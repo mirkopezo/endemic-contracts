@@ -1,0 +1,23 @@
+{
+    "network": "rinkeby",
+    "nftFactoryAddress": "0xb7452f9838f8fe74ee63446F50C608480F1683c6",
+    "marketplaceAddress": "0x8C58fa2A67c339502A3BbA6c947f051a867B3F64",
+    "startBlock": 9222200,
+    "collections": [
+        {
+            "name": "Endemic",
+            "address": "",
+            "block": 9222200
+        },
+        {
+            "name": "Endemic Master Keys",
+            "address": "0xe999A36E49560D5596542B41503F04A383279e75",
+            "block": 9222200
+        },
+        {
+            "name": "Crypto Goblins",
+            "address": "0xD138DfeE03dCe244BEC458D80B4A4E0Fea3Ef9ae",
+            "block": 9516495
+        }
+    ]
+}

@@ -1,0 +1,7 @@
+{
+    "network": "ropsten",
+    "nftFactoryAddress": "",
+    "lazyNftFactoryAddress": "",
+    "marketplaceAddress": "",
+    "startBlock": 10223111
+}

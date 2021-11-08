@@ -1,0 +1,23 @@
+{
+  "name": "nft-platform-ethereum",
+  "license": "UNLICENSED",
+  "scripts": {
+    "codegen": "graph codegen",
+    "build": "graph build",
+    "deploy:rinkeby": "graph deploy mmarinovic/endemic-rinkeby --node https://api.thegraph.com/deploy/ --ipfs https://api.thegraph.com/ipfs/ ",
+    "create:local": "graph create blank-development/nft-platform-ethereum --node http://127.0.0.1:8020 ",
+    "remove:local": "graph remove blank-development/nft-platform-ethereum --node http://127.0.0.1:8020",
+    "deploy:local": "graph deploy blank-development/nft-platform-ethereum --node http://127.0.0.1:8020 --ipfs http://localhost:5001 ",
+    "prepare:mainnet": "mustache configs/mainnet.json subgraph.template.yaml > subgraph.yaml",
+    "prepare:ropsten": "mustache configs/ropsten.json subgraph.template.yaml > subgraph.yaml",
+    "prepare:rinkeby": "mustache configs/rinkeby.json subgraph.template.yaml > subgraph.yaml",
+    "prepare:local": "mustache configs/local.json subgraph.template.yaml > subgraph.yaml"
+  },
+  "dependencies": {
+    "@graphprotocol/graph-ts": "0.20.0",
+    "mustache": "^4.2.0"
+  },
+  "devDependencies": {
+    "prettier": "^2.4.1"
+  }
+}
