@@ -1,7 +1,8 @@
 ## Contracts
 ```
-$ yarn install
 $ cp .env.template .env
+$ yarn install
+$ yarn test
 ```
 
 ## Indexer
