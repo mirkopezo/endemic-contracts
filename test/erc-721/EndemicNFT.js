@@ -91,4 +91,11 @@ describe('EndemicNFT', function () {
       ).to.be.revertedWith('mint caller is not owner nor approved');
     });
   });
+
+  it('sets default approver', async () => {
+    await lazyNftContract.setDefaultApproval(user.address, true);
+    expect(
+      await lazyNftContract.isApprovedForAll(owner.address, user.address)
+    ).to.equal(true);
+  });
 });

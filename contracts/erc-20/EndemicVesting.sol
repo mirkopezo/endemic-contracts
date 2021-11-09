@@ -147,15 +147,17 @@ contract EndemicVesting {
             return (tokenGrant.vestingDuration, remainingGrant);
         } else {
             uint16 daysVested = uint16(elapsedDays.sub(tokenGrant.daysClaimed));
-            if (daysVested.mod(tokenGrant.vestingInterval) != 0) {
-                // Interval is not met
+            uint16 effectiveDaysVested = (daysVested /
+                tokenGrant.vestingInterval) * tokenGrant.vestingInterval;
+            if (effectiveDaysVested <= 0) {
                 return (daysVested, 0);
             }
 
-            uint256 amountVestedPerDay = tokenGrant.amount.div(
-                uint256(tokenGrant.vestingDuration)
-            );
-            uint256 amountVested = uint256(daysVested.mul(amountVestedPerDay));
+            uint256 amountVested = tokenGrant
+                .amount
+                .mul(effectiveDaysVested)
+                .div(tokenGrant.vestingDuration);
+
             return (daysVested, amountVested);
         }
     }
@@ -209,7 +211,7 @@ contract EndemicVesting {
         emit GrantRemoved(recipient, amountVested, amountNotVested);
     }
 
-    function currentTime() private view returns (uint256) {
+    function currentTime() public view returns (uint256) {
         return block.timestamp;
     }
 

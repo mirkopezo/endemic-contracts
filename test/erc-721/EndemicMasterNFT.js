@@ -122,6 +122,7 @@ describe('EndemicMasterNFT', function () {
         .reverted;
     });
   });
+
   describe('Shares distribution', async () => {
     it('should distribute shares to all token owners', async () => {
       // Mint 5 master NFT-s.
@@ -154,6 +155,57 @@ describe('EndemicMasterNFT', function () {
           value: 1000,
         })
       ).to.be.revertedWith('Caller is not the distributor');
+    });
+  });
+
+  describe('Public Mint', () => {
+    it('cant mint if sale is not active', async () => {
+      await expect(
+        masterNftContract.publicMintNFT({
+          value: ethers.utils.parseUnits('1'),
+        })
+      ).to.be.revertedWith('Sale must be active');
+    });
+
+    it('can mint for eth', async () => {
+      await masterNftContract.toggleSaleState();
+
+      await masterNftContract.connect(user).publicMintNFT({
+        value: ethers.utils.parseUnits('15'),
+      });
+
+      const tokenId = await masterNftContract.tokenOfOwnerByIndex(
+        user.address,
+        0
+      );
+
+      expect(tokenId).to.eq('1');
+    });
+
+    it('cant mint for invalid value', async () => {
+      await masterNftContract.toggleSaleState();
+
+      await expect(
+        masterNftContract.connect(user).publicMintNFT({
+          value: ethers.utils.parseUnits('14'),
+        })
+      ).to.be.revertedWith('ETH sent is incorrect');
+    });
+  });
+
+  describe('Owner functions', () => {
+    it('should set sale price', async () => {
+      await masterNftContract.setSalePrice(ethers.utils.parseUnits('1'));
+      expect(await masterNftContract.price()).to.equal(
+        ethers.utils.parseUnits('1')
+      );
+    });
+
+    it('should set sale price', async () => {
+      await masterNftContract.setSalePrice(ethers.utils.parseUnits('1'));
+      expect(await masterNftContract.price()).to.equal(
+        ethers.utils.parseUnits('1')
+      );
     });
   });
 });
