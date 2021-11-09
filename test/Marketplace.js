@@ -539,6 +539,14 @@ describe('Marketplace', function () {
       );
       expect(marketplaceFee).to.equal(250);
     });
+    it('should calculate taker fee correctly', async () => {
+      await masterNftContract.connect(owner).mintNFT(user1.address);
+      const masterNftFee = await marketplace.getTakerFee(user1.address);
+      expect(masterNftFee).to.equal(0);
+
+      const marketplaceFee = await marketplace.getTakerFee(user2.address);
+      expect(marketplaceFee).to.equal(300);
+    });
 
     it('should handle fee change', async function () {
       // Update fees
