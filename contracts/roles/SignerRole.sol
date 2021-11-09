@@ -3,7 +3,7 @@ pragma solidity ^0.8.4;
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "./Roles.sol";
 
-contract SignerRole is OwnableUpgradeable {
+abstract contract SignerRole is OwnableUpgradeable {
     using Roles for Roles.Role;
 
     event SignerAdded(address indexed account);

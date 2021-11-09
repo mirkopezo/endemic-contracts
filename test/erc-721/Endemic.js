@@ -112,4 +112,19 @@ describe('Endemic', function () {
       );
     });
   });
+
+  describe('Signer', () => {
+    it('should add new signer', async () => {
+      await endemicContract.addSigner(user.address);
+      expect(await endemicContract.isSigner(user.address)).to.equal(true);
+    });
+
+    it('should renounce signer', async () => {
+      await endemicContract.addSigner(user.address);
+      expect(await endemicContract.isSigner(user.address)).to.equal(true);
+
+      await endemicContract.connect(user).renounceSigner();
+      expect(await endemicContract.isSigner(user.address)).to.equal(false);
+    });
+  });
 });

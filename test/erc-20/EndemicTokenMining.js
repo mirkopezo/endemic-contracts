@@ -103,4 +103,16 @@ describe('EndemicTokenMining', function () {
       endemicTokenMining.connect(user1).claim(balances, v, r, s)
     ).to.be.revertedWith('Owner should sign message');
   });
+
+  it('reverts if user is not on the list', async () => {
+    let balances = [
+      { recipient: user1.address, value: ethers.utils.parseUnits('10') },
+    ];
+
+    const { v, r, s } = await signBalances(owner, balances);
+
+    await expect(
+      endemicTokenMining.connect(user2).claim(balances, v, r, s)
+    ).to.be.revertedWith('caller not found in recipients');
+  });
 });
