@@ -112,6 +112,33 @@ describe('EndemicVesting', function () {
         )
       ).to.be.revertedWith('amountVestedPerDay > 0');
     });
+
+    it('adds multiple grants for same use', async () => {
+      await endemicVesting.addTokenGrant(
+        user2.address,
+        await currentTime(),
+        ethers.utils.parseUnits('1000'),
+        10,
+        2,
+        1
+      );
+
+      await endemicVesting.addTokenGrant(
+        user2.address,
+        await currentTime(),
+        ethers.utils.parseUnits('100'),
+        10,
+        2,
+        1
+      );
+
+      const [grant1, grant2] = (
+        await endemicVesting.getActiveGrants(user2.address)
+      ).map((x) => x.toString());
+
+      expect(grant1).to.equal('0');
+      expect(grant2).to.equal('1');
+    });
   });
 
   describe('Remove grant', () => {
