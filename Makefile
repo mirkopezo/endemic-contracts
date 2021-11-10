@@ -40,8 +40,8 @@ deployInitialERC1155:
 
 .PHONY: deployERC1155Beacon
 deployERC1155Beacon:
-	npx hardhat run scripts/erc-1155/deploy-erc-1155-beacon.js --network ${network}
+	npx hardhat run scripts/erc-1155/deploy-erc1155-beacon.js --network ${network}
 
 .PHONY: deployERC1155Factory
-deployERC1155Beacon:
-	npx hardhat run scripts/erc-1155/deploy-erc1155-beacon.js --network ${network}
+deployERC1155Factory:
+	npx hardhat run scripts/erc-1155/deploy-erc1155-factory.js --network ${network}

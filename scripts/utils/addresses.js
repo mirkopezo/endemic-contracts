@@ -12,8 +12,21 @@ const testnet_aurora = {
   endemicERC1155Factory: '',
 };
 
+const rinkeby = {
+  endemicMasterKeyProxy: '0xe999A36E49560D5596542B41503F04A383279e75',
+  endemicNftProxy: '0x7a2Fe08968388486c368b0fF57eB36469fe9D11C',
+  endemicNftBeacon: '0x8701876D0092CCE1A903B6b966C5deb52F7d086c',
+  marketplaceProxy: '0x8C58fa2A67c339502A3BbA6c947f051a867B3F64',
+  endemicNftFactory: '0xb7452f9838f8fe74ee63446F50C608480F1683c6',
+
+  endemicERC1155Proxy: '0x55fbE3edd552e9711e51b479a6a66c11Ce52884e',
+  endemicERC1155Beacon: '0x3a5Ca42770Ef7ebAa63bbd917d27AAe52E4aF58e',
+  endemicERC1155Factory: '0x2c4ba617735b8ccab49CBf7eCC0a33fF8245bE86',
+};
+
 const networks = {
   testnet_aurora,
+  rinkeby,
 };
 
 const getForNetwork = (network) => networks[network];

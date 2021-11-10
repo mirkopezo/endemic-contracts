@@ -15,7 +15,7 @@ async function main() {
     'EndemicERC1155Factory'
   );
   const endemicERC1155Factory = await EndemicERC1155Factory.deploy(
-    endemicNftBeacon,
+    endemicERC1155Beacon,
     marketplaceProxy
   );
   await endemicERC1155Factory.deployed();
