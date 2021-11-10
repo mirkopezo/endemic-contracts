@@ -1,7 +1,6 @@
 import { Address, BigInt } from '@graphprotocol/graph-ts';
 import { NFTContract } from '../../../generated/schema';
 import { EndemicNFT } from '../../../generated/templates/EndemicNFT/EndemicNFT';
-import { incrementContractsCount } from '../count';
 
 export function createThirdPartyNFTContract(
   id: Address,
@@ -24,7 +23,6 @@ export function createThirdPartyNFTContract(
   }
 
   nftContract.save();
-  incrementContractsCount();
 
   return <NFTContract>nftContract;
 }

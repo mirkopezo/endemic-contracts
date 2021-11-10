@@ -80,7 +80,7 @@ type Account @entity {
 type Auction @entity {
   id: ID!
   seller: Bytes!
-  buyer: Bytes!
+  buyer: Bytes
   startingPrice: BigInt!
   endingPrice: BigInt!
   duration: BigInt!

@@ -2,9 +2,9 @@ import { log, BigInt } from '@graphprotocol/graph-ts';
 import {
   Transfer,
   Mint,
-} from '../../../generated/templates/EndemicNFT/EndemicNFT';
+} from '../../generated/templates/EndemicNFT/EndemicNFT';
 
-import { NFT, NFTContract, NFTOwner } from '../../../generated/schema';
+import { NFT, NFTContract, NFTOwner } from '../../generated/schema';
 import {
   getERC721TokenURI,
   getNFTId,
@@ -12,11 +12,11 @@ import {
   isERC721BurnEvent,
   readTokenMetadataFromIPFS,
   isERC721MintEvent,
-} from '../../modules/nft';
-import { createAccount } from '../../modules/account';
-import { createERC721TransferActivity } from '../../modules/activity';
-import { createThirdPartyNFTContract } from '../../modules/nftContract';
-import { updateContractCount } from '../../modules/count';
+} from '../modules/nft';
+import { createAccount } from '../modules/account';
+import { createERC721TransferActivity } from '../modules/activity';
+import { createThirdPartyNFTContract } from '../modules/nftContract';
+import { updateContractCount } from '../modules/count';
 
 export function handleTransfer(event: Transfer): void {
   if (event.params.tokenId.toString() == '') {
@@ -69,7 +69,7 @@ export function handleTransfer(event: Transfer): void {
     nft.tokenURI = tokenURI;
 
     updateContractCount(event.address.toHexString(), (counts) => {
-      counts.totalCount += 1;
+      counts.totalCount = counts.totalCount + BigInt.fromI32(1);
     });
 
     let metaData = readTokenMetadataFromIPFS(tokenURI);
@@ -83,7 +83,7 @@ export function handleTransfer(event: Transfer): void {
   } else if (isERC721BurnEvent(event)) {
     nft.burned = true;
     updateContractCount(event.address.toHexString(), (counts) => {
-      counts.totalCount -= 1;
+      counts.totalCount = counts.totalCount - BigInt.fromI32(1);
     });
   }
 

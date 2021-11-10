@@ -1,7 +1,7 @@
-import { Created } from '../../../generated/EndemicERC1155Factory/EndemicERC1155Factory';
-import { EndemicERC1155 } from '../../../generated/templates';
-import { NFTContract } from '../../../generated/schema';
-import { createAccount } from '../../modules/account';
+import { Created } from '../../generated/EndemicNFTFactory/EndemicNFTFactory';
+import { EndemicNFT } from '../../generated/templates';
+import { NFTContract } from '../../generated/schema';
+import { createAccount } from '../modules/account';
 
 export function handleNFTContractCreated(event: Created): void {
   let nftContract = NFTContract.load(event.params.nftContract.toHex());
@@ -16,6 +16,6 @@ export function handleNFTContractCreated(event: Created): void {
 
   nftContract.save();
 
-  EndemicERC1155.create(event.params.nftContract);
+  EndemicNFT.create(event.params.nftContract);
   createAccount(event.params.owner);
 }

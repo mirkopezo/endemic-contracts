@@ -48,7 +48,7 @@ dataSources:
       eventHandlers:
         - event: Created(indexed address,indexed address,string,string,string)
           handler: handleCreated
-      file: ./src/handlers/erc-721/erc721Factory.ts
+      file: ./src/handlers/erc721Factory.ts
 
   - kind: ethereum/contract
     name: EndemicERC1155Factory
@@ -70,7 +70,7 @@ dataSources:
       eventHandlers:
         - event: Created(indexed address,indexed address,string,string,string)
           handler: handleCreated
-      file: ./src/handlers/erc-1155/erc1155Factory.ts
+      file: ./src/handlers/erc1155Factory.ts
 
 {{#collections}}
   - kind: ethereum/contract
@@ -95,7 +95,7 @@ dataSources:
           handler: handleTransfer
         - event: Mint(indexed uint256,address)
           handler: handleMint
-      file: ./src/handlers/erc-721/erc721Factory.ts
+      file: ./src/handlers/erc721.ts
 {{/collections}}
 
 templates:
@@ -119,7 +119,7 @@ templates:
           handler: handleTransfer
         - event: Mint(indexed uint256,address)
           handler: handleMint
-      file: ./src/handlers/erc-721/erc721Factory.ts 
+      file: ./src/handlers/erc721Factory.ts 
   - kind: ethereum/contract
     name: EndemicERC1155
     network: {{network}}
@@ -142,4 +142,4 @@ templates:
           handler: handleTransferBatch
         - event: Create(indexed uint256,address,uint256)
           handler: handleCreate
-      file: ./src/handlers/erc-1155/erc1155.ts
+      file: ./src/handlers/erc1155.ts

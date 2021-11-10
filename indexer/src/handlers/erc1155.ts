@@ -3,9 +3,9 @@ import {
   TransferBatch,
   TransferSingle,
   Create,
-} from '../../../generated/templates/EndemicERC1155/EndemicERC1155';
+} from '../../generated/templates/EndemicERC1155/EndemicERC1155';
 
-import { NFT, NFTContract, NFTOwner } from '../../../generated/schema';
+import { NFT, NFTContract, NFTOwner } from '../../generated/schema';
 import {
   getERC1155TokenURI,
   getNFTId,
@@ -13,10 +13,10 @@ import {
   isERC1155MintEvent,
   readTokenMetadataFromIPFS,
   getNFTOwnerId,
-} from '../../modules/nft';
-import { createAccount } from '../../modules/account';
-import { createERC1155TransferActivity } from '../../modules/activity';
-import { updateContractCount } from '../../modules/count';
+} from '../modules/nft';
+import { createAccount } from '../modules/account';
+import { createERC1155TransferActivity } from '../modules/activity';
+import { updateContractCount } from '../modules/count';
 
 export function handleTransferSingle(event: TransferSingle): void {
   if (event.params.id.toString() == '') {

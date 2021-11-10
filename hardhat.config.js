@@ -27,6 +27,10 @@ module.exports = {
       accounts: [`0x${process.env.PRIVATE_KEY}`],
       chainId: 1313161555,
     },
+    rinkeby: {
+      url: `https://eth-rinkeby.alchemyapi.io/v2/${process.env.ALCHEMY_API_KEY}`,
+      accounts: [`0x${process.env.PRIVATE_KEY}`],
+    },
   },
   gasReporter: {
     currency: 'USD',

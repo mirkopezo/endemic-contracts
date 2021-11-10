@@ -59,6 +59,7 @@ export function handleAuctionSuccessful(event: AuctionSuccessful): void {
 
   auction.soldAt = event.block.timestamp;
   auction.totalPrice = event.params.totalPrice;
+  auction.buyer = event.params.winner;
   auction.status = auctionStatuses.SOLD;
   auction.save();
 
