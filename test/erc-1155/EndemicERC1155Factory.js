@@ -30,11 +30,11 @@ describe('EndemicERC1155Factory', function () {
     const beacon = await EndemicERC1155Beacon.deploy(implContract.address);
     await beacon.deployed();
 
-    const EndemicNFTFactory = await ethers.getContractFactory(
-      'EndemicNFTFactory'
+    const EndemicERC1155Factory = await ethers.getContractFactory(
+      'EndemicERC1155Factory'
     );
 
-    factoryContract = await EndemicNFTFactory.deploy(
+    factoryContract = await EndemicERC1155Factory.deploy(
       beacon.address,
       marketplace.address
     );
