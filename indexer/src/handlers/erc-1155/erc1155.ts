@@ -16,11 +16,7 @@ import {
 } from '../../modules/nft';
 import { createAccount } from '../../modules/account';
 import { createERC1155TransferActivity } from '../../modules/activity';
-import {
-  incrementNftsCount,
-  decrementNftsCount,
-  updateContractCount,
-} from '../../modules/count';
+import { updateContractCount } from '../../modules/count';
 
 export function handleTransferSingle(event: TransferSingle): void {
   if (event.params.id.toString() == '') {
@@ -62,9 +58,8 @@ export function handleTransferSingle(event: TransferSingle): void {
     nft.contractName = contract.name;
     nft.tokenURI = tokenURI;
 
-    incrementNftsCount(event.params.value);
     updateContractCount(event.address.toHexString(), (counts) => {
-      counts.totalCount += 1;
+      counts.totalCount = counts.totalCount + event.params.value;
     });
 
     let metaData = readTokenMetadataFromIPFS(tokenURI);
@@ -77,9 +72,8 @@ export function handleTransferSingle(event: TransferSingle): void {
     }
   } else if (isERC1155BurnEvent(event.params.to)) {
     nft.burned = true;
-    decrementNftsCount(event.params.value);
     updateContractCount(event.address.toHexString(), (counts) => {
-      counts.totalCount -= 1;
+      counts.totalCount = counts.totalCount - event.params.value;
     });
   } else {
     let nftPreviousOwnerId = getNFTOwnerId(id, event.params.from.toHexString());

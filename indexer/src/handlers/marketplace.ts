@@ -11,7 +11,7 @@ import {
 } from '../modules/nft';
 import { createAuctionActivity } from '../modules/activity';
 import * as auctionStatuses from '../data/auctionStatuses';
-import { incrementAuctionsCount, updateContractCount } from '../modules/count';
+import { updateContractCount } from '../modules/count';
 
 export function handleAuctionCreated(event: AuctionCreated): void {
   let nftId = getNFTId(
@@ -34,10 +34,9 @@ export function handleAuctionCreated(event: AuctionCreated): void {
   auction.nft = nftId;
 
   auction.save();
-  incrementAuctionsCount();
-  updateContractCount(event.params.nftContract.toHexString(), (counts) => {
-    counts.onSaleCount += 1;
-  });
+  // updateContractCount(event.params.nftContract.toHexString(), (counts) => {
+  //   counts.onSaleCount += 1;
+  // });
 
   nft = addNFTAuctionProperties(nft!, auction!);
   nft.save();
@@ -67,9 +66,9 @@ export function handleAuctionSuccessful(event: AuctionSuccessful): void {
   nft.save();
 
   createAuctionActivity(auction!, nft!, 'auctionSuccess', event);
-  updateContractCount(event.params.nftContract.toHexString(), (counts) => {
-    counts.onSaleCount -= 1;
-  });
+  // updateContractCount(event.params.nftContract.toHexString(), (counts) => {
+  //   counts.onSaleCount -= 1;
+  // });
 }
 
 export function handleAuctionCancelled(event: AuctionCancelled): void {
@@ -93,7 +92,7 @@ export function handleAuctionCancelled(event: AuctionCancelled): void {
   nft.save();
 
   createAuctionActivity(auction!, nft!, 'auctionCancel', event);
-  updateContractCount(event.params.nftContract.toHexString(), (counts) => {
-    counts.onSaleCount -= 1;
-  });
+  // updateContractCount(event.params.nftContract.toHexString(), (counts) => {
+  //   counts.onSaleCount -= 1;
+  // });
 }

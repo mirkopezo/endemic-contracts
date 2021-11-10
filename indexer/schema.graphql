@@ -116,17 +116,10 @@ type Activity @entity {
   transactionHash: Bytes!
 }
 
-type Counts @entity {
-  id: ID!
-  nftsCount: BigInt!
-  nftContractsCount: Int!
-  nftAuctionsCount: Int!
-}
-
 type ContractsCounts @entity {
   id: ID!
-  totalCount: Int!
-  onSaleCount: Int!
+  totalCount: BigInt!
+  onSaleCount: BigInt!
 }
 
 enum AuctionStatus @entity {

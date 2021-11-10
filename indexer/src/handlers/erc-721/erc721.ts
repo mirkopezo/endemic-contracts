@@ -16,11 +16,7 @@ import {
 import { createAccount } from '../../modules/account';
 import { createERC721TransferActivity } from '../../modules/activity';
 import { createThirdPartyNFTContract } from '../../modules/nftContract';
-import {
-  incrementNftsCount,
-  decrementNftsCount,
-  updateContractCount,
-} from '../../modules/count';
+import { updateContractCount } from '../../modules/count';
 
 export function handleTransfer(event: Transfer): void {
   if (event.params.tokenId.toString() == '') {
@@ -72,7 +68,6 @@ export function handleTransfer(event: Transfer): void {
     nft.contractName = contract.name;
     nft.tokenURI = tokenURI;
 
-    incrementNftsCount(BigInt.fromI32(1));
     updateContractCount(event.address.toHexString(), (counts) => {
       counts.totalCount += 1;
     });
@@ -87,7 +82,6 @@ export function handleTransfer(event: Transfer): void {
     }
   } else if (isERC721BurnEvent(event)) {
     nft.burned = true;
-    decrementNftsCount(BigInt.fromI32(1));
     updateContractCount(event.address.toHexString(), (counts) => {
       counts.totalCount -= 1;
     });

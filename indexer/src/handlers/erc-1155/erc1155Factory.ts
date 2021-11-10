@@ -2,7 +2,6 @@ import { Created } from '../../../generated/EndemicERC1155Factory/EndemicERC1155
 import { EndemicERC1155 } from '../../../generated/templates';
 import { NFTContract } from '../../../generated/schema';
 import { createAccount } from '../../modules/account';
-import { incrementContractsCount } from '../../modules/count';
 
 export function handleNFTContractCreated(event: Created): void {
   let nftContract = NFTContract.load(event.params.nftContract.toHex());
@@ -19,5 +18,4 @@ export function handleNFTContractCreated(event: Created): void {
 
   EndemicERC1155.create(event.params.nftContract);
   createAccount(event.params.owner);
-  incrementContractsCount();
 }
