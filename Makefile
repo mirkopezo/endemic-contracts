@@ -33,3 +33,9 @@ upgradeMarketplace:
 .PHONY: deployEndemicErc20
 deployEndemicErc20:
 	npx hardhat run scripts/deploy-endemic-erc20.js --network ${network}
+
+.PHONY: deployEndemicVesting
+deployEndemicVesting:
+	npx hardhat run scripts/deploy-endemic-vesting.js --network ${network}
+
+
