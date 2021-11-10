@@ -6,6 +6,10 @@ const testnet_aurora = {
   marketplaceProxy: '0xB59AFE0799d7936Da81b24ACF2D843D8309491e6',
   endemicNftFactory: '0x18F1Df65254eFc7031C30747de3D112B9E2A51B9',
   endemicErc20: '0x8F55D345458028d451C4f194E23c1B0150fa2567',
+
+  endemicERC1155Proxy: '',
+  endemicERC1155Beacon: '',
+  endemicERC1155Factory: '',
 };
 
 const networks = {

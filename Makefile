@@ -33,3 +33,15 @@ upgradeMarketplace:
 .PHONY: deployEndemicErc20
 deployEndemicErc20:
 	npx hardhat run scripts/erc-20/deploy-endemic-erc20.js --network ${network}
+
+.PHONY: deployInitialERC1155
+deployInitialERC1155:
+	npx hardhat run scripts/erc-1155/deploy-erc1155-initial.js --network ${network}
+
+.PHONY: deployERC1155Beacon
+deployERC1155Beacon:
+	npx hardhat run scripts/erc-1155/deploy-erc-1155-beacon.js --network ${network}
+
+.PHONY: deployERC1155Factory
+deployERC1155Beacon:
+	npx hardhat run scripts/erc-1155/deploy-erc1155-beacon.js --network ${network}
