@@ -48,15 +48,8 @@ abstract contract ERC1155Base is
         supply[tokenId] = _supply;
     }
 
-    function setDefaultApproval(address operator, bool hasApproval)
-        external
-        onlyOwner
-    {
-        _setDefaultApproval(operator, hasApproval);
-    }
-
-    function setBaseTokenURI(string memory baseTokenURI) public onlyOwner {
-        _setBaseURI(baseTokenURI);
+    function totalSupply(uint256 _id) public view returns (uint256) {
+        return supply[_id];
     }
 
     function uri(uint256 id)
@@ -67,6 +60,17 @@ abstract contract ERC1155Base is
         returns (string memory)
     {
         return _tokenURI(id);
+    }
+
+    function setDefaultApproval(address operator, bool hasApproval)
+        external
+        onlyOwner
+    {
+        _setDefaultApproval(operator, hasApproval);
+    }
+
+    function setBaseTokenURI(string memory baseTokenURI) public onlyOwner {
+        _setBaseURI(baseTokenURI);
     }
 
     function isApprovedForAll(address _owner, address _operator)

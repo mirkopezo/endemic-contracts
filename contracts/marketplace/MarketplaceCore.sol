@@ -70,20 +70,16 @@ abstract contract MarketplaceCore is
     function createAuction(
         address _nftContract,
         uint256 _tokenId,
-        uint256 _tokenValue,
         uint256 _startingPrice,
         uint256 _endingPrice,
         uint256 _duration
     ) external whenNotPaused {
-        if (_tokenValue > 0) {
-            _requireERC1155(_nftContract);
-        } else {
-            _requireERC721(_nftContract);
-            require(
-                _ownsERC721(msg.sender, _nftContract, _tokenId),
-                "Seller is not owner of the asset"
-            );
-        }
+        _requireERC721(_nftContract);
+
+        require(
+            _ownsERC721(msg.sender, _nftContract, _tokenId),
+            "Seller is not owner of the asset"
+        );
 
         require(
             _isApproved(msg.sender, _nftContract, _tokenId),

@@ -1,9 +1,13 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.4;
 
+import "@openzeppelin/contracts-upgradeable/utils/CountersUpgradeable.sol";
 import "./ERC1155Base.sol";
 
 contract EndemicERC1155 is ERC1155Base {
+    using CountersUpgradeable for CountersUpgradeable.Counter;
+    CountersUpgradeable.Counter private _tokenIdCounter;
+
     function __EndemicERC1155_init(
         string memory name,
         string memory symbol,
@@ -19,13 +23,16 @@ contract EndemicERC1155 is ERC1155Base {
         _setBaseURI(baseTokenURI);
     }
 
-    event Mint(uint256 indexed tokenId, address artistId);
+    event Create(uint256 indexed tokenId, address artistId, uint256 supply);
 
     struct MintData {
         address recipient;
-        address artist;
         uint256 tokenId;
         uint256 amount;
+    }
+
+    struct CreateData {
+        address artist;
         uint256 supply;
         string tokenURI;
     }
@@ -36,17 +43,20 @@ contract EndemicERC1155 is ERC1155Base {
             "mint caller is not owner nor approved"
         );
         require(data.amount > 0, "amount incorrect");
-
-        if (supply[data.tokenId] == 0) {
-            require(data.supply > 0, "supply incorrect");
-
-            _saveSupply(data.tokenId, data.supply);
-            _setTokenURI(data.tokenId, data.tokenURI);
-        }
+        require(supply[data.tokenId] > 0, "supply incorrect");
 
         _mint(data.recipient, data.tokenId, data.amount, "");
+    }
 
-        emit Mint(data.tokenId, data.artist);
+    function create(CreateData calldata data) external onlyOwner {
+        _tokenIdCounter.increment();
+        uint256 newTokenId = _tokenIdCounter.current();
+        require(data.supply > 0, "supply incorrect");
+
+        _saveSupply(newTokenId, data.supply);
+        _setTokenURI(newTokenId, data.tokenURI);
+
+        emit Create(newTokenId, data.artist, data.supply);
     }
 
     uint256[50] private __gap;

@@ -48,14 +48,14 @@ contract EndemicERC1155Factory is AccessControl {
         onlyRole(MINTER_ROLE)
     {
         bytes memory data = abi.encodeWithSelector(
-            EndemicNFT(address(0)).__EndemicNFT_init.selector,
+            EndemicERC1155(address(0)).__EndemicERC1155_init.selector,
             params.name,
             params.symbol,
             params.baseURI
         );
 
         BeaconProxy beaconProxy = new BeaconProxy(address(beacon), data);
-        EndemicNFT endemicNft = EndemicNFT(address(beaconProxy));
+        EndemicERC1155 endemicNft = EndemicERC1155(address(beaconProxy));
         endemicNft.setDefaultApproval(marketplaceContract, true);
         endemicNft.transferOwnership(params.owner);
 
