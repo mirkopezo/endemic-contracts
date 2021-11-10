@@ -1,6 +1,6 @@
 const { ethers, network } = require('hardhat');
-const { getForNetwork } = require('./utils/addresses');
-const { getProxyImpl } = require('./utils/get-proxy-impl');
+const { getForNetwork } = require('../utils/addresses');
+const { getProxyImpl } = require('../utils/get-proxy-impl');
 
 async function main() {
   const [deployer] = await ethers.getSigners();
