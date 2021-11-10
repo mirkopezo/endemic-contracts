@@ -20,7 +20,7 @@ contract EndemicERC1155Factory is AccessControl {
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
     }
 
-    event NFTContractCreated(
+    event Created(
         BeaconProxy indexed nftContract,
         address indexed owner,
         string name,
@@ -59,7 +59,7 @@ contract EndemicERC1155Factory is AccessControl {
         endemicNft.setDefaultApproval(marketplaceContract, true);
         endemicNft.transferOwnership(params.owner);
 
-        emit NFTContractCreated(
+        emit Created(
             beaconProxy,
             params.owner,
             params.name,

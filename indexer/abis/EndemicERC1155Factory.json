@@ -196,7 +196,7 @@
             "type": "string"
           }
         ],
-        "internalType": "struct EndemicNFTFactory.DeployParams",
+        "internalType": "struct EndemicERC1155Factory.DeployParams",
         "name": "params",
         "type": "tuple"
       }

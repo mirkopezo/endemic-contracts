@@ -2,7 +2,6 @@ import {
   AuctionCancelled,
   AuctionCreated,
   AuctionSuccessful,
-  Redeem,
 } from '../../generated/Marketplace/Marketplace';
 import { NFT, Auction } from '../../generated/schema';
 import {
@@ -10,10 +9,7 @@ import {
   clearNFTAuctionProperties,
   addNFTAuctionProperties,
 } from '../modules/nft';
-import {
-  createAuctionActivity,
-  createRedeemActivity,
-} from '../modules/activity';
+import { createAuctionActivity } from '../modules/activity';
 import * as auctionStatuses from '../data/auctionStatuses';
 import { incrementAuctionsCount, updateContractCount } from '../modules/count';
 
@@ -100,19 +96,4 @@ export function handleAuctionCancelled(event: AuctionCancelled): void {
   updateContractCount(event.params.nftContract.toHexString(), (counts) => {
     counts.onSaleCount -= 1;
   });
-}
-
-export function handleRedeem(event: Redeem): void {
-  let id = getNFTId(
-    event.params.contractAddress.toHexString(),
-    event.params.tokenId.toString()
-  );
-  let nft = <NFT>NFT.load(id);
-
-  nft.artist = event.params.artist.toHex();
-  nft.artistId = event.params.artist;
-
-  nft.save();
-
-  createRedeemActivity(nft!, event.params.seller, event.params.minPrice, event);
 }

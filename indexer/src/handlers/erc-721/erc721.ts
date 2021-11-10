@@ -2,24 +2,25 @@ import { log, BigInt } from '@graphprotocol/graph-ts';
 import {
   Transfer,
   Mint,
-} from '../../generated/templates/EndemicNFT/EndemicNFT';
+} from '../../../generated/templates/EndemicNFT/EndemicNFT';
 
-import { NFT, NFTContract } from '../../generated/schema';
+import { NFT, NFTContract, NFTOwner } from '../../../generated/schema';
 import {
-  getTokenURI,
+  getERC721TokenURI,
   getNFTId,
-  isMintEvent,
-  isBurnEvent,
+  getNFTOwnerId,
+  isERC721BurnEvent,
   readTokenMetadataFromIPFS,
-} from '../modules/nft';
-import { createAccount } from '../modules/account';
-import { createTransferActivity } from '../modules/activity';
-import { createThirdPartyNFTContract } from '../modules/nftContract';
+  isERC721MintEvent,
+} from '../../modules/nft';
+import { createAccount } from '../../modules/account';
+import { createERC721TransferActivity } from '../../modules/activity';
+import { createThirdPartyNFTContract } from '../../modules/nftContract';
 import {
   incrementNftsCount,
   decrementNftsCount,
   updateContractCount,
-} from '../modules/count';
+} from '../../modules/count';
 
 export function handleTransfer(event: Transfer): void {
   if (event.params.tokenId.toString() == '') {
@@ -30,7 +31,7 @@ export function handleTransfer(event: Transfer): void {
     event.address.toHexString(),
     event.params.tokenId.toString()
   );
-  let tokenURI = getTokenURI(event);
+  let tokenURI = getERC721TokenURI(event.address, event.params.tokenId);
   let nft = <NFT>NFT.load(id);
 
   if (!nft) {
@@ -46,8 +47,16 @@ export function handleTransfer(event: Transfer): void {
     );
   }
 
+  let nftOwnerId = getNFTOwnerId(id, event.params.to.toHexString());
+  let nftOwner = NFTOwner.load(nftOwnerId);
+  if (nftOwner === null) {
+    nftOwner = new NFTOwner(nftOwnerId);
+  }
+
+  nftOwner.supply = BigInt.fromI32(1);
+  nftOwner.account = event.params.to.toHexString();
+
   nft.tokenId = event.params.tokenId;
-  nft.owner = event.params.to.toHex();
   nft.ownerId = event.params.to;
   nft.contract = event.address.toHex();
   nft.updatedAt = event.block.timestamp;
@@ -56,33 +65,29 @@ export function handleTransfer(event: Transfer): void {
   nft.isOnAuction = false;
   nft.seller = null;
 
-  if (isMintEvent(event)) {
+  if (isERC721MintEvent(event)) {
     nft.createdAt = event.block.timestamp;
     nft.category = contract.category;
     nft.contractId = event.address;
     nft.contractName = contract.name;
     nft.tokenURI = tokenURI;
 
-    incrementNftsCount();
+    incrementNftsCount(BigInt.fromI32(1));
     updateContractCount(event.address.toHexString(), (counts) => {
       counts.totalCount += 1;
     });
 
     let metaData = readTokenMetadataFromIPFS(tokenURI);
     if (metaData !== null) {
-      nft.image = metaData.get('image')
-        ? metaData.get('image').toString()
-        : null;
-      nft.name = metaData.get('name') ? metaData.get('name').toString() : null;
-      nft.description = metaData.get('description')
-        ? metaData.get('description').toString()
-        : null;
+      nft.image = metaData.image;
+      nft.name = metaData.name;
+      nft.description = metaData.description;
     } else {
       log.warning('TokenURI: {0} not available', [tokenURI]);
     }
-  } else if (isBurnEvent(event)) {
+  } else if (isERC721BurnEvent(event)) {
     nft.burned = true;
-    decrementNftsCount();
+    decrementNftsCount(BigInt.fromI32(1));
     updateContractCount(event.address.toHexString(), (counts) => {
       counts.totalCount -= 1;
     });
@@ -92,7 +97,7 @@ export function handleTransfer(event: Transfer): void {
 
   nft.save();
 
-  createTransferActivity(nft, event);
+  createERC721TransferActivity(nft, event);
 }
 
 export function handleMint(event: Mint): void {

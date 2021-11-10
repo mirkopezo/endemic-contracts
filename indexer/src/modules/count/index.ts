@@ -1,3 +1,4 @@
+import { BigInt } from '@graphprotocol/graph-ts';
 import { Counts, ContractsCounts } from '../../../generated/schema';
 import * as countsId from '../../data/countId';
 
@@ -6,7 +7,7 @@ function getCount(): Counts {
 
   if (counts == null) {
     counts = new Counts(countsId.countId);
-    counts.nftsCount = 0;
+    counts.nftsCount = BigInt.fromI32(0);
     counts.nftContractsCount = 0;
     counts.nftAuctionsCount = 0;
     counts.save();
@@ -34,15 +35,15 @@ export function incrementContractsCount(): void {
   counts.save();
 }
 
-export function incrementNftsCount(): void {
+export function incrementNftsCount(value: BigInt): void {
   let counts = getCount();
-  counts.nftsCount = counts.nftsCount + 1;
+  counts.nftsCount = counts.nftsCount + value;
   counts.save();
 }
 
-export function decrementNftsCount(): void {
+export function decrementNftsCount(value: BigInt): void {
   let counts = getCount();
-  counts.nftsCount = counts.nftsCount - 1;
+  counts.nftsCount = counts.nftsCount - value;
   counts.save();
 }
 

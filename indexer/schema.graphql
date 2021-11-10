@@ -31,21 +31,31 @@ type NFTContract @entity {
   nfts: [NFT!]! @derivedFrom(field: "contract")
 }
 
+type NFTOwner @entity {
+  id: ID!
+  account: Account!
+  supply: BigInt!
+  nft: NFT!
+}
+
 type NFT @entity {
   id: ID!
   contract: NFTContract!
   tokenId: BigInt!
+  category: String
   artist: Account
-  owner: Account!
+  owners: [NFTOwner!] @derivedFrom(field: "nft")
   updatedAt: BigInt!
   createdAt: BigInt!
   auctions: [Auction!] @derivedFrom(field: "nft")
   burned: Boolean!
 
+  #erc-1155
+  supply: BigInt
+
   seller: Bytes
   isOnAuction: Boolean!
   currentPrice: BigInt!
-  category: String
 
   #metadata
   tokenURI: String
@@ -63,13 +73,14 @@ type NFT @entity {
 type Account @entity {
   id: ID!
   address: Bytes!
-  ownedNfts: [NFT!] @derivedFrom(field: "owner")
+  ownedNfts: [NFTOwner!] @derivedFrom(field: "account")
   createdNfts: [NFT!] @derivedFrom(field: "artist")
 }
 
 type Auction @entity {
   id: ID!
   seller: Bytes!
+  buyer: Bytes!
   startingPrice: BigInt!
   endingPrice: BigInt!
   duration: BigInt!
@@ -93,11 +104,11 @@ type Activity @entity {
   #auction activity
   auction: Auction
   auctionSeller: String
+  auctionBuyer: String
   auctionPrice: BigInt
 
   #denormalized
   nft: NFT
-  nftOwnerId: Bytes!
   nftTokenURI: String
   nftImage: String
   nftName: String
@@ -107,7 +118,7 @@ type Activity @entity {
 
 type Counts @entity {
   id: ID!
-  nftsCount: Int!
+  nftsCount: BigInt!
   nftContractsCount: Int!
   nftAuctionsCount: Int!
 }

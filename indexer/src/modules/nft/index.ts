@@ -1,40 +1,51 @@
-import {
-  log,
-  ipfs,
-  json,
-  TypedMap,
-  JSONValue,
-  BigInt,
-} from '@graphprotocol/graph-ts';
+import { log, ipfs, json, BigInt, Address } from '@graphprotocol/graph-ts';
 import { Auction, NFT } from '../../../generated/schema';
 import {
   Transfer,
   EndemicNFT,
 } from '../../../generated/templates/EndemicNFT/EndemicNFT';
+import {
+  EndemicERC1155,
+  TransferSingle,
+  TransferBatch,
+} from '../../../generated/templates/EndemicERC1155/EndemicERC1155';
 import * as addresses from '../../data/addresses';
+import { Metadata } from './models';
 
-export function isMintEvent(event: Transfer): boolean {
+export function isERC721MintEvent(event: Transfer): boolean {
   return event.params.from.toHexString() == addresses.Null;
 }
 
-export function isBurnEvent(event: Transfer): boolean {
+export function isERC721BurnEvent(event: Transfer): boolean {
   return event.params.to.toHexString() == addresses.Null;
+}
+
+export function isERC1155MintEvent(from: Address): boolean {
+  return from.toHexString() == addresses.Null;
+}
+
+export function isERC1155BurnEvent(to: Address): boolean {
+  return to.toHexString() == addresses.Null;
 }
 
 export function getNFTId(contractAddress: string, tokenId: string): string {
   return contractAddress + '-' + tokenId;
 }
 
-export function getTokenURI(event: Transfer): string {
-  let erc721 = EndemicNFT.bind(event.address);
-  let tokenURICallResult = erc721.try_tokenURI(event.params.tokenId);
+export function getNFTOwnerId(nftId: string, accountAddress: string): string {
+  return nftId + '-' + accountAddress;
+}
+
+export function getERC721TokenURI(address: Address, tokenId: BigInt): string {
+  let erc721 = EndemicNFT.bind(address);
+  let tokenURICallResult = erc721.try_tokenURI(tokenId);
 
   let tokenURI = '';
 
   if (tokenURICallResult.reverted) {
     log.warning('tokenURI reverted for tokenID: {} contract: {}', [
-      event.params.tokenId.toString(),
-      event.address.toHexString(),
+      tokenId.toString(),
+      address.toHexString(),
     ]);
   } else {
     tokenURI = tokenURICallResult.value;
@@ -43,9 +54,25 @@ export function getTokenURI(event: Transfer): string {
   return tokenURI;
 }
 
-export function readTokenMetadataFromIPFS(
-  tokenURI: string
-): TypedMap<string, JSONValue> {
+export function getERC1155TokenURI(address: Address, tokenId: BigInt): string {
+  let erc1155 = EndemicERC1155.bind(address);
+  let tokenURICallResult = erc1155.try_uri(tokenId);
+
+  let tokenURI = '';
+
+  if (tokenURICallResult.reverted) {
+    log.warning('tokenURI reverted for tokenID: {} contract: {}', [
+      tokenId.toString(),
+      address.toHexString(),
+    ]);
+  } else {
+    tokenURI = tokenURICallResult.value;
+  }
+
+  return tokenURI;
+}
+
+export function readTokenMetadataFromIPFS(tokenURI: string): Metadata {
   if (!tokenURI) return null;
 
   let uriParts = tokenURI.split('/');
@@ -59,7 +86,16 @@ export function readTokenMetadataFromIPFS(
     if (data === null) {
       return null;
     }
-    return data.toObject();
+    let metaData = data.toObject();
+    if (metaData !== null) {
+      return {
+        image: metaData.get('image') ? metaData.get('image').toString() : null,
+        name: metaData.get('name') ? metaData.get('name').toString() : null,
+        description: metaData.get('description')
+          ? metaData.get('description').toString()
+          : null,
+      };
+    }
   }
 
   return null;
