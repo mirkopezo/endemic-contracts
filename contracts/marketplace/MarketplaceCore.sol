@@ -9,6 +9,7 @@ import "@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol";
 import "./TransferManager.sol";
 import "./FeeManager.sol";
 import "../erc-721/IERC721.sol";
+import "../erc-1155/IERC1155.sol";
 
 abstract contract MarketplaceCore is
     PausableUpgradeable,
@@ -22,6 +23,7 @@ abstract contract MarketplaceCore is
 
     mapping(address => mapping(uint256 => Auction)) internal tokenIdToAuction;
     bytes4 public constant ERC721_Interface = bytes4(0x80ac58cd);
+    bytes4 public constant ERC1155_Interface = bytes4(0xd9b67a26);
 
     struct Auction {
         uint256 id;
@@ -68,16 +70,21 @@ abstract contract MarketplaceCore is
     function createAuction(
         address _nftContract,
         uint256 _tokenId,
+        uint256 _tokenValue,
         uint256 _startingPrice,
         uint256 _endingPrice,
         uint256 _duration
     ) external whenNotPaused {
-        _requireERC721(_nftContract);
+        if (_tokenValue > 0) {
+            _requireERC1155(_nftContract);
+        } else {
+            _requireERC721(_nftContract);
+            require(
+                _ownsERC721(msg.sender, _nftContract, _tokenId),
+                "Seller is not owner of the asset"
+            );
+        }
 
-        require(
-            _owns(msg.sender, _nftContract, _tokenId),
-            "Seller is not owner of the asset"
-        );
         require(
             _isApproved(msg.sender, _nftContract, _tokenId),
             "Marketplace is not approved for the asset"
@@ -123,7 +130,7 @@ abstract contract MarketplaceCore is
         require(_isOnAuction(auction), "NFT is not on auction");
         require(auction.seller != _msgSender(), "Cant buy from self");
         require(
-            _owns(auction.seller, _nftContract, _tokenId),
+            _ownsERC721(auction.seller, _nftContract, _tokenId),
             "Seller is no longer owner"
         );
         require(
@@ -204,7 +211,7 @@ abstract contract MarketplaceCore is
         return _currentPrice(auction);
     }
 
-    function _owns(
+    function _ownsERC721(
         address _seller,
         address _nftContract,
         uint256 _tokenId
@@ -224,10 +231,16 @@ abstract contract MarketplaceCore is
     }
 
     function _requireERC721(address _nftContract) internal view {
-        require(_nftContract.isContract(), "Address should be a contract");
         require(
             IERC721(_nftContract).supportsInterface(ERC721_Interface),
             "Contract has an invalid ERC721 implementation"
+        );
+    }
+
+    function _requireERC1155(address _nftContract) internal view {
+        require(
+            IERC1155(_nftContract).supportsInterface(ERC1155_Interface),
+            "Contract has an invalid ERC1155 implementation"
         );
     }
 
