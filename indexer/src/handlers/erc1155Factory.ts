@@ -3,7 +3,7 @@ import { EndemicERC1155 } from '../../generated/templates';
 import { NFTContract } from '../../generated/schema';
 import { createAccount } from '../modules/account';
 
-export function handleNFTContractCreated(event: Created): void {
+export function handleCreated(event: Created): void {
   let nftContract = NFTContract.load(event.params.nftContract.toHex());
   if (nftContract == null) {
     nftContract = new NFTContract(event.params.nftContract.toHex());

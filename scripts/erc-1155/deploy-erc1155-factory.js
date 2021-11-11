@@ -11,9 +11,7 @@ async function main() {
     'Deploying EndemicERC1155Factory with the account:',
     deployer.address
   );
-  const EndemicERC1155Factory = await ethers.getContractFactory(
-    'EndemicERC1155Factory'
-  );
+  const EndemicERC1155Factory = await ethers.getContractFactory('EndemicERC1155Factory');
   const endemicERC1155Factory = await EndemicERC1155Factory.deploy(
     endemicERC1155Beacon,
     marketplaceProxy
