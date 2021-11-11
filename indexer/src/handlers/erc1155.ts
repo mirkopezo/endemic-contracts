@@ -44,7 +44,7 @@ export function handleTransferSingle(event: TransferSingle): void {
   nftOwner.account = event.params.to.toHexString();
 
   nft.tokenId = event.params.id;
-  nft.contract = event.address.toHex();
+  nft.contract = event.address.toHexString();
   nft.updatedAt = event.block.timestamp;
   nft.currentPrice = BigInt.fromI32(0);
   nft.burned = false;
