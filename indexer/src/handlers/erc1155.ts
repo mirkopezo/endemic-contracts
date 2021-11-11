@@ -24,69 +24,35 @@ export function handleTransferSingle(event: TransferSingle): void {
   }
 
   let id = getNFTId(event.address.toHexString(), event.params.id.toString());
-  let tokenURI = getERC1155TokenURI(event.address, event.params.id);
   let nft = <NFT>NFT.load(id);
 
-  if (!nft) {
-    log.warning('NFT: {0} not available', [id]);
-    return;
+  let newOwnerId = getNFTOwnerId(id, event.params.to.toHexString());
+  let newOwner = NFTOwner.load(newOwnerId);
+  if (newOwner === null) {
+    newOwner = new NFTOwner(newOwnerId);
+    newOwner.account = event.params.to.toHexString();
   }
+  newOwner.supply = newOwner.supply + event.params.value;
+  newOwner.save();
 
-  let contract = NFTContract.load(event.address.toHexString());
-
-  let nftOwnerId = getNFTOwnerId(id, event.params.to.toHexString());
-  let nftOwner = NFTOwner.load(nftOwnerId);
-  if (nftOwner === null) {
-    nftOwner = new NFTOwner(nftOwnerId);
+  let oldOwnerId = getNFTOwnerId(id, event.params.from.toHexString());
+  let oldOwner = NFTOwner.load(oldOwnerId);
+  if (newOwner !== null) {
+    oldOwner.supply = oldOwner.supply - event.params.value;
+    oldOwner.save();
   }
-
-  nftOwner.supply = nftOwner.supply + event.params.value;
-  nftOwner.account = event.params.to.toHexString();
-
-  nft.tokenId = event.params.id;
-  nft.contract = event.address.toHexString();
-  nft.updatedAt = event.block.timestamp;
-  nft.currentPrice = BigInt.fromI32(0);
-  nft.burned = false;
-  nft.isOnAuction = false;
-  nft.seller = null;
 
   if (isERC1155MintEvent(event.params.from)) {
-    nft.createdAt = event.block.timestamp;
-    nft.category = contract.category;
-    nft.contractId = event.address;
-    nft.contractName = contract.name;
-    nft.tokenURI = tokenURI;
-
     updateContractCount(event.address.toHexString(), (counts) => {
       counts.totalCount = counts.totalCount + event.params.value;
     });
-
-    let metaData = readTokenMetadataFromIPFS(tokenURI);
-    if (metaData !== null) {
-      nft.image = metaData.image;
-      nft.name = metaData.name;
-      nft.description = metaData.description;
-    } else {
-      log.warning('TokenURI: {0} not available', [tokenURI]);
-    }
   } else if (isERC1155BurnEvent(event.params.to)) {
-    nft.burned = true;
     updateContractCount(event.address.toHexString(), (counts) => {
       counts.totalCount = counts.totalCount - event.params.value;
     });
-  } else {
-    let nftPreviousOwnerId = getNFTOwnerId(id, event.params.from.toHexString());
-    let nftPreviousOwner = NFTOwner.load(nftPreviousOwnerId);
-    nftPreviousOwner.supply = nftPreviousOwner.supply - event.params.value;
-    nftPreviousOwner.save();
   }
 
   createAccount(event.params.to);
-
-  nft.save();
-  nftOwner.save();
-
   createERC1155TransferActivity(nft, event);
 }
 
@@ -96,10 +62,36 @@ export function handleCreate(event: Create): void {
     event.params.tokenId.toString()
   );
   let nft = new NFT(id);
+  let contract = NFTContract.load(event.address.toHexString());
+  let tokenURI = getERC1155TokenURI(event.address, event.params.tokenId);
 
+  nft.category = contract.category;
   nft.artist = event.params.artistId.toHex();
   nft.artistId = event.params.artistId;
+
+  nft.contract = event.address.toHexString();
+  nft.contractId = event.address;
+  nft.contractName = contract.name;
+
+  nft.createdAt = event.block.timestamp;
+
+  nft.tokenURI = tokenURI;
+  nft.tokenId = event.params.tokenId;
   nft.supply = event.params.supply;
+
+  nft.currentPrice = BigInt.fromI32(0);
+  nft.burned = false;
+  nft.isOnAuction = false;
+  nft.seller = null;
+
+  let metaData = readTokenMetadataFromIPFS(tokenURI);
+  if (metaData !== null) {
+    nft.image = metaData.image;
+    nft.name = metaData.name;
+    nft.description = metaData.description;
+  } else {
+    log.warning('TokenURI: {0} not available', [tokenURI]);
+  }
 
   nft.save();
 }
