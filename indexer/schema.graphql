@@ -10,7 +10,6 @@ type _Schema_
           { name: "transferFrom" }
           { name: "transferTo" }
           { name: "auctionSeller" }
-          { name: "auctionBuyer" }
           { name: "type" }
         ]
       }
@@ -32,7 +31,7 @@ type NFTContract @entity {
   nfts: [NFT!]! @derivedFrom(field: "contract")
 }
 
-type NFTBalance @entity {
+type NFTOwnership @entity {
   id: ID!
   account: Account!
   nft: NFT!
@@ -47,7 +46,7 @@ type NFT @entity {
   tokenId: BigInt!
   category: String
   artist: Account
-  balances: [NFTBalance!] @derivedFrom(field: "nft")
+  ownership: [NFTOwnership!] @derivedFrom(field: "nft")
   updatedAt: BigInt!
   createdAt: BigInt!
   auctions: [Auction!] @derivedFrom(field: "nft")
@@ -57,8 +56,8 @@ type NFT @entity {
   supply: BigInt
 
   seller: Bytes
-  isOnAuction: Boolean!
-  currentPrice: BigInt!
+  isOnSale: Boolean!
+  price: BigInt!
 
   #metadata
   tokenURI: String
@@ -77,7 +76,7 @@ type NFT @entity {
 type Account @entity {
   id: ID!
   address: Bytes!
-  nftBalances: [NFTBalance!] @derivedFrom(field: "account")
+  nftOwnership: [NFTOwnership!] @derivedFrom(field: "account")
   createdNfts: [NFT!] @derivedFrom(field: "artist")
 }
 

@@ -5,14 +5,14 @@ import {
   Create,
 } from '../../generated/templates/EndemicERC1155/EndemicERC1155';
 
-import { NFT, NFTContract, NFTBalance } from '../../generated/schema';
+import { NFT, NFTContract, NFTOwnership } from '../../generated/schema';
 import {
   getERC1155TokenURI,
   getNFTId,
   isERC1155BurnEvent,
   isERC1155MintEvent,
   readTokenMetadataFromIPFS,
-  getNFTBalanceId,
+  getNftOwnershipId,
 } from '../modules/nft';
 import { createAccount } from '../modules/account';
 import { createERC1155TransferActivity } from '../modules/activity';
@@ -22,10 +22,10 @@ export function handleTransferSingle(event: TransferSingle): void {
   let nftId = getNFTId(event.address.toHexString(), event.params.id.toString());
   let nft = <NFT>NFT.load(nftId);
 
-  let newBalanceId = getNFTBalanceId(nftId, event.params.to.toHexString());
-  let newBalance = NFTBalance.load(newBalanceId);
+  let newBalanceId = getNftOwnershipId(nftId, event.params.to.toHexString());
+  let newBalance = NFTOwnership.load(newBalanceId);
   if (newBalance === null) {
-    newBalance = new NFTBalance(newBalanceId);
+    newBalance = new NFTOwnership(newBalanceId);
     newBalance.account = event.params.to.toHexString();
     newBalance.accountId = event.params.to;
     newBalance.nft = nftId;
@@ -35,8 +35,8 @@ export function handleTransferSingle(event: TransferSingle): void {
   newBalance.value = newBalance.value.plus(event.params.value);
   newBalance.save();
 
-  let oldBalanceId = getNFTBalanceId(nftId, event.params.from.toHexString());
-  let oldOwner = NFTBalance.load(oldBalanceId);
+  let oldBalanceId = getNftOwnershipId(nftId, event.params.from.toHexString());
+  let oldOwner = NFTOwnership.load(oldBalanceId);
   if (oldOwner !== null) {
     oldOwner.value = oldOwner.value.minus(event.params.value);
     oldOwner.save();
@@ -89,8 +89,8 @@ export function handleCreate(event: Create): void {
   nft.tokenId = event.params.tokenId;
   nft.supply = event.params.supply;
 
-  nft.currentPrice = BigInt.fromI32(0);
-  nft.isOnAuction = false;
+  nft.price = BigInt.fromI32(0);
+  nft.isOnSale = false;
   nft.seller = null;
   nft.burned = false;
 

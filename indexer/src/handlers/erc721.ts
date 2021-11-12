@@ -4,11 +4,11 @@ import {
   Mint,
 } from '../../generated/templates/EndemicNFT/EndemicNFT';
 
-import { NFT, NFTContract, NFTBalance } from '../../generated/schema';
+import { NFT, NFTContract, NFTOwnership } from '../../generated/schema';
 import {
   getERC721TokenURI,
   getNFTId,
-  getNFTBalanceId,
+  getNftOwnershipId,
   isERC721BurnEvent,
   readTokenMetadataFromIPFS,
   isERC721MintEvent,
@@ -44,24 +44,24 @@ export function handleTransfer(event: Transfer): void {
     );
   }
 
-  let nftBalanceId = getNFTBalanceId(id, event.params.to.toHexString());
-  let nftBalance = NFTBalance.load(nftBalanceId);
-  if (nftBalance === null) {
-    nftBalance = new NFTBalance(nftBalanceId);
-    nftBalance.account = event.params.to.toHexString();
-    nftBalance.accountId = event.params.to;
-    nftBalance.nft = id;
-    nftBalance.nftId = id;
+  let nftOwnershipId = getNftOwnershipId(id, event.params.to.toHexString());
+  let nftOwnership = NFTOwnership.load(nftOwnershipId);
+  if (nftOwnership === null) {
+    nftOwnership = new NFTOwnership(nftOwnershipId);
+    nftOwnership.account = event.params.to.toHexString();
+    nftOwnership.accountId = event.params.to;
+    nftOwnership.nft = id;
+    nftOwnership.nftId = id;
   }
 
-  nftBalance.value = BigInt.fromI32(1);
+  nftOwnership.value = BigInt.fromI32(1);
 
   nft.tokenId = event.params.tokenId;
   nft.contract = event.address.toHexString();
   nft.updatedAt = event.block.timestamp;
-  nft.currentPrice = BigInt.fromI32(0);
+  nft.price = BigInt.fromI32(0);
   nft.burned = false;
-  nft.isOnAuction = false;
+  nft.isOnSale = false;
   nft.seller = null;
 
   if (isERC721MintEvent(event)) {
@@ -95,10 +95,20 @@ export function handleTransfer(event: Transfer): void {
     );
   }
 
+  if (!isERC721MintEvent(event)) {
+    let oldBalanceId = getNftOwnershipId(id, event.params.from.toHexString());
+    let oldBalance = NFTOwnership.load(oldBalanceId);
+    if (oldBalance !== null) {
+      oldBalance.unset('nft');
+      oldBalance.unset('nftId');
+      oldBalance.save();
+    }
+  }
+
   createAccount(event.params.to);
 
   nft.save();
-  nftBalance.save();
+  nftOwnership.save();
 
   createERC721TransferActivity(nft, event);
 }

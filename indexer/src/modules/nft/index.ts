@@ -28,7 +28,10 @@ export function getNFTId(contractAddress: string, tokenId: string): string {
   return contractAddress + '-' + tokenId;
 }
 
-export function getNFTBalanceId(nftId: string, accountAddress: string): string {
+export function getNftOwnershipId(
+  nftId: string,
+  accountAddress: string
+): string {
   return nftId + '-' + accountAddress;
 }
 
@@ -102,16 +105,16 @@ export function readTokenMetadataFromIPFS(tokenURI: string): Metadata | null {
 }
 
 export function addNFTAuctionProperties(nft: NFT, auction: Auction): NFT {
-  nft.isOnAuction = true;
+  nft.isOnSale = true;
   nft.seller = auction.seller;
   // we only support immutable price for now. Starting and ending prices will always be the same in the contract
-  nft.currentPrice = auction.startingPrice;
+  nft.price = auction.startingPrice;
   return nft;
 }
 
 export function clearNFTAuctionProperties(nft: NFT): NFT {
-  nft.isOnAuction = false;
+  nft.isOnSale = false;
   nft.seller = null;
-  nft.currentPrice = BigInt.fromI32(0);
+  nft.price = BigInt.fromI32(0);
   return nft;
 }
