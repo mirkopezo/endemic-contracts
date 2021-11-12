@@ -29,6 +29,7 @@ export function handleTransferSingle(event: TransferSingle): void {
     newBalance.account = event.params.to.toHexString();
     newBalance.accountId = event.params.to;
     newBalance.nft = nftId;
+    newBalance.nftId = nftId;
     newBalance.value = BigInt.fromI32(0);
   }
   newBalance.value = newBalance.value.plus(event.params.value);

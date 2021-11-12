@@ -10,6 +10,7 @@ type _Schema_
           { name: "transferFrom" }
           { name: "transferTo" }
           { name: "auctionSeller" }
+          { name: "auctionBuyer" }
           { name: "type" }
         ]
       }
@@ -35,6 +36,7 @@ type NFTBalance @entity {
   id: ID!
   account: Account!
   nft: NFT!
+  nftId: String!
   accountId: Bytes!
   value: BigInt!
 }
@@ -106,7 +108,7 @@ type Activity @entity {
   #auction activity
   auction: Auction
   auctionSeller: String
-  auctionBuyer: String
+  auctionBuyer: Bytes
   auctionPrice: BigInt
 
   #denormalized

@@ -51,6 +51,7 @@ export function handleTransfer(event: Transfer): void {
     nftBalance.account = event.params.to.toHexString();
     nftBalance.accountId = event.params.to;
     nftBalance.nft = id;
+    nftBalance.nftId = id;
   }
 
   nftBalance.value = BigInt.fromI32(1);
@@ -69,6 +70,7 @@ export function handleTransfer(event: Transfer): void {
     nft.contractId = event.address;
     nft.contractName = contract.name;
     nft.tokenURI = tokenURI;
+    nft.supply = BigInt.fromI32(1);
 
     addContractCount(
       event.address.toHexString(),
