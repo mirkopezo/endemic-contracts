@@ -28,7 +28,7 @@ export function getNFTId(contractAddress: string, tokenId: string): string {
   return contractAddress + '-' + tokenId;
 }
 
-export function getNFTOwnerId(nftId: string, accountAddress: string): string {
+export function getNFTBalanceId(nftId: string, accountAddress: string): string {
   return nftId + '-' + accountAddress;
 }
 

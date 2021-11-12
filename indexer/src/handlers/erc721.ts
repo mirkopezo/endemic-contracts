@@ -4,11 +4,11 @@ import {
   Mint,
 } from '../../generated/templates/EndemicNFT/EndemicNFT';
 
-import { NFT, NFTContract, NFTOwner } from '../../generated/schema';
+import { NFT, NFTContract, NFTBalance } from '../../generated/schema';
 import {
   getERC721TokenURI,
   getNFTId,
-  getNFTOwnerId,
+  getNFTBalanceId,
   isERC721BurnEvent,
   readTokenMetadataFromIPFS,
   isERC721MintEvent,
@@ -32,6 +32,7 @@ export function handleTransfer(event: Transfer): void {
 
   if (!nft) {
     nft = new NFT(id);
+    nft.type = 'ERC-721';
   }
 
   let contract = NFTContract.load(event.address.toHexString());
@@ -43,17 +44,18 @@ export function handleTransfer(event: Transfer): void {
     );
   }
 
-  let nftOwnerId = getNFTOwnerId(id, event.params.to.toHexString());
-  let nftOwner = NFTOwner.load(nftOwnerId);
-  if (nftOwner === null) {
-    nftOwner = new NFTOwner(nftOwnerId);
+  let nftBalanceId = getNFTBalanceId(id, event.params.to.toHexString());
+  let nftBalance = NFTBalance.load(nftBalanceId);
+  if (nftBalance === null) {
+    nftBalance = new NFTBalance(nftBalanceId);
+    nftBalance.account = event.params.to.toHexString();
+    nftBalance.accountId = event.params.to;
+    nftBalance.nft = id;
   }
 
-  nftOwner.supply = BigInt.fromI32(1);
-  nftOwner.account = event.params.to.toHexString();
+  nftBalance.value = BigInt.fromI32(1);
 
   nft.tokenId = event.params.tokenId;
-  nft.ownerId = event.params.to;
   nft.contract = event.address.toHexString();
   nft.updatedAt = event.block.timestamp;
   nft.currentPrice = BigInt.fromI32(0);
@@ -94,7 +96,7 @@ export function handleTransfer(event: Transfer): void {
   createAccount(event.params.to);
 
   nft.save();
-  nftOwner.save();
+  nftBalance.save();
 
   createERC721TransferActivity(nft, event);
 }

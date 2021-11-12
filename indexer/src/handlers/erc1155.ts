@@ -5,14 +5,14 @@ import {
   Create,
 } from '../../generated/templates/EndemicERC1155/EndemicERC1155';
 
-import { NFT, NFTContract, NFTOwner } from '../../generated/schema';
+import { NFT, NFTContract, NFTBalance } from '../../generated/schema';
 import {
   getERC1155TokenURI,
   getNFTId,
   isERC1155BurnEvent,
   isERC1155MintEvent,
   readTokenMetadataFromIPFS,
-  getNFTOwnerId,
+  getNFTBalanceId,
 } from '../modules/nft';
 import { createAccount } from '../modules/account';
 import { createERC1155TransferActivity } from '../modules/activity';
@@ -22,21 +22,22 @@ export function handleTransferSingle(event: TransferSingle): void {
   let nftId = getNFTId(event.address.toHexString(), event.params.id.toString());
   let nft = <NFT>NFT.load(nftId);
 
-  let newOwnerId = getNFTOwnerId(nftId, event.params.to.toHexString());
-  let newOwner = NFTOwner.load(newOwnerId);
-  if (newOwner === null) {
-    newOwner = new NFTOwner(newOwnerId);
-    newOwner.account = event.params.to.toHexString();
-    newOwner.nft = nftId;
-    newOwner.supply = BigInt.fromI32(0);
+  let newBalanceId = getNFTBalanceId(nftId, event.params.to.toHexString());
+  let newBalance = NFTBalance.load(newBalanceId);
+  if (newBalance === null) {
+    newBalance = new NFTBalance(newBalanceId);
+    newBalance.account = event.params.to.toHexString();
+    newBalance.accountId = event.params.to;
+    newBalance.nft = nftId;
+    newBalance.value = BigInt.fromI32(0);
   }
-  newOwner.supply = newOwner.supply.plus(event.params.value);
-  newOwner.save();
+  newBalance.value = newBalance.value.plus(event.params.value);
+  newBalance.save();
 
-  let oldOwnerId = getNFTOwnerId(nftId, event.params.from.toHexString());
-  let oldOwner = NFTOwner.load(oldOwnerId);
+  let oldBalanceId = getNFTBalanceId(nftId, event.params.from.toHexString());
+  let oldOwner = NFTBalance.load(oldBalanceId);
   if (oldOwner !== null) {
-    oldOwner.supply = oldOwner.supply.minus(event.params.value);
+    oldOwner.value = oldOwner.value.minus(event.params.value);
     oldOwner.save();
   }
   if (isERC1155MintEvent(event.params.from)) {
@@ -71,6 +72,7 @@ export function handleCreate(event: Create): void {
 
   let tokenURI = getERC1155TokenURI(event.address, event.params.tokenId);
 
+  nft.type = 'ERC-1155';
   nft.category = contract.category;
   nft.artist = event.params.artistId.toHex();
   nft.artistId = event.params.artistId;
