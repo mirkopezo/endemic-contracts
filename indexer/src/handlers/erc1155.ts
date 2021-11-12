@@ -22,18 +22,16 @@ export function handleTransferSingle(event: TransferSingle): void {
   let nftId = getNFTId(event.address.toHexString(), event.params.id.toString());
   let nft = <NFT>NFT.load(nftId);
 
-  let newBalanceId = getNftOwnershipId(nftId, event.params.to.toHexString());
-  let newBalance = NFTOwnership.load(newBalanceId);
-  if (newBalance === null) {
-    newBalance = new NFTOwnership(newBalanceId);
-    newBalance.account = event.params.to.toHexString();
-    newBalance.accountId = event.params.to;
-    newBalance.nft = nftId;
-    newBalance.nftId = nftId;
-    newBalance.value = BigInt.fromI32(0);
+  let newOwnerhipId = getNftOwnershipId(nftId, event.params.to.toHexString());
+  let newOwnership = NFTOwnership.load(newOwnerhipId);
+  if (newOwnership === null) {
+    newOwnership = new NFTOwnership(newOwnerhipId);
+    newOwnership.account = event.params.to.toHexString();
+    newOwnership.nft = nftId;
+    newOwnership.value = BigInt.fromI32(0);
   }
-  newBalance.value = newBalance.value.plus(event.params.value);
-  newBalance.save();
+  newOwnership.value = newOwnership.value.plus(event.params.value);
+  newOwnership.save();
 
   let oldBalanceId = getNftOwnershipId(nftId, event.params.from.toHexString());
   let oldOwner = NFTOwnership.load(oldBalanceId);

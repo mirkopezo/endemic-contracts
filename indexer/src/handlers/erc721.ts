@@ -1,4 +1,4 @@
-import { log, BigInt } from '@graphprotocol/graph-ts';
+import { log, BigInt, store } from '@graphprotocol/graph-ts';
 import {
   Transfer,
   Mint,
@@ -44,18 +44,6 @@ export function handleTransfer(event: Transfer): void {
     );
   }
 
-  let nftOwnershipId = getNftOwnershipId(id, event.params.to.toHexString());
-  let nftOwnership = NFTOwnership.load(nftOwnershipId);
-  if (nftOwnership === null) {
-    nftOwnership = new NFTOwnership(nftOwnershipId);
-    nftOwnership.account = event.params.to.toHexString();
-    nftOwnership.accountId = event.params.to;
-    nftOwnership.nft = id;
-    nftOwnership.nftId = id;
-  }
-
-  nftOwnership.value = BigInt.fromI32(1);
-
   nft.tokenId = event.params.tokenId;
   nft.contract = event.address.toHexString();
   nft.updatedAt = event.block.timestamp;
@@ -95,21 +83,25 @@ export function handleTransfer(event: Transfer): void {
     );
   }
 
+  nft.save();
+
   if (!isERC721MintEvent(event)) {
     let oldBalanceId = getNftOwnershipId(id, event.params.from.toHexString());
-    let oldBalance = NFTOwnership.load(oldBalanceId);
-    if (oldBalance !== null) {
-      oldBalance.unset('nft');
-      oldBalance.unset('nftId');
-      oldBalance.save();
-    }
+    store.remove('NFTOwnership', oldBalanceId);
   }
 
-  createAccount(event.params.to);
+  let nftOwnershipId = getNftOwnershipId(id, event.params.to.toHexString());
+  let nftOwnership = NFTOwnership.load(nftOwnershipId);
+  if (nftOwnership === null) {
+    nftOwnership = new NFTOwnership(nftOwnershipId);
+    nftOwnership.account = event.params.to.toHexString();
+    nftOwnership.nft = id;
+  }
 
-  nft.save();
+  nftOwnership.value = BigInt.fromI32(1);
   nftOwnership.save();
 
+  createAccount(event.params.to);
   createERC721TransferActivity(nft, event);
 }
 

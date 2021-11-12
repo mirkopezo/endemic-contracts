@@ -34,9 +34,7 @@ type NFTContract @entity {
 type NFTOwnership @entity {
   id: ID!
   account: Account!
-  nft: NFT!
-  nftId: String!
-  accountId: Bytes!
+  nft: NFT
   value: BigInt!
 }
 
