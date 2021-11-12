@@ -40,8 +40,8 @@ export function createAuctionActivity(
   activity.auction = auction.id;
   activity.auctionPrice = auction.startingPrice;
   activity.auctionSeller = auction.seller.toHexString();
-  activity.auctionBuyer =
-    auction.buyer !== null ? auction.buyer.toHexString() : null;
+  // activity.auctionBuyer =
+  //   auction.buyer !== null ? auction.buyer.toHexString() : null;
   activity.nft = nft.id;
   activity.nftTokenURI = nft.tokenURI;
   activity.nftImage = nft.image;

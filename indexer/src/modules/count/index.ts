@@ -14,11 +14,24 @@ function getContractsCount(contractAddress: string): ContractsCounts {
   return <ContractsCounts>counts;
 }
 
-export function updateContractCount(
+export function addContractCount(
   contractAddress: string,
-  updateFn: (counts: ContractsCounts) => void
+  totalValue: BigInt,
+  saleValue: BigInt
 ): void {
   let counts = getContractsCount(contractAddress);
-  updateFn(counts);
+  counts.onSaleCount = counts.totalCount.plus(totalValue);
+  counts.totalCount = counts.onSaleCount.plus(saleValue);
+  counts.save();
+}
+
+export function removeContractCount(
+  contractAddress: string,
+  totalValue: BigInt,
+  saleValue: BigInt
+): void {
+  let counts = getContractsCount(contractAddress);
+  counts.onSaleCount = counts.totalCount.minus(totalValue);
+  counts.totalCount = counts.onSaleCount.minus(saleValue);
   counts.save();
 }

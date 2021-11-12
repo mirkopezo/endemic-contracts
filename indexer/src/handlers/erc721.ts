@@ -16,7 +16,7 @@ import {
 import { createAccount } from '../modules/account';
 import { createERC721TransferActivity } from '../modules/activity';
 import { createThirdPartyNFTContract } from '../modules/nftContract';
-import { updateContractCount } from '../modules/count';
+import { addContractCount, removeContractCount } from '../modules/count';
 
 export function handleTransfer(event: Transfer): void {
   if (event.params.tokenId.toString() == '') {
@@ -28,7 +28,7 @@ export function handleTransfer(event: Transfer): void {
     event.params.tokenId.toString()
   );
   let tokenURI = getERC721TokenURI(event.address, event.params.tokenId);
-  let nft = <NFT>NFT.load(id);
+  let nft = NFT.load(id);
 
   if (!nft) {
     nft = new NFT(id);
@@ -68,9 +68,11 @@ export function handleTransfer(event: Transfer): void {
     nft.contractName = contract.name;
     nft.tokenURI = tokenURI;
 
-    updateContractCount(event.address.toHexString(), (counts) => {
-      counts.totalCount = counts.totalCount + BigInt.fromI32(1);
-    });
+    addContractCount(
+      event.address.toHexString(),
+      BigInt.fromI32(1),
+      BigInt.fromI32(0)
+    );
 
     let metaData = readTokenMetadataFromIPFS(tokenURI);
     if (metaData !== null) {
@@ -82,14 +84,17 @@ export function handleTransfer(event: Transfer): void {
     }
   } else if (isERC721BurnEvent(event)) {
     nft.burned = true;
-    updateContractCount(event.address.toHexString(), (counts) => {
-      counts.totalCount = counts.totalCount - BigInt.fromI32(1);
-    });
+    removeContractCount(
+      event.address.toHexString(),
+      BigInt.fromI32(1),
+      BigInt.fromI32(0)
+    );
   }
 
   createAccount(event.params.to);
 
   nft.save();
+  nftOwner.save();
 
   createERC721TransferActivity(nft, event);
 }

@@ -67,7 +67,7 @@ type NFT @entity {
   contractId: Bytes!
   contractName: String
   artistId: Bytes
-  ownerId: Bytes!
+  ownerId: Bytes
 }
 
 type Account @entity {

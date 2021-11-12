@@ -24,16 +24,9 @@ export function createThirdPartyNFTContract(
 
   nftContract.save();
 
-  return <NFTContract>nftContract;
+  return nftContract;
 }
 
 export function getPredefinedCategory(id: string): string {
-  // Todo
   return 'Collectibles';
-  // switch (id) {
-  //   case '0x7b404c05733344ea9a618b95b21ad27090b53456': // Art test
-  //     return 'Collectibles';
-  //   default:
-  //     return '';
-  // }
 }

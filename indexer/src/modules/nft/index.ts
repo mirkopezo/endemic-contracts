@@ -4,11 +4,7 @@ import {
   Transfer,
   EndemicNFT,
 } from '../../../generated/templates/EndemicNFT/EndemicNFT';
-import {
-  EndemicERC1155,
-  TransferSingle,
-  TransferBatch,
-} from '../../../generated/templates/EndemicERC1155/EndemicERC1155';
+import { EndemicERC1155 } from '../../../generated/templates/EndemicERC1155/EndemicERC1155';
 import * as addresses from '../../data/addresses';
 import { Metadata } from './models';
 
@@ -72,7 +68,7 @@ export function getERC1155TokenURI(address: Address, tokenId: BigInt): string {
   return tokenURI;
 }
 
-export function readTokenMetadataFromIPFS(tokenURI: string): Metadata {
+export function readTokenMetadataFromIPFS(tokenURI: string): Metadata | null {
   if (!tokenURI) return null;
 
   let uriParts = tokenURI.split('/');
@@ -82,20 +78,24 @@ export function readTokenMetadataFromIPFS(tokenURI: string): Metadata {
   let ipfsHash = uriParts.join('/');
   let bytes = ipfs.cat(ipfsHash);
   if (bytes !== null) {
-    let data = json.fromBytes(bytes!);
+    let data = json.fromBytes(bytes);
     if (data === null) {
       return null;
     }
     let metaData = data.toObject();
-    if (metaData !== null) {
-      return {
-        image: metaData.get('image') ? metaData.get('image').toString() : null,
-        name: metaData.get('name') ? metaData.get('name').toString() : null,
-        description: metaData.get('description')
-          ? metaData.get('description').toString()
-          : null,
-      };
+    if (metaData === null) {
+      return null;
     }
+
+    const image = metaData.get('image');
+    const name = metaData.get('name');
+    const description = metaData.get('description');
+
+    return {
+      image: image !== null ? image.toString() : null,
+      name: name !== null ? name.toString() : null,
+      description: description !== null ? description.toString() : null,
+    };
   }
 
   return null;

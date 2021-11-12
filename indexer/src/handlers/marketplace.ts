@@ -11,7 +11,7 @@ import {
 } from '../modules/nft';
 import { createAuctionActivity } from '../modules/activity';
 import * as auctionStatuses from '../data/auctionStatuses';
-import { updateContractCount } from '../modules/count';
+import { addContractCount, removeContractCount } from '../modules/count';
 
 export function handleAuctionCreated(event: AuctionCreated): void {
   let nftId = getNFTId(
@@ -19,7 +19,7 @@ export function handleAuctionCreated(event: AuctionCreated): void {
     event.params.tokenId.toString()
   );
 
-  let nft = <NFT>NFT.load(nftId);
+  let nft = NFT.load(nftId);
   if (nft === null) {
     return;
   }
@@ -38,10 +38,10 @@ export function handleAuctionCreated(event: AuctionCreated): void {
   //   counts.onSaleCount += 1;
   // });
 
-  nft = addNFTAuctionProperties(nft!, auction!);
+  nft = addNFTAuctionProperties(nft, auction);
   nft.save();
 
-  createAuctionActivity(auction!, nft!, 'auctionCreate', event);
+  createAuctionActivity(auction, nft, 'auctionCreate', event);
 }
 
 export function handleAuctionSuccessful(event: AuctionSuccessful): void {
@@ -63,10 +63,10 @@ export function handleAuctionSuccessful(event: AuctionSuccessful): void {
   auction.status = auctionStatuses.SOLD;
   auction.save();
 
-  nft = clearNFTAuctionProperties(nft!);
+  nft = clearNFTAuctionProperties(nft);
   nft.save();
 
-  createAuctionActivity(auction!, nft!, 'auctionSuccess', event);
+  createAuctionActivity(auction, nft, 'auctionSuccess', event);
   // updateContractCount(event.params.nftContract.toHexString(), (counts) => {
   //   counts.onSaleCount -= 1;
   // });
@@ -89,10 +89,10 @@ export function handleAuctionCancelled(event: AuctionCancelled): void {
   auction.status = auctionStatuses.CANCELED;
   auction.save();
 
-  nft = clearNFTAuctionProperties(nft!);
+  nft = clearNFTAuctionProperties(nft);
   nft.save();
 
-  createAuctionActivity(auction!, nft!, 'auctionCancel', event);
+  createAuctionActivity(auction, nft, 'auctionCancel', event);
   // updateContractCount(event.params.nftContract.toHexString(), (counts) => {
   //   counts.onSaleCount -= 1;
   // });
