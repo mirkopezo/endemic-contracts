@@ -6,7 +6,7 @@ library LibAuction {
     bytes4 public constant ERC1155_ASSET_CLASS = bytes4(keccak256("ERC1155"));
 
     struct Auction {
-        uint256 id;
+        bytes32 id;
         address contractId;
         uint256 tokenId;
         address seller;
@@ -27,6 +27,14 @@ library LibAuction {
             "Prices too low"
         );
         require(auction.startingPrice >= auction.endingPrice, "Prices invalid");
+
+        if (auction.assetClass == ERC721_ASSET_CLASS) {
+            require(auction.amount == 1, "Invalid amount");
+        } else if (auction.assetClass == ERC1155_ASSET_CLASS) {
+            require(auction.amount > 0, "Invalid amount");
+        } else {
+            revert("Invalid asset class");
+        }
     }
 
     function isOnAuction(LibAuction.Auction storage auction)

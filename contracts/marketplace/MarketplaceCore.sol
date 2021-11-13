@@ -3,7 +3,6 @@ pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/utils/CountersUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol";
 import "./TransferManager.sol";
@@ -18,15 +17,13 @@ abstract contract MarketplaceCore is
     FeeManager
 {
     using AddressUpgradeable for address;
-    using CountersUpgradeable for CountersUpgradeable.Counter;
-    CountersUpgradeable.Counter private _auctionIds;
 
-    mapping(uint256 => LibAuction.Auction) internal idToAuction;
+    mapping(bytes32 => LibAuction.Auction) internal idToAuction;
 
     event AuctionCreated(
         address indexed nftContract,
         uint256 indexed tokenId,
-        uint256 indexed id,
+        bytes32 indexed id,
         uint256 startingPrice,
         uint256 endingPrice,
         uint256 duration,
@@ -36,14 +33,13 @@ abstract contract MarketplaceCore is
     );
 
     event AuctionSuccessful(
-        uint256 indexed id,
+        bytes32 indexed id,
         uint256 indexed totalPrice,
         address winner,
-        uint256 amount,
-        bytes4 assetClass
+        uint256 amount
     );
 
-    event AuctionCancelled(uint256 indexed id);
+    event AuctionCancelled(bytes32 indexed id);
 
     function pause() external onlyOwner {
         _pause();
@@ -62,24 +58,43 @@ abstract contract MarketplaceCore is
         uint256 _amount,
         bytes4 _assetClass
     ) external whenNotPaused {
-        _auctionIds.increment();
+        bytes32 auctionId = createAuctionId(
+            _nftContract,
+            _tokenId,
+            _msgSender()
+        );
 
         LibAuction.Auction memory auction = LibAuction.Auction(
-            _auctionIds.current(),
+            auctionId,
             _nftContract,
             _tokenId,
             msg.sender,
             _startingPrice,
             _endingPrice,
             _duration,
-            block.timestamp,
             _amount,
+            block.timestamp,
             _assetClass
         );
 
         LibAuction.validate(auction);
 
-        idToAuction[_auctionIds.current()] = auction;
+        LibNFT.requireTokenOwnership(
+            auction.assetClass,
+            auction.contractId,
+            auction.tokenId,
+            _amount,
+            auction.seller
+        );
+
+        LibNFT.requireTokenApproval(
+            auction.assetClass,
+            auction.contractId,
+            auction.tokenId,
+            auction.seller
+        );
+
+        idToAuction[auctionId] = auction;
 
         emit AuctionCreated(
             _nftContract,
@@ -94,7 +109,7 @@ abstract contract MarketplaceCore is
         );
     }
 
-    function bid(uint256 _id, uint256 _amount) external payable whenNotPaused {
+    function bid(bytes32 _id, uint256 _amount) external payable whenNotPaused {
         LibAuction.Auction storage auction = idToAuction[_id];
 
         require(LibAuction.isOnAuction(auction), "NFT is not on auction");
@@ -123,60 +138,51 @@ abstract contract MarketplaceCore is
         );
 
         address seller = auction.seller;
-        uint256 auctionId = auction.id;
+        bytes32 auctionId = auction.id;
+        address contractId = auction.contractId;
+        uint256 tokenId = auction.tokenId;
+        bytes4 assetClass = auction.assetClass;
 
         if (auction.assetClass == LibAuction.ERC721_ASSET_CLASS) {
-            _removeAuction(auction.id);
+            _removeAuction(auction);
         } else if (auction.assetClass == LibAuction.ERC1155_ASSET_CLASS) {
-            _deductFromAuction(auction.id, _amount);
+            _deductFromAuction(auction, _amount);
         } else {
             revert("Invalid asset class");
         }
 
-        _handlePayment(
-            auction.contractId,
-            auction.tokenId,
-            seller,
-            _msgSender(),
-            price
-        );
+        _handlePayment(contractId, tokenId, seller, _msgSender(), price);
 
         _transfer(
             seller,
             _msgSender(),
-            auction.contractId,
-            auction.tokenId,
+            contractId,
+            tokenId,
             _amount,
-            auction.assetClass
+            assetClass
         );
 
-        emit AuctionSuccessful(
-            auctionId,
-            price,
-            _msgSender(),
-            _amount,
-            auction.assetClass
-        );
+        emit AuctionSuccessful(auctionId, price, _msgSender(), _amount);
     }
 
-    function cancelAuction(uint256 _id) external {
+    function cancelAuction(bytes32 _id) external {
         LibAuction.Auction storage auction = idToAuction[_id];
         require(LibAuction.isOnAuction(auction), "Invalid auction");
         require(_msgSender() == auction.seller, "Sender is not seller");
-        _cancelAuction(auction.id);
+        _cancelAuction(auction);
     }
 
-    function cancelAuctionWhenPaused(uint256 _id)
+    function cancelAuctionWhenPaused(bytes32 _id)
         external
         whenPaused
         onlyOwner
     {
         LibAuction.Auction storage auction = idToAuction[_id];
         require(LibAuction.isOnAuction(auction));
-        _cancelAuction(auction.id);
+        _cancelAuction(auction);
     }
 
-    function getAuction(uint256 _id)
+    function getAuction(bytes32 _id)
         external
         view
         returns (
@@ -184,37 +190,45 @@ abstract contract MarketplaceCore is
             uint256 startingPrice,
             uint256 endingPrice,
             uint256 duration,
-            uint256 startedAt
+            uint256 startedAt,
+            uint256 amount
         )
     {
         LibAuction.Auction storage auction = idToAuction[_id];
-        require(LibAuction.isOnAuction(auction));
+        require(LibAuction.isOnAuction(auction), "Not on auction");
         return (
             auction.seller,
             auction.startingPrice,
             auction.endingPrice,
             auction.duration,
-            auction.startedAt
+            auction.startedAt,
+            auction.amount
         );
     }
 
-    function getCurrentPrice(uint256 _id) external view returns (uint256) {
+    function getCurrentPrice(bytes32 _id) external view returns (uint256) {
         LibAuction.Auction storage auction = idToAuction[_id];
         require(LibAuction.isOnAuction(auction));
         return LibAuction.currentPrice(auction);
     }
 
-    function _cancelAuction(uint256 _id) internal {
-        _removeAuction(_id);
-        emit AuctionCancelled(_id);
+    function _cancelAuction(LibAuction.Auction storage auction) internal {
+        _removeAuction(auction);
+        emit AuctionCancelled(auction.id);
     }
 
-    function _removeAuction(uint256 _id) internal {
-        delete idToAuction[_id];
+    function _removeAuction(LibAuction.Auction storage auction) internal {
+        delete idToAuction[auction.id];
     }
 
-    function _deductFromAuction(uint256 _id, uint256 _amount) internal {
-        idToAuction[_id].amount -= _amount;
+    function _deductFromAuction(
+        LibAuction.Auction storage auction,
+        uint256 _amount
+    ) internal {
+        idToAuction[auction.id].amount -= _amount;
+        if (idToAuction[auction.id].amount <= 0) {
+            _removeAuction(auction);
+        }
     }
 
     function _handlePayment(
@@ -247,6 +261,17 @@ abstract contract MarketplaceCore is
 
     function _addMasterNFTContractShares(uint256 _marketplaceCut) internal {
         masterNFTShares += (_marketplaceCut * masterNftCut) / 10000;
+    }
+
+    function createAuctionId(
+        address _nftContract,
+        uint256 _tokenId,
+        address _seller
+    ) public pure returns (bytes32) {
+        return
+            keccak256(
+                abi.encodePacked(_nftContract, "-", _tokenId, "-", _seller)
+            );
     }
 
     uint256[50] private __gap;
