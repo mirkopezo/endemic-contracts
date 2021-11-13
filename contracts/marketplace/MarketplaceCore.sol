@@ -213,8 +213,9 @@ abstract contract MarketplaceCore is
     }
 
     function _cancelAuction(LibAuction.Auction storage auction) internal {
+        bytes32 auctionId = auction.id;
         _removeAuction(auction);
-        emit AuctionCancelled(auction.id);
+        emit AuctionCancelled(auctionId);
     }
 
     function _removeAuction(LibAuction.Auction storage auction) internal {

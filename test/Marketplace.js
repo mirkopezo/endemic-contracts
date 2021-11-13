@@ -682,9 +682,15 @@ describe('Marketplace', function () {
   });
 
   describe('Conclude auction', function () {
+    let erc721AuctionId, erc1155AuctionId;
+
     beforeEach(async function () {
       await deploy();
       await nftContract.connect(user1).approve(marketplace.address, tokenId);
+      await erc1155Contract
+        .connect(user1)
+        .setApprovalForAll(marketplace.address, true);
+
       await marketplace
         .connect(user1)
         .createAuction(
@@ -692,50 +698,87 @@ describe('Marketplace', function () {
           tokenId,
           ethers.utils.parseUnits('0.1'),
           ethers.utils.parseUnits('0.1'),
-          60
+          60,
+          1,
+          ERC721_ASSET_CLASS
         );
+
+      await marketplace
+        .connect(user1)
+        .createAuction(
+          erc1155Contract.address,
+          1,
+          ethers.utils.parseUnits('0.1'),
+          ethers.utils.parseUnits('0.1'),
+          60,
+          3,
+          ERC1155_ASSET_CLASS
+        );
+
+      erc721AuctionId = await marketplace.createAuctionId(
+        nftContract.address,
+        tokenId,
+        user1.address
+      );
+
+      erc1155AuctionId = await marketplace.createAuctionId(
+        erc1155Contract.address,
+        1,
+        user1.address
+      );
     });
 
     it('should fail to conclude if NFT not on auction', async function () {
       await expect(
-        marketplace.connect(user1).cancelAuction(nftContract.address, 12)
+        marketplace.connect(user1).cancelAuction(
+          await marketplace.createAuctionId(
+            erc1155Contract.address,
+            2, //invalid
+            user1.address
+          )
+        )
       ).to.be.revertedWith('Invalid auction');
     });
 
     it('should fail to conclude auction if not seller', async function () {
       await expect(
-        marketplace.connect(user2).cancelAuction(nftContract.address, tokenId)
+        marketplace.connect(user2).cancelAuction(erc721AuctionId)
+      ).to.be.revertedWith('Sender is not seller');
+
+      await expect(
+        marketplace.connect(user2).cancelAuction(erc1155AuctionId)
       ).to.be.revertedWith('Sender is not seller');
     });
 
     it('should be able to conclude auction', async function () {
       await network.provider.send('evm_increaseTime', [60]);
-      await marketplace
-        .connect(user1)
-        .cancelAuction(nftContract.address, tokenId);
-      // Seller should regain ownership of NFT
-      const token1Owner = await nftContract.ownerOf(tokenId);
-      expect(token1Owner).to.equal(user1.address);
-    });
+      await marketplace.connect(user1).cancelAuction(erc721AuctionId);
+      await marketplace.connect(user1).cancelAuction(erc1155AuctionId);
 
-    it('should be able to conclude ongoing auction', async function () {
-      await marketplace
-        .connect(user1)
-        .cancelAuction(nftContract.address, tokenId);
-      const token1Owner = await nftContract.ownerOf(tokenId);
-      expect(token1Owner).to.equal(user1.address);
+      await expect(marketplace.getAuction(erc721AuctionId)).to.be.revertedWith(
+        'Not on auction'
+      );
+      await expect(marketplace.getAuction(erc1155AuctionId)).to.be.revertedWith(
+        'Not on auction'
+      );
     });
 
     it('should trigger event after canceling auction', async function () {
-      const auctionId = '1';
-
-      const cancleAuction = await marketplace
+      const cancleAuction1 = await marketplace
         .connect(user1)
-        .cancelAuction(nftContract.address, tokenId);
+        .cancelAuction(erc721AuctionId);
 
-      await expect(cancleAuction)
+      const cancleAuction2 = await marketplace
+        .connect(user1)
+        .cancelAuction(erc1155AuctionId);
+
+      await expect(cancleAuction1)
         .to.emit(marketplace, 'AuctionCancelled')
-        .withArgs(nftContract.address, tokenId.toString(), auctionId);
+        .withArgs(erc721AuctionId);
+
+      await expect(cancleAuction2)
+        .to.emit(marketplace, 'AuctionCancelled')
+        .withArgs(erc1155AuctionId);
     });
   });
 
@@ -743,6 +786,9 @@ describe('Marketplace', function () {
     beforeEach(async function () {
       await deploy(250, 300, 2200);
       await nftContract.connect(user1).approve(marketplace.address, tokenId);
+      await erc1155Contract
+        .connect(user1)
+        .setApprovalForAll(marketplace.address, true);
     });
 
     it('should take cut on initial sale', async function () {
@@ -757,12 +803,20 @@ describe('Marketplace', function () {
           tokenId,
           ethers.utils.parseUnits('0.2'),
           ethers.utils.parseUnits('0.2'),
-          60
+          60,
+          1,
+          ERC721_ASSET_CLASS
         );
+      const auctionid = await marketplace.createAuctionId(
+        nftContract.address,
+        tokenId,
+        user1.address
+      );
+
       const user1Bal1 = await user1.getBalance();
 
       // buys NFT and calculates price diff on contract and user1 wallet
-      await marketplace.connect(user2).bid(nftContract.address, tokenId, {
+      await marketplace.connect(user2).bid(auctionid, 1, {
         value: ethers.utils.parseUnits('0.206'),
       });
       const contractBal2 = await marketplace.provider.getBalance(
@@ -791,11 +845,19 @@ describe('Marketplace', function () {
           tokenId,
           ethers.utils.parseUnits('1'),
           ethers.utils.parseUnits('1'),
-          60
+          60,
+          1,
+          ERC721_ASSET_CLASS
         );
 
+      const auctionid = await marketplace.createAuctionId(
+        nftContract.address,
+        tokenId,
+        user1.address
+      );
+
       // Buy with user 2
-      await marketplace.connect(user2).bid(nftContract.address, tokenId, {
+      await marketplace.connect(user2).bid(auctionid, 1, {
         value: ethers.utils.parseUnits('1.03'),
       });
 
@@ -808,8 +870,16 @@ describe('Marketplace', function () {
           tokenId,
           ethers.utils.parseUnits('0.5'),
           ethers.utils.parseUnits('0.5'),
-          60
+          60,
+          1,
+          ERC721_ASSET_CLASS
         );
+
+      const auctionid2 = await marketplace.createAuctionId(
+        nftContract.address,
+        tokenId,
+        user2.address
+      );
 
       // Grab current balance of seller and contract
       const user2Bal1 = await user2.getBalance();
@@ -818,7 +888,7 @@ describe('Marketplace', function () {
       );
 
       // Buy with user 3
-      await marketplace.connect(user3).bid(nftContract.address, tokenId, {
+      await marketplace.connect(user3).bid(auctionid2, 1, {
         value: ethers.utils.parseUnits('0.515'),
       });
 
@@ -864,10 +934,18 @@ describe('Marketplace', function () {
           tokenId,
           ethers.utils.parseUnits('1'),
           ethers.utils.parseUnits('1'),
-          60
+          60,
+          1,
+          ERC721_ASSET_CLASS
         );
 
-      await marketplace.connect(user2).bid(nftContract.address, tokenId, {
+      const auctionid = await marketplace.createAuctionId(
+        nftContract.address,
+        tokenId,
+        user1.address
+      );
+
+      await marketplace.connect(user2).bid(auctionid, 1, {
         value: ethers.utils.parseUnits('1.03'),
       });
 
@@ -900,15 +978,23 @@ describe('Marketplace', function () {
           tokenId,
           ethers.utils.parseUnits('2'),
           ethers.utils.parseUnits('2'),
-          60
+          60,
+          1,
+          ERC721_ASSET_CLASS
         );
+
+      const auctionid = await marketplace.createAuctionId(
+        nftContract.address,
+        tokenId,
+        user1.address
+      );
 
       // Grab current marketpalce balance
       const contractBal1 = await marketplace.provider.getBalance(
         marketplace.address
       );
 
-      await marketplace.connect(user2).bid(nftContract.address, tokenId, {
+      await marketplace.connect(user2).bid(auctionid, 1, {
         value: ethers.utils.parseUnits('2.2'),
       });
 
@@ -922,14 +1008,22 @@ describe('Marketplace', function () {
           tokenId,
           ethers.utils.parseUnits('1'),
           ethers.utils.parseUnits('1'),
-          60
+          60,
+          1,
+          ERC721_ASSET_CLASS
         );
+
+      const auctionid2 = await marketplace.createAuctionId(
+        nftContract.address,
+        tokenId,
+        user2.address
+      );
 
       // Grab current balance of seller
       const user2Bal1 = await user2.getBalance();
 
       // Bid it
-      await marketplace.connect(user3).bid(nftContract.address, tokenId, {
+      await marketplace.connect(user3).bid(auctionid2, 1, {
         value: ethers.utils.parseUnits('1.1'),
       });
 
@@ -967,7 +1061,9 @@ describe('Marketplace', function () {
           tokenId,
           ethers.utils.parseUnits('0.2'),
           ethers.utils.parseUnits('0.2'),
-          1000
+          1000,
+          1,
+          ERC721_ASSET_CLASS
         );
 
       // Grab balances
@@ -976,8 +1072,14 @@ describe('Marketplace', function () {
       );
       const user1Bal1 = await user1.getBalance();
 
+      const auctionid = await marketplace.createAuctionId(
+        nftContract.address,
+        tokenId,
+        user1.address
+      );
+
       // Buy NFT
-      await marketplace.connect(user3).bid(nftContract.address, tokenId, {
+      await marketplace.connect(user3).bid(auctionid, 1, {
         value: ethers.utils.parseUnits('0.206'),
       });
 
@@ -1007,7 +1109,9 @@ describe('Marketplace', function () {
           tokenId,
           ethers.utils.parseUnits('0.2'),
           ethers.utils.parseUnits('0.2'),
-          1000
+          1000,
+          1,
+          ERC721_ASSET_CLASS
         );
 
       // Grab balances
@@ -1016,8 +1120,14 @@ describe('Marketplace', function () {
       );
       const user1Bal1 = await user1.getBalance();
 
+      const auctionid = await marketplace.createAuctionId(
+        nftContract.address,
+        tokenId,
+        user1.address
+      );
+
       // Buy NFT
-      await marketplace.connect(user3).bid(nftContract.address, tokenId, {
+      await marketplace.connect(user3).bid(auctionid, 1, {
         value: ethers.utils.parseUnits('0.2'),
       });
 
@@ -1045,7 +1155,9 @@ describe('Marketplace', function () {
           tokenId,
           ethers.utils.parseUnits('1'),
           ethers.utils.parseUnits('1'),
-          1000
+          1000,
+          1,
+          ERC721_ASSET_CLASS
         );
 
       const user1Bal1 = await user1.getBalance();
@@ -1053,8 +1165,14 @@ describe('Marketplace', function () {
         marketplace.address
       );
 
+      const auctionid = await marketplace.createAuctionId(
+        nftContract.address,
+        tokenId,
+        user1.address
+      );
+
       // Buy NFT
-      await marketplace.connect(user3).bid(nftContract.address, tokenId, {
+      await marketplace.connect(user3).bid(auctionid, 1, {
         value: ethers.utils.parseUnits('1.03'),
       });
 
@@ -1098,9 +1216,18 @@ describe('Marketplace', function () {
           tokenId,
           ethers.utils.parseUnits('1'),
           ethers.utils.parseUnits('1'),
-          60
+          60,
+          1,
+          ERC721_ASSET_CLASS
         );
-      await marketplace.connect(user2).bid(nftContract.address, tokenId, {
+
+      const auctionid = await marketplace.createAuctionId(
+        nftContract.address,
+        tokenId,
+        user1.address
+      );
+
+      await marketplace.connect(user2).bid(auctionid, 1, {
         value: ethers.utils.parseUnits('1.03'),
       });
 
@@ -1127,53 +1254,93 @@ describe('Marketplace', function () {
   });
 
   describe('Cancel auctions while paused', function () {
+    let erc721AuctionId, erc1155AuctionId;
+
     beforeEach(async function () {
       await deploy();
       await nftContract.connect(user1).approve(marketplace.address, tokenId);
+      await erc1155Contract
+        .connect(user1)
+        .setApprovalForAll(marketplace.address, true);
+
       await marketplace
         .connect(user1)
         .createAuction(
           nftContract.address,
           tokenId,
-          ethers.utils.parseUnits('1'),
-          ethers.utils.parseUnits('1'),
-          60
+          ethers.utils.parseUnits('0.1'),
+          ethers.utils.parseUnits('0.1'),
+          60,
+          1,
+          ERC721_ASSET_CLASS
         );
+
+      await marketplace
+        .connect(user1)
+        .createAuction(
+          erc1155Contract.address,
+          1,
+          ethers.utils.parseUnits('0.1'),
+          ethers.utils.parseUnits('0.1'),
+          60,
+          3,
+          ERC1155_ASSET_CLASS
+        );
+
+      erc721AuctionId = await marketplace.createAuctionId(
+        nftContract.address,
+        tokenId,
+        user1.address
+      );
+
+      erc1155AuctionId = await marketplace.createAuctionId(
+        erc1155Contract.address,
+        1,
+        user1.address
+      );
     });
 
     it('should fail to cancel auction when not paused', async function () {
       await expect(
-        marketplace
-          .connect(owner)
-          .cancelAuctionWhenPaused(nftContract.address, tokenId)
+        marketplace.connect(owner).cancelAuctionWhenPaused(erc721AuctionId)
       ).to.be.revertedWith('Pausable: not paused');
     });
 
     it('should fail to cancel auction when not owner', async function () {
       await marketplace.connect(owner).pause();
       await expect(
-        marketplace
-          .connect(user2)
-          .cancelAuctionWhenPaused(nftContract.address, tokenId)
+        marketplace.connect(user2).cancelAuctionWhenPaused(erc721AuctionId)
       ).to.be.revertedWith('Ownable: caller is not the owner');
     });
 
     it('should be able to cancel auction as owner when paused', async function () {
       await marketplace.connect(owner).pause();
+      await marketplace.connect(owner).cancelAuctionWhenPaused(erc721AuctionId);
       await marketplace
         .connect(owner)
-        .cancelAuctionWhenPaused(nftContract.address, tokenId);
-      const tokenOwner = await nftContract.ownerOf(tokenId);
-      expect(tokenOwner).to.equal(user1.address);
+        .cancelAuctionWhenPaused(erc1155AuctionId);
+
+      await expect(marketplace.getAuction(erc721AuctionId)).to.be.revertedWith(
+        'Not on auction'
+      );
+
+      await expect(marketplace.getAuction(erc1155AuctionId)).to.be.revertedWith(
+        'Not on auction'
+      );
     });
 
     it('should be able to cancel auction as auction owner when paused', async function () {
       await marketplace.connect(owner).pause();
-      await marketplace
-        .connect(user1)
-        .cancelAuction(nftContract.address, tokenId);
-      const tokenOwner = await nftContract.ownerOf(tokenId);
-      expect(tokenOwner).to.equal(user1.address);
+      await marketplace.connect(user1).cancelAuction(erc721AuctionId);
+      await marketplace.connect(user1).cancelAuction(erc1155AuctionId);
+
+      await expect(marketplace.getAuction(erc721AuctionId)).to.be.revertedWith(
+        'Not on auction'
+      );
+
+      await expect(marketplace.getAuction(erc1155AuctionId)).to.be.revertedWith(
+        'Not on auction'
+      );
     });
   });
 });
