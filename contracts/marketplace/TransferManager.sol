@@ -3,7 +3,9 @@ pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "../erc-721/IERC721.sol";
+import "../erc-1155/IERC1155.sol";
 import "../erc-721/IEndemicMasterNFT.sol";
+import "./LibAuction.sol";
 
 abstract contract TransferManager is OwnableUpgradeable {
     address claimEthAddress;
@@ -45,9 +47,23 @@ abstract contract TransferManager is OwnableUpgradeable {
         address _owner,
         address _receiver,
         address _nftContract,
-        uint256 _tokenId
+        uint256 _tokenId,
+        uint256 _amount,
+        bytes4 _assetClass
     ) internal {
-        IERC721(_nftContract).safeTransferFrom(_owner, _receiver, _tokenId);
+        if (_assetClass == LibAuction.ERC721_ASSET_CLASS) {
+            IERC721(_nftContract).safeTransferFrom(_owner, _receiver, _tokenId);
+        } else if (_assetClass == LibAuction.ERC1155_ASSET_CLASS) {
+            IERC1155(_nftContract).safeTransferFrom(
+                _owner,
+                _receiver,
+                _tokenId,
+                _amount,
+                ""
+            );
+        } else {
+            revert("Invalid asset class");
+        }
     }
 
     uint256[50] private __gap;
