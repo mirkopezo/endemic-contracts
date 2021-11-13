@@ -666,11 +666,11 @@ describe('Marketplace', function () {
           1
         );
 
-      const bid12 = marketplace.connect(user2).bid(erc1155AuctionId, 2, {
+      const bid2 = marketplace.connect(user2).bid(erc1155AuctionId, 2, {
         value: ethers.utils.parseUnits('0.206'),
       });
 
-      await expect(bid1)
+      await expect(bid2)
         .to.emit(marketplace, 'AuctionSuccessful')
         .withArgs(
           erc1155AuctionId,
