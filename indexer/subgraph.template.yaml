@@ -20,11 +20,11 @@ dataSources:
         - name: Marketplace
           file: ./abis/Marketplace.json
       eventHandlers:
-        - event: AuctionCreated(indexed address,indexed uint256,indexed uint256,uint256,uint256,uint256,address)
+        - event: AuctionCreated(indexed address,indexed uint256,indexed bytes32,uint256,uint256,uint256,address,uint256,bytes4)
           handler: handleAuctionCreated
-        - event: AuctionSuccessful(indexed address,indexed uint256,indexed uint256,address,uint256)
+        - event:  AuctionSuccessful(indexed bytes32,indexed uint256,address,uint256)
           handler: handleAuctionSuccessful
-        - event: AuctionCancelled(indexed address,indexed uint256,uint256)
+        - event:  AuctionCancelled(indexed bytes32)
           handler: handleAuctionCancelled
       file: ./src/handlers/marketplace.ts
     

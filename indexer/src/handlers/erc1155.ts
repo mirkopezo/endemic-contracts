@@ -89,7 +89,6 @@ export function handleCreate(event: Create): void {
 
   nft.price = BigInt.fromI32(0);
   nft.isOnSale = false;
-  nft.seller = null;
   nft.burned = false;
 
   let metaData = readTokenMetadataFromIPFS(tokenURI);

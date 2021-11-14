@@ -50,7 +50,6 @@ export function handleTransfer(event: Transfer): void {
   nft.price = BigInt.fromI32(0);
   nft.burned = false;
   nft.isOnSale = false;
-  nft.seller = null;
 
   if (isERC721MintEvent(event)) {
     nft.createdAt = event.block.timestamp;

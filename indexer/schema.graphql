@@ -53,7 +53,6 @@ type NFT @entity {
   #erc-1155
   supply: BigInt
 
-  seller: Bytes
   isOnSale: Boolean!
   price: BigInt!
 
@@ -91,6 +90,8 @@ type Auction @entity {
   canceledAt: BigInt
   soldAt: BigInt
   totalPrice: BigInt
+  tokenAmount: BigInt!
+  soldTokenAmount: BigInt!
 }
 
 type Activity @entity {

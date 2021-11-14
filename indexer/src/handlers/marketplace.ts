@@ -12,6 +12,7 @@ import {
 import { createAuctionActivity } from '../modules/activity';
 import * as auctionStatuses from '../data/auctionStatuses';
 import { addContractCount, removeContractCount } from '../modules/count';
+import { BigInt } from '@graphprotocol/graph-ts';
 
 export function handleAuctionCreated(event: AuctionCreated): void {
   let nftId = getNFTId(
@@ -24,7 +25,7 @@ export function handleAuctionCreated(event: AuctionCreated): void {
     return;
   }
 
-  let auction = new Auction(event.params.id.toString());
+  let auction = new Auction(event.params.id.toHexString());
   auction.startedAt = event.block.timestamp;
   auction.seller = event.params.seller;
   auction.startingPrice = event.params.startingPrice;
@@ -32,11 +33,16 @@ export function handleAuctionCreated(event: AuctionCreated): void {
   auction.duration = event.params.duration;
   auction.status = auctionStatuses.OPEN;
   auction.nft = nftId;
+  auction.tokenAmount = event.params.amount;
+  auction.soldTokenAmount = BigInt.fromI32(0);
 
   auction.save();
-  // updateContractCount(event.params.nftContract.toHexString(), (counts) => {
-  //   counts.onSaleCount += 1;
-  // });
+
+  addContractCount(
+    nft.contractId.toHexString(),
+    BigInt.fromI32(0),
+    event.params.amount
+  );
 
   nft = addNFTAuctionProperties(nft, auction);
   nft.save();
@@ -50,26 +56,29 @@ export function handleAuctionSuccessful(event: AuctionSuccessful): void {
     return;
   }
 
-  let nftId = getNFTId(
-    event.params.nftContract.toHexString(),
-    event.params.tokenId.toString()
-  );
-
-  let nft = <NFT>NFT.load(nftId);
+  let nft = <NFT>NFT.load(auction.nft);
 
   auction.soldAt = event.block.timestamp;
   auction.totalPrice = event.params.totalPrice;
   auction.buyer = event.params.winner;
-  auction.status = auctionStatuses.SOLD;
+  auction.soldTokenAmount = event.params.amount;
+  auction.tokenAmount = auction.tokenAmount.minus(event.params.amount);
+
+  if (auction.tokenAmount <= BigInt.fromI32(0)) {
+    auction.status = auctionStatuses.SOLD;
+    nft = clearNFTAuctionProperties(nft, auction);
+    nft.save();
+  }
+
   auction.save();
 
-  nft = clearNFTAuctionProperties(nft);
-  nft.save();
+  removeContractCount(
+    nft.contractId.toHexString(),
+    BigInt.fromI32(0),
+    event.params.amount
+  );
 
   createAuctionActivity(auction, nft, 'auctionSuccess', event);
-  // updateContractCount(event.params.nftContract.toHexString(), (counts) => {
-  //   counts.onSaleCount -= 1;
-  // });
 }
 
 export function handleAuctionCancelled(event: AuctionCancelled): void {
@@ -78,22 +87,20 @@ export function handleAuctionCancelled(event: AuctionCancelled): void {
     return;
   }
 
-  let nftId = getNFTId(
-    event.params.nftContract.toHexString(),
-    event.params.tokenId.toString()
-  );
-
-  let nft = <NFT>NFT.load(nftId);
+  let nft = <NFT>NFT.load(auction.nft);
 
   auction.canceledAt = event.block.timestamp;
   auction.status = auctionStatuses.CANCELED;
   auction.save();
 
-  nft = clearNFTAuctionProperties(nft);
+  nft = clearNFTAuctionProperties(nft, auction);
   nft.save();
 
   createAuctionActivity(auction, nft, 'auctionCancel', event);
-  // updateContractCount(event.params.nftContract.toHexString(), (counts) => {
-  //   counts.onSaleCount -= 1;
-  // });
+
+  removeContractCount(
+    nft.contractId.toHexString(),
+    BigInt.fromI32(0),
+    auction.tokenAmount
+  );
 }

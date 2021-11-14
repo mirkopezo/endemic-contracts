@@ -1,4 +1,11 @@
-import { log, ipfs, json, BigInt, Address } from '@graphprotocol/graph-ts';
+import {
+  log,
+  ipfs,
+  json,
+  BigInt,
+  Address,
+  Bytes,
+} from '@graphprotocol/graph-ts';
 import { Auction, NFT } from '../../../generated/schema';
 import {
   Transfer,
@@ -6,6 +13,7 @@ import {
 } from '../../../generated/templates/EndemicNFT/EndemicNFT';
 import { EndemicERC1155 } from '../../../generated/templates/EndemicERC1155/EndemicERC1155';
 import * as addresses from '../../data/addresses';
+import * as auctionStatuses from '../../data/auctionStatuses';
 import { Metadata } from './models';
 
 export function isERC721MintEvent(event: Transfer): boolean {
@@ -106,15 +114,51 @@ export function readTokenMetadataFromIPFS(tokenURI: string): Metadata | null {
 
 export function addNFTAuctionProperties(nft: NFT, auction: Auction): NFT {
   nft.isOnSale = true;
-  nft.seller = auction.seller;
-  // we only support immutable price for now. Starting and ending prices will always be the same in the contract
-  nft.price = auction.startingPrice;
+
+  if (nft.type === 'ERC-1155') {
+    if (nft.price === null || nft.price > auction.startingPrice) {
+      nft.price = auction.startingPrice;
+    }
+  } else {
+    // we only support immutable price for now. Starting and ending prices will always be the same in the contract
+    nft.price = auction.startingPrice;
+  }
+
   return nft;
 }
 
-export function clearNFTAuctionProperties(nft: NFT): NFT {
-  nft.isOnSale = false;
-  nft.seller = null;
-  nft.price = BigInt.fromI32(0);
+export function clearNFTAuctionProperties(nft: NFT, auction: Auction): NFT {
+  if (nft.type === 'ERC-1155') {
+    // let isAuctionDone =
+    //   auction.status === auctionStatuses.SOLD ||
+    //   auction.status === auctionStatuses.CANCELED;
+    // if (isAuctionDone) {
+    //   let hasOtherAuctions = nft.auctions.length > 1;
+    //   if (hasOtherAuctions) {
+    //     let lowestPrice = BigInt.fromI32(2 ** 256);
+    //     let lowestSeller: Bytes;
+    //     for (let i = 0; i < nft.auctions.length; i++) {
+    //       if (nft.auctions[i] !== auction.id) {
+    //         let otherAuction = Auction.load(nft.auctions[i]);
+    //         if (otherAuction === null) continue;
+    //         if (lowestPrice > otherAuction.startingPrice) {
+    //           lowestPrice = otherAuction.startingPrice;
+    //           lowestSeller = otherAuction.seller;
+    //         }
+    //       }
+    //     }
+    //     nft.price = lowestPrice;
+    //     nft.seller = lowestSeller;
+    //   } else {
+    //     nft.isOnSale = false;
+    //     nft.seller = null;
+    //     nft.price = BigInt.fromI32(0);
+    //   }
+    // }
+  } else {
+    nft.isOnSale = false;
+    nft.price = BigInt.fromI32(0);
+  }
+
   return nft;
 }

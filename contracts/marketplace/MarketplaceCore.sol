@@ -109,18 +109,25 @@ abstract contract MarketplaceCore is
         );
     }
 
-    function bid(bytes32 _id, uint256 _amount) external payable whenNotPaused {
+    function bid(bytes32 _id, uint256 _tokenAmount)
+        external
+        payable
+        whenNotPaused
+    {
         LibAuction.Auction storage auction = idToAuction[_id];
 
         require(LibAuction.isOnAuction(auction), "NFT is not on auction");
         require(auction.seller != _msgSender(), "Cant buy from self");
-        require(auction.amount >= _amount, "Amount incorrect");
+        require(
+            auction.amount >= _tokenAmount && _tokenAmount >= 0,
+            "Amount incorrect"
+        );
 
         LibNFT.requireTokenOwnership(
             auction.assetClass,
             auction.contractId,
             auction.tokenId,
-            _amount,
+            _tokenAmount,
             auction.seller
         );
 
@@ -131,7 +138,7 @@ abstract contract MarketplaceCore is
             auction.seller
         );
 
-        uint256 price = LibAuction.currentPrice(auction) * _amount;
+        uint256 price = LibAuction.currentPrice(auction) * _tokenAmount;
         require(
             msg.value >= price,
             "Bid amount can not be lower then auction price"
@@ -146,7 +153,7 @@ abstract contract MarketplaceCore is
         if (auction.assetClass == LibAuction.ERC721_ASSET_CLASS) {
             _removeAuction(auction);
         } else if (auction.assetClass == LibAuction.ERC1155_ASSET_CLASS) {
-            _deductFromAuction(auction, _amount);
+            _deductFromAuction(auction, _tokenAmount);
         } else {
             revert("Invalid asset class");
         }
@@ -158,11 +165,11 @@ abstract contract MarketplaceCore is
             _msgSender(),
             contractId,
             tokenId,
-            _amount,
+            _tokenAmount,
             assetClass
         );
 
-        emit AuctionSuccessful(auctionId, price, _msgSender(), _amount);
+        emit AuctionSuccessful(auctionId, price, _msgSender(), _tokenAmount);
     }
 
     function cancelAuction(bytes32 _id) external {
