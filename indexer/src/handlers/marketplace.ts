@@ -25,7 +25,19 @@ export function handleAuctionCreated(event: AuctionCreated): void {
     return;
   }
 
-  let auction = new Auction(event.params.id.toHexString());
+  let auction = Auction.load(event.params.id.toHexString());
+  if (auction == null || auction.status !== auctionStatuses.OPEN) {
+    addContractCount(
+      nft.contractId.toHexString(),
+      BigInt.fromI32(0),
+      event.params.amount
+    );
+  }
+
+  if (auction == null) {
+    auction = new Auction(event.params.id.toHexString());
+  }
+
   auction.startedAt = event.block.timestamp;
   auction.seller = event.params.seller;
   auction.startingPrice = event.params.startingPrice;
@@ -37,12 +49,6 @@ export function handleAuctionCreated(event: AuctionCreated): void {
   auction.soldTokenAmount = BigInt.fromI32(0);
 
   auction.save();
-
-  addContractCount(
-    nft.contractId.toHexString(),
-    BigInt.fromI32(0),
-    event.params.amount
-  );
 
   nft = addNFTAuctionProperties(nft, auction);
   nft.save();

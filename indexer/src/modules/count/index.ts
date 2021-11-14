@@ -20,8 +20,8 @@ export function addContractCount(
   saleValue: BigInt
 ): void {
   let counts = getContractsCount(contractAddress);
-  counts.onSaleCount = counts.totalCount.plus(totalValue);
-  counts.totalCount = counts.onSaleCount.plus(saleValue);
+  counts.onSaleCount = counts.onSaleCount.plus(totalValue);
+  counts.totalCount = counts.totalCount.plus(saleValue);
   counts.save();
 }
 
