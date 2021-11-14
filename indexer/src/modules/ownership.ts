@@ -20,9 +20,10 @@ export function getOrCreateOwnership(nft: NFT, accountId: Bytes): NFTOwnership {
     nftOwnership = new NFTOwnership(nftOwnershipId);
     nftOwnership.account = accountId.toHexString();
     nftOwnership.nft = nft.id;
-    nftOwnership.category = nft.category;
-    nftOwnership.price = nft.price;
-    nftOwnership.contractId = nft.contractId;
+    nftOwnership.nftCategory = nft.category;
+    nftOwnership.nftPrice = nft.price;
+    nftOwnership.nftContractId = nft.contractId;
+    nftOwnership.nftBurned = nft.burned;
   }
 
   return nftOwnership;

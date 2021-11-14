@@ -56,7 +56,7 @@ export function handleAuctionCreated(event: AuctionCreated): void {
 
   let ownershipId = getNftOwnershipId(nftId, event.params.seller.toHexString());
   let nftOwnership = NFTOwnership.load(ownershipId)!;
-  nftOwnership.price = nft.price;
+  nftOwnership.nftPrice = nft.price;
   nftOwnership.save();
 
   createAuctionActivity(auction, nft, 'auctionCreate', event);
@@ -87,7 +87,7 @@ export function handleAuctionSuccessful(event: AuctionSuccessful): void {
   let nftOwnership = NFTOwnership.load(
     getNftOwnershipId(nft.id, auction.seller.toHexString())
   )!;
-  nftOwnership.price = BigInt.fromI32(0);
+  nftOwnership.nftPrice = BigInt.fromI32(0);
   nftOwnership.save();
 
   removeContractCount(

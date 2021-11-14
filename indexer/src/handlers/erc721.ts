@@ -90,6 +90,7 @@ export function handleTransfer(event: Transfer): void {
 
   let nftOwnership = getOrCreateOwnership(nft, event.params.to);
   nftOwnership.value = BigInt.fromI32(1);
+  nftOwnership.nftBurned = nft.burned;
   nftOwnership.save();
 
   createAccount(event.params.to);

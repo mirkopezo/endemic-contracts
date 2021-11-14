@@ -14,9 +14,11 @@ type NFTOwnership @entity {
   value: BigInt!
 
   #copy fields from nft because graph can't filter / sort on child collection
-  contractId: Bytes!
-  category: String
-  price: BigInt!
+  nftContractId: Bytes!
+  nftCategory: String
+  nftPrice: BigInt!
+  nftBurned: Boolean!
+  nftCreatedAt: BigInt!
 }
 
 type NFT @entity {
