@@ -1,19 +1,11 @@
-import {
-  log,
-  ipfs,
-  json,
-  BigInt,
-  Address,
-  Bytes,
-} from '@graphprotocol/graph-ts';
-import { Auction, NFT } from '../../../generated/schema';
+import { log, ipfs, json, BigInt, Address } from '@graphprotocol/graph-ts';
+import { Auction, NFT } from '../../generated/schema';
 import {
   Transfer,
   EndemicNFT,
-} from '../../../generated/templates/EndemicNFT/EndemicNFT';
-import { EndemicERC1155 } from '../../../generated/templates/EndemicERC1155/EndemicERC1155';
-import * as addresses from '../../data/addresses';
-import * as auctionStatuses from '../../data/auctionStatuses';
+} from '../../generated/templates/EndemicNFT/EndemicNFT';
+import { EndemicERC1155 } from '../../generated/templates/EndemicERC1155/EndemicERC1155';
+import * as addresses from '../data/addresses';
 import { Metadata } from './models';
 
 export function isERC721MintEvent(event: Transfer): boolean {
@@ -36,12 +28,6 @@ export function getNFTId(contractAddress: string, tokenId: string): string {
   return contractAddress + '-' + tokenId;
 }
 
-export function getNftOwnershipId(
-  nftId: string,
-  accountAddress: string
-): string {
-  return nftId + '-' + accountAddress;
-}
 
 export function getERC721TokenURI(address: Address, tokenId: BigInt): string {
   let erc721 = EndemicNFT.bind(address);

@@ -1,27 +1,3 @@
-type _Schema_
-  @fulltext(
-    name: "activitySearch"
-    language: en
-    algorithm: rank
-    include: [
-      {
-        entity: "Activity"
-        fields: [
-          { name: "transferFrom" }
-          { name: "transferTo" }
-          { name: "auctionSeller" }
-          { name: "type" }
-        ]
-      }
-    ]
-  )
-  @fulltext(
-    name: "nftSearch"
-    language: en
-    algorithm: proximityRank
-    include: [{ entity: "NFT", fields: [{ name: "name" }, { name: "id" }] }]
-  )
-
 type NFTContract @entity {
   id: ID!
   name: String!
@@ -36,6 +12,11 @@ type NFTOwnership @entity {
   account: Account!
   nft: NFT
   value: BigInt!
+
+  #copy fields from nft because graph can't filter / sort on child collection
+  contractId: Bytes!
+  category: String
+  price: BigInt!
 }
 
 type NFT @entity {
@@ -138,3 +119,27 @@ enum ActivityType @entity {
   auctionSuccess
   auctionCancel
 }
+
+type _Schema_
+  @fulltext(
+    name: "activitySearch"
+    language: en
+    algorithm: rank
+    include: [
+      {
+        entity: "Activity"
+        fields: [
+          { name: "transferFrom" }
+          { name: "transferTo" }
+          { name: "auctionSeller" }
+          { name: "type" }
+        ]
+      }
+    ]
+  )
+  @fulltext(
+    name: "nftSearch"
+    language: en
+    algorithm: proximityRank
+    include: [{ entity: "NFT", fields: [{ name: "name" }, { name: "id" }] }]
+  )

@@ -1,6 +1,6 @@
 import { Address, BigInt } from '@graphprotocol/graph-ts';
-import { NFTContract } from '../../../generated/schema';
-import { EndemicNFT } from '../../../generated/templates/EndemicNFT/EndemicNFT';
+import { NFTContract } from '../../generated/schema';
+import { EndemicNFT } from '../../generated/templates/EndemicNFT/EndemicNFT';
 
 export function createThirdPartyNFTContract(
   id: Address,

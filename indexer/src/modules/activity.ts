@@ -1,12 +1,12 @@
-import { Transfer } from '../../../generated/templates/EndemicNFT/EndemicNFT';
-import { TransferSingle } from '../../../generated/templates/EndemicERC1155/EndemicERC1155';
-import { Activity, NFT, Auction } from '../../../generated/schema';
+import { Transfer } from '../../generated/templates/EndemicNFT/EndemicNFT';
+import { TransferSingle } from '../../generated/templates/EndemicERC1155/EndemicERC1155';
+import { Activity, NFT, Auction } from '../../generated/schema';
 import {
   isERC721BurnEvent,
   isERC721MintEvent,
   isERC1155MintEvent,
   isERC1155BurnEvent,
-} from '../nft';
+} from './nft';
 import { ethereum } from '@graphprotocol/graph-ts';
 
 function getERC721TransferActivityType(event: Transfer): string {

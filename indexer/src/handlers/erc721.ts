@@ -1,14 +1,13 @@
-import { log, BigInt, store } from '@graphprotocol/graph-ts';
+import { log, BigInt } from '@graphprotocol/graph-ts';
 import {
   Transfer,
   Mint,
 } from '../../generated/templates/EndemicNFT/EndemicNFT';
 
-import { NFT, NFTContract, NFTOwnership } from '../../generated/schema';
+import { NFT, NFTContract } from '../../generated/schema';
 import {
   getERC721TokenURI,
   getNFTId,
-  getNftOwnershipId,
   isERC721BurnEvent,
   readTokenMetadataFromIPFS,
   isERC721MintEvent,
@@ -17,6 +16,7 @@ import { createAccount } from '../modules/account';
 import { createERC721TransferActivity } from '../modules/activity';
 import { createThirdPartyNFTContract } from '../modules/nftContract';
 import { addContractCount, removeContractCount } from '../modules/count';
+import { deleteOwnership, getOrCreateOwnership } from '../modules/ownership';
 
 export function handleTransfer(event: Transfer): void {
   if (event.params.tokenId.toString() == '') {
@@ -85,18 +85,10 @@ export function handleTransfer(event: Transfer): void {
   nft.save();
 
   if (!isERC721MintEvent(event)) {
-    let oldBalanceId = getNftOwnershipId(id, event.params.from.toHexString());
-    store.remove('NFTOwnership', oldBalanceId);
+    deleteOwnership(id, event.params.from);
   }
 
-  let nftOwnershipId = getNftOwnershipId(id, event.params.to.toHexString());
-  let nftOwnership = NFTOwnership.load(nftOwnershipId);
-  if (nftOwnership === null) {
-    nftOwnership = new NFTOwnership(nftOwnershipId);
-    nftOwnership.account = event.params.to.toHexString();
-    nftOwnership.nft = id;
-  }
-
+  let nftOwnership = getOrCreateOwnership(nft, event.params.to);
   nftOwnership.value = BigInt.fromI32(1);
   nftOwnership.save();
 

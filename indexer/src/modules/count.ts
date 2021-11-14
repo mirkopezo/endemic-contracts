@@ -1,5 +1,5 @@
 import { BigInt } from '@graphprotocol/graph-ts';
-import { ContractsCounts } from '../../../generated/schema';
+import { ContractsCounts } from '../../generated/schema';
 
 function getContractsCount(contractAddress: string): ContractsCounts {
   let counts = ContractsCounts.load(contractAddress);

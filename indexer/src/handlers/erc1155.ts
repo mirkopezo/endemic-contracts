@@ -12,33 +12,28 @@ import {
   isERC1155BurnEvent,
   isERC1155MintEvent,
   readTokenMetadataFromIPFS,
-  getNftOwnershipId,
 } from '../modules/nft';
 import { createAccount } from '../modules/account';
 import { createERC1155TransferActivity } from '../modules/activity';
 import { addContractCount, removeContractCount } from '../modules/count';
+import { getNftOwnershipId, getOrCreateOwnership } from '../modules/ownership';
 
 export function handleTransferSingle(event: TransferSingle): void {
   let nftId = getNFTId(event.address.toHexString(), event.params.id.toString());
   let nft = <NFT>NFT.load(nftId);
 
-  let newOwnerhipId = getNftOwnershipId(nftId, event.params.to.toHexString());
-  let newOwnership = NFTOwnership.load(newOwnerhipId);
-  if (newOwnership === null) {
-    newOwnership = new NFTOwnership(newOwnerhipId);
-    newOwnership.account = event.params.to.toHexString();
-    newOwnership.nft = nftId;
-    newOwnership.value = BigInt.fromI32(0);
-  }
-  newOwnership.value = newOwnership.value.plus(event.params.value);
-  newOwnership.save();
+  let nftOwnership = getOrCreateOwnership(nft, event.params.to);
+  nftOwnership.value = nftOwnership.value.plus(event.params.value);
+  nftOwnership.save();
 
-  let oldBalanceId = getNftOwnershipId(nftId, event.params.from.toHexString());
-  let oldOwner = NFTOwnership.load(oldBalanceId);
-  if (oldOwner !== null) {
-    oldOwner.value = oldOwner.value.minus(event.params.value);
-    oldOwner.save();
+  let sourceOwnership = NFTOwnership.load(
+    getNftOwnershipId(nftId, event.params.from.toHexString())
+  );
+  if (sourceOwnership !== null) {
+    sourceOwnership.value = sourceOwnership.value.minus(event.params.value);
+    sourceOwnership.save();
   }
+
   if (isERC1155MintEvent(event.params.from)) {
     addContractCount(
       event.address.toHexString(),

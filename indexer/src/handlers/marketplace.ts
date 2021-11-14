@@ -3,7 +3,7 @@ import {
   AuctionCreated,
   AuctionSuccessful,
 } from '../../generated/Marketplace/Marketplace';
-import { NFT, Auction } from '../../generated/schema';
+import { NFT, Auction, NFTOwnership } from '../../generated/schema';
 import {
   getNFTId,
   clearNFTAuctionProperties,
@@ -13,6 +13,7 @@ import { createAuctionActivity } from '../modules/activity';
 import * as auctionStatuses from '../data/auctionStatuses';
 import { addContractCount, removeContractCount } from '../modules/count';
 import { BigInt } from '@graphprotocol/graph-ts';
+import { getNftOwnershipId } from '../modules/ownership';
 
 export function handleAuctionCreated(event: AuctionCreated): void {
   let nftId = getNFTId(
@@ -53,6 +54,11 @@ export function handleAuctionCreated(event: AuctionCreated): void {
   nft = addNFTAuctionProperties(nft, auction);
   nft.save();
 
+  let ownershipId = getNftOwnershipId(nftId, event.params.seller.toHexString());
+  let nftOwnership = NFTOwnership.load(ownershipId)!;
+  nftOwnership.price = nft.price;
+  nftOwnership.save();
+
   createAuctionActivity(auction, nft, 'auctionCreate', event);
 }
 
@@ -77,6 +83,12 @@ export function handleAuctionSuccessful(event: AuctionSuccessful): void {
   }
 
   auction.save();
+
+  let nftOwnership = NFTOwnership.load(
+    getNftOwnershipId(nft.id, auction.seller.toHexString())
+  )!;
+  nftOwnership.price = BigInt.fromI32(0);
+  nftOwnership.save();
 
   removeContractCount(
     nft.contractId.toHexString(),
