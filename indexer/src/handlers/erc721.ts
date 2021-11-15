@@ -84,15 +84,15 @@ export function handleTransfer(event: Transfer): void {
 
   nft.save();
 
-  if (!isERC721MintEvent(event)) {
-    deleteOwnership(id, event.params.from);
-  }
-
   let nftOwnership = getOrCreateOwnership(nft, event.params.to);
   nftOwnership.value = BigInt.fromI32(1);
   nftOwnership.nftBurned = nft.burned;
   nftOwnership.nftIsOnSale = nft.isOnSale;
   nftOwnership.save();
+
+  if (!isERC721MintEvent(event)) {
+    deleteOwnership(id, event.params.from);
+  }
 
   createAccount(event.params.to);
   createERC721TransferActivity(nft, event);

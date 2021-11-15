@@ -70,7 +70,6 @@ type Auction @entity {
   duration: BigInt!
   startedAt: BigInt!
   nft: NFT!
-  status: AuctionStatus!
   canceledAt: BigInt
   soldAt: BigInt
   tokenAmount: BigInt!
@@ -105,12 +104,6 @@ type ContractsCounts @entity {
   id: ID!
   totalCount: BigInt!
   onSaleCount: BigInt!
-}
-
-enum AuctionStatus @entity {
-  open
-  sold
-  canceled
 }
 
 enum ActivityType @entity {

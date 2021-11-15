@@ -41,13 +41,14 @@ export function createAuctionActivity(
   activity.auctionPrice = auction.startingPrice;
   activity.auctionSeller = auction.seller.toHexString();
   activity.auctionBuyer = auction.buyer;
+  activity.type = type;
+  activity.createdAt = event.block.timestamp;
+  activity.transactionHash = event.transaction.hash;
   activity.nft = nft.id;
   activity.nftTokenURI = nft.tokenURI;
   activity.nftImage = nft.image;
   activity.nftName = nft.name;
-  activity.type = type;
-  activity.createdAt = event.block.timestamp;
-  activity.transactionHash = event.transaction.hash;
+
   activity.save();
 }
 
