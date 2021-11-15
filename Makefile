@@ -37,6 +37,10 @@ deployEndemicErc20:
 .PHONY: deployInitialERC1155
 deployInitialERC1155:
 	npx hardhat run scripts/erc-1155/deploy-erc1155-initial.js --network ${network}
+	
+.PHONY: deployEndemicVesting
+deployEndemicVesting:
+	npx hardhat run scripts/deploy-endemic-vesting.js --network ${network}
 
 .PHONY: deployERC1155Beacon
 deployERC1155Beacon:
