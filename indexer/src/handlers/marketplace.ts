@@ -13,7 +13,7 @@ import { createAuctionActivity } from '../modules/activity';
 import * as auctionStatuses from '../data/auctionStatuses';
 import { addContractCount, removeContractCount } from '../modules/count';
 import { BigInt } from '@graphprotocol/graph-ts';
-import { getNftOwnershipId } from '../modules/ownership';
+import { getNftOwnershipId, getOrCreateOwnership } from '../modules/ownership';
 
 export function handleAuctionCreated(event: AuctionCreated): void {
   let nftId = getNFTId(
@@ -21,10 +21,7 @@ export function handleAuctionCreated(event: AuctionCreated): void {
     event.params.tokenId.toString()
   );
 
-  let nft = NFT.load(nftId);
-  if (nft === null) {
-    return;
-  }
+  let nft = NFT.load(nftId)!;
 
   let auction = Auction.load(event.params.id.toHexString());
   if (auction == null || auction.status !== auctionStatuses.OPEN) {
@@ -57,23 +54,19 @@ export function handleAuctionCreated(event: AuctionCreated): void {
   let ownershipId = getNftOwnershipId(nftId, event.params.seller.toHexString());
   let nftOwnership = NFTOwnership.load(ownershipId)!;
   nftOwnership.nftPrice = nft.price;
+  nftOwnership.nftIsOnSale = nft.isOnSale;
   nftOwnership.save();
 
   createAuctionActivity(auction, nft, 'auctionCreate', event);
 }
 
 export function handleAuctionSuccessful(event: AuctionSuccessful): void {
-  let auction = Auction.load(event.params.id.toString());
-  if (auction === null) {
-    return;
-  }
-
-  let nft = <NFT>NFT.load(auction.nft);
+  let auction = Auction.load(event.params.id.toHexString())!;
+  let nft = NFT.load(auction.nft)!;
 
   auction.soldAt = event.block.timestamp;
-  auction.totalPrice = event.params.totalPrice;
   auction.buyer = event.params.winner;
-  auction.soldTokenAmount = event.params.amount;
+  auction.soldTokenAmount = auction.soldTokenAmount.plus(event.params.amount);
   auction.tokenAmount = auction.tokenAmount.minus(event.params.amount);
 
   if (auction.tokenAmount <= BigInt.fromI32(0)) {
@@ -83,12 +76,6 @@ export function handleAuctionSuccessful(event: AuctionSuccessful): void {
   }
 
   auction.save();
-
-  let nftOwnership = NFTOwnership.load(
-    getNftOwnershipId(nft.id, auction.seller.toHexString())
-  )!;
-  nftOwnership.nftPrice = BigInt.fromI32(0);
-  nftOwnership.save();
 
   removeContractCount(
     nft.contractId.toHexString(),
@@ -100,12 +87,8 @@ export function handleAuctionSuccessful(event: AuctionSuccessful): void {
 }
 
 export function handleAuctionCancelled(event: AuctionCancelled): void {
-  let auction = Auction.load(event.params.id.toString());
-  if (auction === null) {
-    return;
-  }
-
-  let nft = <NFT>NFT.load(auction.nft);
+  let auction = Auction.load(event.params.id.toHexString())!;
+  let nft = NFT.load(auction.nft)!;
 
   auction.canceledAt = event.block.timestamp;
   auction.status = auctionStatuses.CANCELED;
@@ -113,6 +96,10 @@ export function handleAuctionCancelled(event: AuctionCancelled): void {
 
   nft = clearNFTAuctionProperties(nft, auction);
   nft.save();
+
+  let nftOwnership = getOrCreateOwnership(nft, auction.seller);
+  nftOwnership.nftIsOnSale = nft.isOnSale;
+  nftOwnership.save();
 
   createAuctionActivity(auction, nft, 'auctionCancel', event);
 

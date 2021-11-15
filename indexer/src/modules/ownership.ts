@@ -1,4 +1,4 @@
-import { Bytes, store, BigInt } from '@graphprotocol/graph-ts';
+import { store, Bytes } from '@graphprotocol/graph-ts';
 import { NFT, NFTOwnership } from '../../generated/schema';
 
 export function getNftOwnershipId(
@@ -24,6 +24,8 @@ export function getOrCreateOwnership(nft: NFT, accountId: Bytes): NFTOwnership {
     nftOwnership.nftPrice = nft.price;
     nftOwnership.nftContractId = nft.contractId;
     nftOwnership.nftBurned = nft.burned;
+    nftOwnership.nftCreatedAt = nft.createdAt;
+    nftOwnership.nftIsOnSale = nft.isOnSale;
   }
 
   return nftOwnership;

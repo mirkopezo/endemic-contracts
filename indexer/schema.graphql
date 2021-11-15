@@ -19,6 +19,7 @@ type NFTOwnership @entity {
   nftPrice: BigInt!
   nftBurned: Boolean!
   nftCreatedAt: BigInt!
+  nftIsOnSale: Boolean!
 }
 
 type NFT @entity {
@@ -72,7 +73,6 @@ type Auction @entity {
   status: AuctionStatus!
   canceledAt: BigInt
   soldAt: BigInt
-  totalPrice: BigInt
   tokenAmount: BigInt!
   soldTokenAmount: BigInt!
 }
