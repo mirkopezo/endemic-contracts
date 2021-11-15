@@ -60,7 +60,7 @@ export function handleCreate(event: Create): void {
   let nft = new NFT(id);
   let contract = NFTContract.load(event.address.toHexString());
   if (contract === null) {
-    log.warning('Contract: {0} not available', [event.address.toHexString()]);
+    log.warning('Contract: {} not available', [event.address.toHexString()]);
     return;
   }
 
@@ -92,7 +92,7 @@ export function handleCreate(event: Create): void {
     nft.name = metaData.name;
     nft.description = metaData.description;
   } else {
-    log.warning('TokenURI: {0} not available', [tokenURI]);
+    log.warning('TokenURI: {} not available', [tokenURI]);
   }
 
   nft.save();

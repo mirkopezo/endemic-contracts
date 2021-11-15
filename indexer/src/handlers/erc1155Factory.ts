@@ -5,7 +5,7 @@ import { createAccount } from '../modules/account';
 
 export function handleCreated(event: Created): void {
   let nftContract = NFTContract.load(event.params.nftContract.toHex());
-  if (nftContract == null) {
+  if (nftContract === null) {
     nftContract = new NFTContract(event.params.nftContract.toHex());
   }
 

@@ -89,10 +89,11 @@ export function readTokenMetadataFromIPFS(tokenURI: string): Metadata | null {
 export function handleAuctionCreateForNFT(nft: NFT, auction: Auction): NFT {
   nft.isOnSale = true;
 
-  if (nft.type === 'ERC-1155') {
-    if (nft.price === null || nft.price > auction.startingPrice) {
-      nft.price = auction.startingPrice;
-    }
+  if (nft.type == 'ERC-1155') {
+    // todo
+    // if (nft.price === null || nft.price > auction.startingPrice) {
+    //   nft.price = auction.startingPrice;
+    // }
   } else {
     // we only support immutable price for now. Starting and ending prices will always be the same in the contract
     nft.price = auction.startingPrice;
@@ -101,24 +102,9 @@ export function handleAuctionCreateForNFT(nft: NFT, auction: Auction): NFT {
   return nft;
 }
 
-export function handleAuctionCompletedForNFT(nft: NFT, auction: Auction): NFT {
-  if (nft.type === 'ERC-1155') {
-    let hasOtherAuctions = nft.auctions !== null && nft.auctions!.length > 0;
-    if (hasOtherAuctions) {
-      let lowestPrice = BigInt.fromI32(2 ** 256);
-      for (let i = 0; i < nft.auctions!.length; i++) {
-        if (nft.auctions![i] !== auction.id) {
-          let otherAuction = Auction.load(nft.auctions![i])!;
-          if (lowestPrice > otherAuction.startingPrice) {
-            lowestPrice = otherAuction.startingPrice;
-          }
-        }
-      }
-      nft.price = lowestPrice;
-    } else {
-      nft.isOnSale = false;
-      nft.price = BigInt.fromI32(0);
-    }
+export function handleAuctionCompletedForNFT(nft: NFT): NFT {
+  if (nft.type == 'ERC-1155') {
+    // todo
   } else {
     nft.isOnSale = false;
     nft.price = BigInt.fromI32(0);

@@ -66,12 +66,12 @@ export function handleTransfer(event: Transfer): void {
     );
 
     let metaData = readTokenMetadataFromIPFS(tokenURI);
-    if (metaData !== null) {
+    if (metaData != null) {
       nft.image = metaData.image;
       nft.name = metaData.name;
       nft.description = metaData.description;
     } else {
-      log.warning('TokenURI: {0} not available', [tokenURI]);
+      log.warning('TokenURI: {} not available', [tokenURI]);
     }
   } else if (isBurnEvent(event.params.to)) {
     nft.burned = true;

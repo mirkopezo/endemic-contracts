@@ -23,7 +23,7 @@ export function handleAuctionCreated(event: AuctionCreated): void {
   let nft = NFT.load(nftId)!;
 
   let auction = Auction.load(event.params.id.toHexString());
-  if (auction == null) {
+  if (auction === null) {
     auction = new Auction(event.params.id.toHexString());
     addContractCount(
       nft.contractId.toHexString(),
@@ -71,7 +71,7 @@ export function handleAuctionSuccessful(event: AuctionSuccessful): void {
   let nft = NFT.load(auction.nft)!;
 
   if (isAuctionCompleted) {
-    nft = handleAuctionCompletedForNFT(nft, auction);
+    nft = handleAuctionCompletedForNFT(nft);
     nft.save();
   }
 
@@ -89,7 +89,7 @@ export function handleAuctionCancelled(event: AuctionCancelled): void {
   store.remove('Auction', auction.id);
 
   let nft = NFT.load(auction.nft)!;
-  nft = handleAuctionCompletedForNFT(nft, auction);
+  nft = handleAuctionCompletedForNFT(nft);
   nft.save();
 
   let nftOwnership = getOrCreateOwnership(nft, auction.seller);
