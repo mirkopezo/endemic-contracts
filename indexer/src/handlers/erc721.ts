@@ -36,7 +36,7 @@ export function handleTransfer(event: Transfer): void {
   }
 
   let contract = NFTContract.load(event.address.toHexString());
-  if (contract === null) {
+  if (!contract) {
     // Contract is not created via our factory, it's third party
     contract = createThirdPartyNFTContract(
       event.address,

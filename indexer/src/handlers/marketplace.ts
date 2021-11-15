@@ -23,7 +23,7 @@ export function handleAuctionCreated(event: AuctionCreated): void {
   let nft = NFT.load(nftId)!;
 
   let auction = Auction.load(event.params.id.toHexString());
-  if (auction === null) {
+  if (!auction) {
     auction = new Auction(event.params.id.toHexString());
     addContractCount(
       nft.contractId.toHexString(),

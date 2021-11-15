@@ -62,13 +62,13 @@ export function readTokenMetadataFromIPFS(tokenURI: string): Metadata | null {
   uriParts.splice(0, 2);
   let ipfsHash = uriParts.join('/');
   let bytes = ipfs.cat(ipfsHash);
-  if (bytes !== null) {
+  if (bytes) {
     let data = json.fromBytes(bytes);
-    if (data === null) {
+    if (!data) {
       return null;
     }
     let metaData = data.toObject();
-    if (metaData === null) {
+    if (!metaData) {
       return null;
     }
 
@@ -77,9 +77,9 @@ export function readTokenMetadataFromIPFS(tokenURI: string): Metadata | null {
     const description = metaData.get('description');
 
     return {
-      image: image !== null ? image.toString() : null,
-      name: name !== null ? name.toString() : null,
-      description: description !== null ? description.toString() : null,
+      image: image ? image.toString() : null,
+      name: name ? name.toString() : null,
+      description: description ? description.toString() : null,
     };
   }
 

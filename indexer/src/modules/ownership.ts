@@ -16,7 +16,7 @@ export function deleteOwnership(nftId: string, accountId: Bytes): void {
 export function getOrCreateOwnership(nft: NFT, accountId: Bytes): NFTOwnership {
   let nftOwnershipId = getNftOwnershipId(nft.id, accountId.toHexString());
   let nftOwnership = NFTOwnership.load(nftOwnershipId);
-  if (nftOwnership === null) {
+  if (!nftOwnership) {
     nftOwnership = new NFTOwnership(nftOwnershipId);
     nftOwnership.account = accountId.toHexString();
     nftOwnership.nft = nft.id;

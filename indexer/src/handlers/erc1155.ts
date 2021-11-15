@@ -29,7 +29,7 @@ export function handleTransferSingle(event: TransferSingle): void {
   let sourceOwnership = NFTOwnership.load(
     getNftOwnershipId(nftId, event.params.from.toHexString())
   );
-  if (sourceOwnership !== null) {
+  if (sourceOwnership) {
     sourceOwnership.value = sourceOwnership.value.minus(event.params.value);
     sourceOwnership.save();
   }
@@ -59,7 +59,7 @@ export function handleCreate(event: Create): void {
   );
   let nft = new NFT(id);
   let contract = NFTContract.load(event.address.toHexString());
-  if (contract === null) {
+  if (!contract) {
     log.warning('Contract: {} not available', [event.address.toHexString()]);
     return;
   }
@@ -87,7 +87,7 @@ export function handleCreate(event: Create): void {
   nft.burned = false;
 
   let metaData = readTokenMetadataFromIPFS(tokenURI);
-  if (metaData !== null) {
+  if (metaData) {
     nft.image = metaData.image;
     nft.name = metaData.name;
     nft.description = metaData.description;

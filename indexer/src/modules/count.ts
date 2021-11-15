@@ -4,7 +4,7 @@ import { ContractsCounts } from '../../generated/schema';
 function getContractsCount(contractAddress: string): ContractsCounts {
   let counts = ContractsCounts.load(contractAddress);
 
-  if (counts == null) {
+  if (!counts) {
     counts = new ContractsCounts(contractAddress);
     counts.onSaleCount = BigInt.fromI32(0);
     counts.totalCount = BigInt.fromI32(0);
