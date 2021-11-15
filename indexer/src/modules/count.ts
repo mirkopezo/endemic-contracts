@@ -20,8 +20,8 @@ export function addContractCount(
   saleValue: BigInt
 ): void {
   let counts = getContractsCount(contractAddress);
-  counts.onSaleCount = counts.onSaleCount.plus(totalValue);
-  counts.totalCount = counts.totalCount.plus(saleValue);
+  counts.totalCount = counts.totalCount.plus(totalValue);
+  counts.onSaleCount = counts.onSaleCount.plus(saleValue);
   counts.save();
 }
 
@@ -31,7 +31,7 @@ export function removeContractCount(
   saleValue: BigInt
 ): void {
   let counts = getContractsCount(contractAddress);
-  counts.onSaleCount = counts.totalCount.minus(totalValue);
-  counts.totalCount = counts.onSaleCount.minus(saleValue);
+  counts.totalCount = counts.totalCount.minus(totalValue);
+  counts.onSaleCount = counts.onSaleCount.minus(saleValue);
   counts.save();
 }
