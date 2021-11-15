@@ -8,9 +8,9 @@ import { NFT, NFTContract } from '../../generated/schema';
 import {
   getERC721TokenURI,
   getNFTId,
-  isERC721BurnEvent,
   readTokenMetadataFromIPFS,
-  isERC721MintEvent,
+  isBurnEvent,
+  isMintEvent,
 } from '../modules/nft';
 import { createAccount } from '../modules/account';
 import { createERC721TransferActivity } from '../modules/activity';
@@ -51,7 +51,7 @@ export function handleTransfer(event: Transfer): void {
   nft.burned = false;
   nft.isOnSale = false;
 
-  if (isERC721MintEvent(event)) {
+  if (isMintEvent(event.params.from)) {
     nft.createdAt = event.block.timestamp;
     nft.category = contract.category;
     nft.contractId = event.address;
@@ -73,7 +73,7 @@ export function handleTransfer(event: Transfer): void {
     } else {
       log.warning('TokenURI: {0} not available', [tokenURI]);
     }
-  } else if (isERC721BurnEvent(event)) {
+  } else if (isBurnEvent(event.params.to)) {
     nft.burned = true;
     removeContractCount(
       event.address.toHexString(),
@@ -90,7 +90,7 @@ export function handleTransfer(event: Transfer): void {
   nftOwnership.nftIsOnSale = nft.isOnSale;
   nftOwnership.save();
 
-  if (!isERC721MintEvent(event)) {
+  if (!isMintEvent(event.params.from)) {
     deleteOwnership(id, event.params.from);
   }
 

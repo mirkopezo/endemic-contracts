@@ -1,26 +1,15 @@
 import { log, ipfs, json, BigInt, Address } from '@graphprotocol/graph-ts';
 import { Auction, NFT } from '../../generated/schema';
-import {
-  Transfer,
-  EndemicNFT,
-} from '../../generated/templates/EndemicNFT/EndemicNFT';
+import { EndemicNFT } from '../../generated/templates/EndemicNFT/EndemicNFT';
 import { EndemicERC1155 } from '../../generated/templates/EndemicERC1155/EndemicERC1155';
 import * as addresses from '../data/addresses';
 import { Metadata } from './models';
 
-export function isERC721MintEvent(event: Transfer): boolean {
-  return event.params.from.toHexString() == addresses.Null;
-}
-
-export function isERC721BurnEvent(event: Transfer): boolean {
-  return event.params.to.toHexString() == addresses.Null;
-}
-
-export function isERC1155MintEvent(from: Address): boolean {
+export function isMintEvent(from: Address): boolean {
   return from.toHexString() == addresses.Null;
 }
 
-export function isERC1155BurnEvent(to: Address): boolean {
+export function isBurnEvent(to: Address): boolean {
   return to.toHexString() == addresses.Null;
 }
 

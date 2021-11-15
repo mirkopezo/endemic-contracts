@@ -9,8 +9,8 @@ import { NFT, NFTContract, NFTOwnership } from '../../generated/schema';
 import {
   getERC1155TokenURI,
   getNFTId,
-  isERC1155BurnEvent,
-  isERC1155MintEvent,
+  isBurnEvent,
+  isMintEvent,
   readTokenMetadataFromIPFS,
 } from '../modules/nft';
 import { createAccount } from '../modules/account';
@@ -34,13 +34,13 @@ export function handleTransferSingle(event: TransferSingle): void {
     sourceOwnership.save();
   }
 
-  if (isERC1155MintEvent(event.params.from)) {
+  if (isMintEvent(event.params.from)) {
     addContractCount(
       event.address.toHexString(),
       event.params.value,
       BigInt.fromI32(0)
     );
-  } else if (isERC1155BurnEvent(event.params.to)) {
+  } else if (isBurnEvent(event.params.to)) {
     removeContractCount(
       event.address.toHexString(),
       event.params.value,
