@@ -90,7 +90,7 @@ const deployMarketplace = async (
   const Marketplace = await ethers.getContractFactory('Marketplace');
   const marketplaceContract = await upgrades.deployProxy(
     Marketplace,
-    [makerFee, takerFee, initialFee, masterNFTAddress],
+    [makerFee, takerFee, initialFee, 500, masterNFTAddress],
     {
       deployer,
       initializer: '__Marketplace_init',
