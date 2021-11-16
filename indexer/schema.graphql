@@ -1,3 +1,121 @@
+type NFTContract @entity {
+  id: ID!
+  name: String!
+  symbol: String!
+  category: String!
+  createdAt: BigInt!
+  nfts: [NFT!]! @derivedFrom(field: "contract")
+}
+
+type NFTOwnership @entity {
+  id: ID!
+  account: Account!
+  nft: NFT
+  value: BigInt!
+
+  #copy fields from nft because graph can't filter / sort on child collection
+  nftContractId: Bytes!
+  nftCategory: String
+  nftPrice: BigInt!
+  nftBurned: Boolean!
+  nftCreatedAt: BigInt!
+  nftIsOnSale: Boolean!
+}
+
+type NFT @entity {
+  id: ID!
+  contract: NFTContract!
+  tokenId: BigInt!
+  category: String
+  artist: Account
+  ownership: [NFTOwnership!] @derivedFrom(field: "nft")
+  updatedAt: BigInt!
+  createdAt: BigInt!
+  auctions: [Auction!] @derivedFrom(field: "nft")
+  auctionsArray: [Auction!]
+  burned: Boolean!
+
+  #erc-1155
+  supply: BigInt
+
+  isOnSale: Boolean!
+  price: BigInt!
+
+  #metadata
+  tokenURI: String
+  name: String
+  description: String
+  image: String
+
+  #denormalized for performance
+  contractId: Bytes!
+  contractName: String
+  artistId: Bytes
+
+  type: String!
+}
+
+type Account @entity {
+  id: ID!
+  address: Bytes!
+  nftOwnership: [NFTOwnership!] @derivedFrom(field: "account")
+  createdNfts: [NFT!] @derivedFrom(field: "artist")
+}
+
+type Auction @entity {
+  id: ID!
+  seller: Bytes!
+  buyer: Bytes
+  startingPrice: BigInt!
+  endingPrice: BigInt!
+  duration: BigInt!
+  startedAt: BigInt!
+  nft: NFT!
+  canceledAt: BigInt
+  soldAt: BigInt
+  tokenAmount: BigInt!
+  soldTokenAmount: BigInt!
+}
+
+type Activity @entity {
+  id: ID!
+  type: String!
+  createdAt: BigInt!
+
+  #transfer activity
+  transferFrom: String
+  transferTo: String
+
+  #auction activity
+  auction: Auction
+  auctionSeller: String
+  auctionBuyer: Bytes
+  auctionPrice: BigInt
+
+  #denormalized
+  nft: NFT
+  nftTokenURI: String
+  nftImage: String
+  nftName: String
+
+  transactionHash: Bytes!
+}
+
+type ContractsCounts @entity {
+  id: ID!
+  totalCount: BigInt!
+  onSaleCount: BigInt!
+}
+
+enum ActivityType @entity {
+  mint
+  burn
+  transfer
+  auctionCreate
+  auctionSuccess
+  auctionCancel
+}
+
 type _Schema_
   @fulltext(
     name: "activitySearch"
@@ -21,114 +139,3 @@ type _Schema_
     algorithm: proximityRank
     include: [{ entity: "NFT", fields: [{ name: "name" }, { name: "id" }] }]
   )
-
-type NFTContract @entity {
-  id: ID!
-  name: String!
-  symbol: String!
-  category: String!
-  createdAt: BigInt!
-  nfts: [NFT!]! @derivedFrom(field: "contract")
-}
-
-type NFT @entity {
-  id: ID!
-  contract: NFTContract!
-  tokenId: BigInt!
-  artist: Account
-  owner: Account!
-  updatedAt: BigInt!
-  createdAt: BigInt!
-  auctions: [Auction!] @derivedFrom(field: "nft")
-  burned: Boolean!
-
-  seller: Bytes
-  isOnAuction: Boolean!
-  currentPrice: BigInt!
-  category: String
-
-  #metadata
-  tokenURI: String
-  name: String
-  description: String
-  image: String
-
-  #denormalized for performance
-  contractId: Bytes!
-  contractName: String
-  artistId: Bytes
-  ownerId: Bytes!
-}
-
-type Account @entity {
-  id: ID!
-  address: Bytes!
-  ownedNfts: [NFT!] @derivedFrom(field: "owner")
-  createdNfts: [NFT!] @derivedFrom(field: "artist")
-}
-
-type Auction @entity {
-  id: ID!
-  seller: Bytes!
-  startingPrice: BigInt!
-  endingPrice: BigInt!
-  duration: BigInt!
-  startedAt: BigInt!
-  nft: NFT!
-  status: AuctionStatus!
-  canceledAt: BigInt
-  soldAt: BigInt
-  totalPrice: BigInt
-}
-
-type Activity @entity {
-  id: ID!
-  type: String!
-  createdAt: BigInt!
-
-  #transfer activity
-  transferFrom: String
-  transferTo: String
-
-  #auction activity
-  auction: Auction
-  auctionSeller: String
-  auctionPrice: BigInt
-
-  #denormalized
-  nft: NFT
-  nftOwnerId: Bytes!
-  nftTokenURI: String
-  nftImage: String
-  nftName: String
-
-  transactionHash: Bytes!
-}
-
-type Counts @entity {
-  id: ID!
-  nftsCount: Int!
-  nftContractsCount: Int!
-  nftAuctionsCount: Int!
-}
-
-type ContractsCounts @entity {
-  id: ID!
-  totalCount: Int!
-  onSaleCount: Int!
-}
-
-enum AuctionStatus @entity {
-  open
-  sold
-  canceled
-}
-
-enum ActivityType @entity {
-  mint
-  burn
-  transfer
-  auctionCreate
-  auctionSuccess
-  auctionCancel
-}

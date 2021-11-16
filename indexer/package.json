@@ -5,6 +5,7 @@
     "codegen": "graph codegen",
     "build": "graph build",
     "deploy:rinkeby": "graph deploy mmarinovic/endemic-rinkeby --node https://api.thegraph.com/deploy/ --ipfs https://api.thegraph.com/ipfs/ ",
+    "deploy:test": "graph deploy mmarinovic/nft-rinkeby-erc1155 --node https://api.thegraph.com/deploy/ --ipfs https://api.thegraph.com/ipfs/ ",
     "create:local": "graph create blank-development/nft-platform-ethereum --node http://127.0.0.1:8020 ",
     "remove:local": "graph remove blank-development/nft-platform-ethereum --node http://127.0.0.1:8020",
     "deploy:local": "graph deploy blank-development/nft-platform-ethereum --node http://127.0.0.1:8020 --ipfs http://localhost:5001 ",
@@ -14,7 +15,7 @@
     "prepare:local": "mustache configs/local.json subgraph.template.yaml > subgraph.yaml"
   },
   "dependencies": {
-    "@graphprotocol/graph-ts": "0.20.0",
+    "@graphprotocol/graph-ts": "^0.23.1",
     "mustache": "^4.2.0"
   },
   "devDependencies": {

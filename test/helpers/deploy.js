@@ -66,6 +66,20 @@ const deployEndemicNFT = async (deployer) => {
   return nftContract;
 };
 
+const deployEndemicERC1155 = async (deployer) => {
+  const EndemicERC1155 = await ethers.getContractFactory('EndemicERC1155');
+  const nftContract = await upgrades.deployProxy(
+    EndemicERC1155,
+    ['Endemic ERC 1155', 'ENDR', 'ipfs://'],
+    {
+      deployer,
+      initializer: '__EndemicERC1155_init',
+    }
+  );
+  await nftContract.deployed();
+  return nftContract;
+};
+
 const deployMarketplace = async (
   deployer,
   masterNFTAddress,
@@ -108,4 +122,5 @@ module.exports = {
   deployEndemic,
   deployEndemicTokenMining,
   deployEndemicVesting,
+  deployEndemicERC1155,
 };

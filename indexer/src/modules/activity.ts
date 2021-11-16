@@ -1,12 +1,13 @@
-import { Transfer } from '../../../generated/templates/EndemicNFT/EndemicNFT';
-import { Activity, NFT, Auction } from '../../../generated/schema';
-import { isMintEvent, isBurnEvent } from '../nft';
-import { Bytes, BigInt, ethereum } from '@graphprotocol/graph-ts';
+import { Transfer } from '../../generated/templates/EndemicNFT/EndemicNFT';
+import { TransferSingle } from '../../generated/templates/EndemicERC1155/EndemicERC1155';
+import { Activity, NFT, Auction } from '../../generated/schema';
+import { isMintEvent, isBurnEvent } from './nft';
+import { Address, ethereum } from '@graphprotocol/graph-ts';
 
-function getTransferActivityType(event: Transfer): string {
-  if (isMintEvent(event)) {
+function getTransferActivityType(from: Address, to: Address): string {
+  if (isMintEvent(from)) {
     return 'mint';
-  } else if (isBurnEvent(event)) {
+  } else if (isBurnEvent(to)) {
     return 'burn';
   } else {
     return 'transfer';
@@ -24,27 +25,27 @@ export function createAuctionActivity(
   activity.auction = auction.id;
   activity.auctionPrice = auction.startingPrice;
   activity.auctionSeller = auction.seller.toHexString();
-  activity.nft = nft.id;
-  activity.nftTokenURI = nft.tokenURI;
-  activity.nftOwnerId = nft.ownerId;
-  activity.nftImage = nft.image;
-  activity.nftName = nft.name;
+  activity.auctionBuyer = auction.buyer;
   activity.type = type;
   activity.createdAt = event.block.timestamp;
   activity.transactionHash = event.transaction.hash;
+  activity.nft = nft.id;
+  activity.nftTokenURI = nft.tokenURI;
+  activity.nftImage = nft.image;
+  activity.nftName = nft.name;
+
   activity.save();
 }
 
-export function createTransferActivity(nft: NFT, event: Transfer): void {
+export function createERC721TransferActivity(nft: NFT, event: Transfer): void {
   let id =
     'transfer/' + event.transaction.hash.toHex() + event.logIndex.toHex();
   let activity = new Activity(id);
   activity.nft = nft.id;
   activity.nftTokenURI = nft.tokenURI;
-  activity.nftOwnerId = nft.ownerId;
   activity.nftImage = nft.image;
   activity.nftName = nft.name;
-  activity.type = getTransferActivityType(event);
+  activity.type = getTransferActivityType(event.params.from, event.params.to);
   activity.transferFrom = event.params.from.toHexString();
   activity.transferTo = event.params.to.toHexString();
   activity.createdAt = event.block.timestamp;
@@ -52,22 +53,20 @@ export function createTransferActivity(nft: NFT, event: Transfer): void {
   activity.save();
 }
 
-export function createRedeemActivity(
+export function createERC1155TransferActivity(
   nft: NFT,
-  seller: Bytes,
-  price: BigInt,
-  event: ethereum.Event
+  event: TransferSingle
 ): void {
-  let id = 'auction/' + event.transaction.hash.toHex() + event.logIndex.toHex();
+  let id =
+    'transfer/' + event.transaction.hash.toHex() + event.logIndex.toHex();
   let activity = new Activity(id);
-  activity.auctionPrice = price;
-  activity.auctionSeller = seller.toHexString();
   activity.nft = nft.id;
   activity.nftTokenURI = nft.tokenURI;
-  activity.nftOwnerId = nft.ownerId;
   activity.nftImage = nft.image;
   activity.nftName = nft.name;
-  activity.type = 'auctionSuccess';
+  activity.type = getTransferActivityType(event.params.from, event.params.to);
+  activity.transferFrom = event.params.from.toHexString();
+  activity.transferTo = event.params.to.toHexString();
   activity.createdAt = event.block.timestamp;
   activity.transactionHash = event.transaction.hash;
   activity.save();
