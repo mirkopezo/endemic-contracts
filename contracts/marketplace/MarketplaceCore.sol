@@ -41,14 +41,6 @@ abstract contract MarketplaceCore is
 
     event AuctionCancelled(bytes32 indexed id);
 
-    function pause() external onlyOwner {
-        _pause();
-    }
-
-    function unpause() external onlyOwner {
-        _unpause();
-    }
-
     function createAuction(
         address _nftContract,
         uint256 _tokenId,
@@ -219,6 +211,17 @@ abstract contract MarketplaceCore is
         return LibAuction.currentPrice(auction);
     }
 
+    function createAuctionId(
+        address _nftContract,
+        uint256 _tokenId,
+        address _seller
+    ) public pure returns (bytes32) {
+        return
+            keccak256(
+                abi.encodePacked(_nftContract, "-", _tokenId, "-", _seller)
+            );
+    }
+
     function _cancelAuction(LibAuction.Auction storage auction) internal {
         bytes32 auctionId = auction.id;
         _removeAuction(auction);
@@ -271,15 +274,12 @@ abstract contract MarketplaceCore is
         masterNFTShares += (_marketplaceCut * masterNftCut) / 10000;
     }
 
-    function createAuctionId(
-        address _nftContract,
-        uint256 _tokenId,
-        address _seller
-    ) public pure returns (bytes32) {
-        return
-            keccak256(
-                abi.encodePacked(_nftContract, "-", _tokenId, "-", _seller)
-            );
+    function pause() external onlyOwner {
+        _pause();
+    }
+
+    function unpause() external onlyOwner {
+        _unpause();
     }
 
     uint256[50] private __gap;
