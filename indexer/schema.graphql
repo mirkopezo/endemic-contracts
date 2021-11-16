@@ -32,7 +32,7 @@ type NFT @entity {
   updatedAt: BigInt!
   createdAt: BigInt!
   auctions: [Auction!] @derivedFrom(field: "nft")
-  auctionsArray: [Auction!]
+  auctionIds: [String!]!
   burned: Boolean!
 
   #erc-1155

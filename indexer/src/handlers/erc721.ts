@@ -32,6 +32,7 @@ export function handleTransfer(event: Transfer): void {
 
   if (!nft) {
     nft = new NFT(id);
+    nft.auctionIds = [];
     nft.type = 'ERC-721';
   }
 

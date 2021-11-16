@@ -4,6 +4,7 @@ import { EndemicNFT } from '../../generated/templates/EndemicNFT/EndemicNFT';
 import { EndemicERC1155 } from '../../generated/templates/EndemicERC1155/EndemicERC1155';
 import * as addresses from '../data/addresses';
 import { Metadata } from './models';
+import { filter } from '../utils/array';
 
 export function isMintEvent(from: Address): boolean {
   return from.toHexString() == addresses.Null;
@@ -62,13 +63,13 @@ export function readTokenMetadataFromIPFS(tokenURI: string): Metadata | null {
   uriParts.splice(0, 2);
   let ipfsHash = uriParts.join('/');
   let bytes = ipfs.cat(ipfsHash);
-  if (bytes) {
+  if (bytes !== null) {
     let data = json.fromBytes(bytes);
-    if (!data) {
+    if (data) {
       return null;
     }
     let metaData = data.toObject();
-    if (!metaData) {
+    if (metaData === null) {
       return null;
     }
 
@@ -90,10 +91,9 @@ export function handleAuctionCreateForNFT(nft: NFT, auction: Auction): NFT {
   nft.isOnSale = true;
 
   if (nft.type == 'ERC-1155') {
-    // todo
-    // if (nft.price === null || nft.price > auction.startingPrice) {
-    //   nft.price = auction.startingPrice;
-    // }
+    if (nft.price === null || nft.price > auction.startingPrice) {
+      nft.price = auction.startingPrice;
+    }
   } else {
     // we only support immutable price for now. Starting and ending prices will always be the same in the contract
     nft.price = auction.startingPrice;
@@ -102,9 +102,24 @@ export function handleAuctionCreateForNFT(nft: NFT, auction: Auction): NFT {
   return nft;
 }
 
-export function handleAuctionCompletedForNFT(nft: NFT): NFT {
+export function handleAuctionCompletedForNFT(nft: NFT, auctionId: string): NFT {
+  nft.auctionIds = filter(nft.auctionIds, auctionId);
+
   if (nft.type == 'ERC-1155') {
-    // todo
+    let hasOtherAuctions = nft.auctionIds.length > 0;
+    if (hasOtherAuctions) {
+      let lowestPrice = BigInt.fromI32(2).pow(255 as u8);
+      for (let i = 0; i < nft.auctionIds.length; i++) {
+        let otherAuction = Auction.load(nft.auctionIds[i])!;
+        if (lowestPrice.gt(otherAuction.startingPrice)) {
+          lowestPrice = otherAuction.startingPrice;
+        }
+      }
+      nft.price = lowestPrice;
+    } else {
+      nft.isOnSale = false;
+      nft.price = BigInt.fromI32(0);
+    }
   } else {
     nft.isOnSale = false;
     nft.price = BigInt.fromI32(0);

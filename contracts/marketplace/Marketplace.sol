@@ -8,17 +8,20 @@ contract Marketplace is MarketplaceCore {
     /// @param _makerFee - percent fee the marketplace takes on each auction from seller
     /// @param _takerFee - percent fee the marketplace takes on each auction from buyer
     /// @param _initialSaleCut - percent cut the masterplace takes on first sale
+    /// @param _masterKeyCut - percent cut for master key holders
     /// @param _masterNFTContract - address of master nft contract (Endemic platform)
     ///  between 0-10,000.
     function __Marketplace_init(
         uint256 _makerFee,
         uint256 _takerFee,
         uint256 _initialSaleCut,
+        uint256 _masterKeyCut,
         IEndemicMasterNFT _masterNFTContract
     ) external initializer {
         require(_makerFee <= 10000);
         require(_takerFee <= 10000);
         require(_initialSaleCut <= 10000);
+        require(_masterKeyCut <= 10000);
 
         __Context_init_unchained();
         __Pausable_init_unchained();
@@ -31,7 +34,7 @@ contract Marketplace is MarketplaceCore {
             _makerFee,
             _takerFee,
             _initialSaleCut,
-            500,
+            _masterKeyCut,
             _masterNFTContract
         );
     }

@@ -58,6 +58,8 @@ export function handleCreate(event: Create): void {
     event.params.tokenId.toString()
   );
   let nft = new NFT(id);
+  nft.auctionIds = [];
+
   let contract = NFTContract.load(event.address.toHexString());
   if (!contract) {
     log.warning('Contract: {} not available', [event.address.toHexString()]);
