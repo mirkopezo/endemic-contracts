@@ -1,0 +1,33 @@
+name: Main Build
+
+on:
+   push:
+     branches: [ master ]
+   pull_request:
+     branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [12.x]
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+    - name: Install dependencies
+      run: |
+        yarn install
+    - name: Test
+      run: |
+        yarn test
+      env:
+        ETHERSCAN_KEY: ZACIH6PH846I5MQGXH6HVJDV6WCJBT766U
+        PRIVATE_KEY: 727d1a87bcbd1883828be841e6cfb8c98971779b030b3ad4480a64a052aeac4d
+        ALCHEMY_API_KEY: Iw34o-VYAykzHt1_-ZoDYqVihmK5vMF7
