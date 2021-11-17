@@ -90,6 +90,8 @@ dataSources:
       abis:
         - name: EndemicNFT
           file: ./abis/EndemicNFT.json
+        - name: Marketplace
+          file: ./abis/Marketplace.json
       eventHandlers:
         - event: Transfer(indexed address,indexed address,indexed uint256)
           handler: handleTransfer
@@ -114,6 +116,8 @@ templates:
       abis:
         - name: EndemicNFT
           file: ./abis/EndemicNFT.json
+        - name: Marketplace
+          file: ./abis/Marketplace.json
       eventHandlers:
         - event: Transfer(indexed address,indexed address,indexed uint256)
           handler: handleTransfer
@@ -135,6 +139,8 @@ templates:
       abis:
         - name: EndemicERC1155
           file: ./abis/EndemicERC1155.json
+        - name: Marketplace
+          file: ./abis/Marketplace.json  
       eventHandlers:
         - event: TransferSingle(indexed address,indexed address,indexed address,uint256,uint256)
           handler: handleTransferSingle

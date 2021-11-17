@@ -7,7 +7,7 @@ import { NFT, Auction } from '../../generated/schema';
 import {
   getNFTId,
   handleAuctionCompletedForNFT,
-  handleAuctionCreateForNFT,
+  handleAuctionCreatedForNFT,
 } from '../modules/nft';
 import { createAuctionActivity } from '../modules/activity';
 import { addContractCount, removeContractCount } from '../modules/count';
@@ -43,13 +43,8 @@ export function handleAuctionCreated(event: AuctionCreated): void {
 
   auction.save();
 
-  nft = handleAuctionCreateForNFT(nft, auction);
-  let auctionIds = nft.auctionIds;
-  auctionIds.push(auction.id.toString());
-  nft.auctionIds = auctionIds;
+  handleAuctionCreatedForNFT(nft, auction);
   nft.save();
-
-  log.warning('Auction ids {}', [nft.auctionIds.length.toString()]);
 
   let nftOwnership = getOrCreateOwnership(nft, auction.seller);
   nftOwnership.nftPrice = nft.price;
@@ -75,7 +70,7 @@ export function handleAuctionSuccessful(event: AuctionSuccessful): void {
   }
 
   if (isAuctionCompleted) {
-    nft = handleAuctionCompletedForNFT(nft, auction.id);
+    handleAuctionCompletedForNFT(nft, auction.id);
     nft.save();
   }
 
@@ -93,7 +88,7 @@ export function handleAuctionCancelled(event: AuctionCancelled): void {
   store.remove('Auction', auction.id);
 
   let nft = NFT.load(auction.nft)!;
-  nft = handleAuctionCompletedForNFT(nft, auction.id);
+  handleAuctionCompletedForNFT(nft, auction.id);
   nft.save();
 
   let nftOwnership = getOrCreateOwnership(nft, auction.seller);

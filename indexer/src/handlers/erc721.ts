@@ -11,7 +11,9 @@ import {
   readTokenMetadataFromIPFS,
   isBurnEvent,
   isMintEvent,
+  isMarketplaceAddress,
 } from '../modules/nft';
+import { updateRelatedAuction } from '../modules/auction';
 import { createAccount } from '../modules/account';
 import { createERC721TransferActivity } from '../modules/activity';
 import { createThirdPartyNFTContract } from '../modules/nftContract';
@@ -81,6 +83,14 @@ export function handleTransfer(event: Transfer): void {
       BigInt.fromI32(1),
       BigInt.fromI32(0)
     );
+  }
+
+  if (
+    event.transaction.to !== null &&
+    !isMarketplaceAddress(event.transaction.to!.toHexString()) &&
+    !isMintEvent(event.params.from)
+  ) {
+    updateRelatedAuction(nft, event.params.from, BigInt.fromI32(1));
   }
 
   nft.save();

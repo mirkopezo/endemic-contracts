@@ -1,4 +1,11 @@
-import { log, ipfs, json, BigInt, Address } from '@graphprotocol/graph-ts';
+import {
+  log,
+  ipfs,
+  json,
+  BigInt,
+  Address,
+  Bytes,
+} from '@graphprotocol/graph-ts';
 import { Auction, NFT } from '../../generated/schema';
 import { EndemicNFT } from '../../generated/templates/EndemicNFT/EndemicNFT';
 import { EndemicERC1155 } from '../../generated/templates/EndemicERC1155/EndemicERC1155';
@@ -65,7 +72,7 @@ export function readTokenMetadataFromIPFS(tokenURI: string): Metadata | null {
   let bytes = ipfs.cat(ipfsHash);
   if (bytes !== null) {
     let data = json.fromBytes(bytes);
-    if (data) {
+    if (data === null) {
       return null;
     }
     let metaData = data.toObject();
@@ -87,8 +94,12 @@ export function readTokenMetadataFromIPFS(tokenURI: string): Metadata | null {
   return null;
 }
 
-export function handleAuctionCreateForNFT(nft: NFT, auction: Auction): NFT {
+export function handleAuctionCreatedForNFT(nft: NFT, auction: Auction): void {
   nft.isOnSale = true;
+
+  let auctionIds = nft.auctionIds;
+  auctionIds.push(auction.id.toString());
+  nft.auctionIds = auctionIds;
 
   if (nft.type == 'ERC-1155') {
     if (nft.price === null || nft.price > auction.startingPrice) {
@@ -98,11 +109,12 @@ export function handleAuctionCreateForNFT(nft: NFT, auction: Auction): NFT {
     // we only support immutable price for now. Starting and ending prices will always be the same in the contract
     nft.price = auction.startingPrice;
   }
-
-  return nft;
 }
 
-export function handleAuctionCompletedForNFT(nft: NFT, auctionId: string): NFT {
+export function handleAuctionCompletedForNFT(
+  nft: NFT,
+  auctionId: string
+): void {
   nft.auctionIds = filter(nft.auctionIds, auctionId);
 
   if (nft.type == 'ERC-1155') {
@@ -124,6 +136,8 @@ export function handleAuctionCompletedForNFT(nft: NFT, auctionId: string): NFT {
     nft.isOnSale = false;
     nft.price = BigInt.fromI32(0);
   }
+}
 
-  return nft;
+export function isMarketplaceAddress(address: String): boolean {
+  return address.toLowerCase() == addresses.EndemicMarketplace.toLowerCase();
 }

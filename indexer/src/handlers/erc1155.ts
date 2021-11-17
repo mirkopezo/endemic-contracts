@@ -10,6 +10,7 @@ import {
   getERC1155TokenURI,
   getNFTId,
   isBurnEvent,
+  isMarketplaceAddress,
   isMintEvent,
   readTokenMetadataFromIPFS,
 } from '../modules/nft';
@@ -17,6 +18,7 @@ import { createAccount } from '../modules/account';
 import { createERC1155TransferActivity } from '../modules/activity';
 import { addContractCount, removeContractCount } from '../modules/count';
 import { getNftOwnershipId, getOrCreateOwnership } from '../modules/ownership';
+import { updateRelatedAuction } from '../modules/auction';
 
 export function handleTransferSingle(event: TransferSingle): void {
   let nftId = getNFTId(event.address.toHexString(), event.params.id.toString());
@@ -46,6 +48,15 @@ export function handleTransferSingle(event: TransferSingle): void {
       event.params.value,
       BigInt.fromI32(0)
     );
+  }
+
+  if (
+    event.transaction.to !== null &&
+    !isMarketplaceAddress(event.transaction.to!.toHexString()) &&
+    !isMintEvent(event.params.from)
+  ) {
+    updateRelatedAuction(nft, event.params.from, event.params.value);
+    nft.save();
   }
 
   createAccount(event.params.to);
