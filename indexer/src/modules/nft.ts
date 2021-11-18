@@ -1,11 +1,4 @@
-import {
-  log,
-  ipfs,
-  json,
-  BigInt,
-  Address,
-  Bytes,
-} from '@graphprotocol/graph-ts';
+import { log, ipfs, json, BigInt, Address } from '@graphprotocol/graph-ts';
 import { Auction, NFT } from '../../generated/schema';
 import { EndemicNFT } from '../../generated/templates/EndemicNFT/EndemicNFT';
 import { EndemicERC1155 } from '../../generated/templates/EndemicERC1155/EndemicERC1155';
