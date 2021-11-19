@@ -92,7 +92,8 @@ type Activity @entity {
   auction: Auction
   auctionSeller: String
   auctionBuyer: Bytes
-  auctionPrice: BigInt
+  auctionTotalPrice: BigInt
+  auctionStartingPrice: BigInt
 
   #denormalized
   nft: NFT

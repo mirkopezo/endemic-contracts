@@ -72,6 +72,7 @@ export function handleAuctionSuccessful(event: AuctionSuccessful): void {
 
   if (isAuctionCompleted) {
     handleAuctionCompletedForNFT(nft, auction.id);
+    nft.lastSalePrice = auction.totalPrice;
     nft.save();
   }
 
