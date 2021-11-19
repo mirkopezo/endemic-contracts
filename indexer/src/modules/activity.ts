@@ -23,7 +23,7 @@ export function createAuctionActivity(
   let id = 'auction/' + event.transaction.hash.toHex() + event.logIndex.toHex();
   let activity = new Activity(id);
   activity.auction = auction.id;
-  activity.auctionPrice = auction.startingPrice;
+  activity.auctionPrice = auction.totalPrice;
   activity.auctionSeller = auction.seller.toHexString();
   activity.auctionBuyer = auction.buyer;
   activity.type = type;

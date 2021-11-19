@@ -40,6 +40,7 @@ type NFT @entity {
 
   isOnSale: Boolean!
   price: BigInt!
+  lastSalePrice: BigInt
 
   #metadata
   tokenURI: String
@@ -75,6 +76,7 @@ type Auction @entity {
   soldAt: BigInt
   tokenAmount: BigInt!
   soldTokenAmount: BigInt!
+  totalPrice: BigInt
 }
 
 type Activity @entity {

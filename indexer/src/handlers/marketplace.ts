@@ -62,6 +62,7 @@ export function handleAuctionSuccessful(event: AuctionSuccessful): void {
   auction.buyer = event.params.winner;
   auction.soldTokenAmount = auction.soldTokenAmount.plus(event.params.amount);
   auction.tokenAmount = auction.tokenAmount.minus(event.params.amount);
+  auction.totalPrice = event.params.totalPrice;
   auction.save();
 
   let isAuctionCompleted = auction.tokenAmount <= BigInt.fromI32(0);
