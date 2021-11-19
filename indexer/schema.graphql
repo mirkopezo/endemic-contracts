@@ -81,27 +81,22 @@ type Auction @entity {
 
 type Activity @entity {
   id: ID!
+  nft: NFT
   type: String!
   createdAt: BigInt!
 
   #transfer activity
-  transferFrom: String
-  transferTo: String
+  transferFrom: Bytes
+  transferTo: Bytes
 
   #auction activity
-  auction: Auction
-  auctionSeller: String
+  auctionSeller: Bytes
   auctionBuyer: Bytes
-  auctionTotalPrice: BigInt
   auctionStartingPrice: BigInt
-
-  #denormalized
-  nft: NFT
-  nftTokenURI: String
-  nftImage: String
-  nftName: String
+  auctionTotalPrice: BigInt
 
   transactionHash: Bytes!
+  from: Bytes!
 }
 
 type ContractsCounts @entity {
@@ -120,22 +115,6 @@ enum ActivityType @entity {
 }
 
 type _Schema_
-  @fulltext(
-    name: "activitySearch"
-    language: en
-    algorithm: rank
-    include: [
-      {
-        entity: "Activity"
-        fields: [
-          { name: "transferFrom" }
-          { name: "transferTo" }
-          { name: "auctionSeller" }
-          { name: "type" }
-        ]
-      }
-    ]
-  )
   @fulltext(
     name: "nftSearch"
     language: en

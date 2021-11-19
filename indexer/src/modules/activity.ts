@@ -22,18 +22,20 @@ export function createAuctionActivity(
 ): void {
   let id = 'auction/' + event.transaction.hash.toHex() + event.logIndex.toHex();
   let activity = new Activity(id);
-  activity.auction = auction.id;
   activity.auctionTotalPrice = auction.totalPrice;
   activity.auctionStartingPrice = auction.startingPrice;
-  activity.auctionSeller = auction.seller.toHexString();
+  activity.auctionSeller = auction.seller;
   activity.auctionBuyer = auction.buyer;
   activity.type = type;
   activity.createdAt = event.block.timestamp;
-  activity.transactionHash = event.transaction.hash;
   activity.nft = nft.id;
-  activity.nftTokenURI = nft.tokenURI;
-  activity.nftImage = nft.image;
-  activity.nftName = nft.name;
+  activity.transactionHash = event.transaction.hash;
+
+  if (type == 'auctionSuccess' || type == 'auctionCancel') {
+    activity.from = auction.seller;
+  } else if (type == 'auctionSuccess') {
+    activity.from = auction.buyer!;
+  }
 
   activity.save();
 }
@@ -43,14 +45,18 @@ export function createERC721TransferActivity(nft: NFT, event: Transfer): void {
     'transfer/' + event.transaction.hash.toHex() + event.logIndex.toHex();
   let activity = new Activity(id);
   activity.nft = nft.id;
-  activity.nftTokenURI = nft.tokenURI;
-  activity.nftImage = nft.image;
-  activity.nftName = nft.name;
   activity.type = getTransferActivityType(event.params.from, event.params.to);
-  activity.transferFrom = event.params.from.toHexString();
-  activity.transferTo = event.params.to.toHexString();
+  activity.transferFrom = event.params.from;
+  activity.transferTo = event.params.to;
   activity.createdAt = event.block.timestamp;
   activity.transactionHash = event.transaction.hash;
+
+  if (activity.type == 'mint') {
+    activity.from = activity.transferTo!;
+  } else if (activity.type == 'burn' || activity.type == 'transfer') {
+    activity.from = activity.transferFrom!;
+  }
+
   activity.save();
 }
 
@@ -62,13 +68,17 @@ export function createERC1155TransferActivity(
     'transfer/' + event.transaction.hash.toHex() + event.logIndex.toHex();
   let activity = new Activity(id);
   activity.nft = nft.id;
-  activity.nftTokenURI = nft.tokenURI;
-  activity.nftImage = nft.image;
-  activity.nftName = nft.name;
   activity.type = getTransferActivityType(event.params.from, event.params.to);
-  activity.transferFrom = event.params.from.toHexString();
-  activity.transferTo = event.params.to.toHexString();
+  activity.transferFrom = event.params.from;
+  activity.transferTo = event.params.to;
   activity.createdAt = event.block.timestamp;
-  activity.transactionHash = event.transaction.hash;
+  activity.transactionHash = event.transaction.from;
+
+  if (activity.type == 'mint') {
+    activity.from = activity.transferTo!;
+  } else if (activity.type == 'burn' || activity.type == 'transfer') {
+    activity.from = activity.transferFrom!;
+  }
+
   activity.save();
 }
