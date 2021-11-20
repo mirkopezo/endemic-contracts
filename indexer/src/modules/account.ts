@@ -7,7 +7,6 @@ export function createAccount(id: Address): void {
   if (!account) {
     account = new Account(id.toHexString());
     account.address = id;
+    account.save();
   }
-
-  account.save();
 }

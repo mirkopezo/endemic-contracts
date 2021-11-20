@@ -1,54 +1,26 @@
 import { log, BigInt } from '@graphprotocol/graph-ts';
 import {
-  TransferBatch,
   TransferSingle,
   Create,
 } from '../../generated/templates/EndemicERC1155/EndemicERC1155';
 
-import { NFT, NFTContract, NFTOwnership } from '../../generated/schema';
+import { NFT, NFTContract } from '../../generated/schema';
 import {
   getERC1155TokenURI,
   getNFTId,
-  isBurnEvent,
   isMarketplaceAddress,
   isMintEvent,
   readTokenMetadataFromIPFS,
 } from '../modules/nft';
 import { createAccount } from '../modules/account';
 import { createERC1155TransferActivity } from '../modules/activity';
-import { addContractCount, removeContractCount } from '../modules/count';
-import { getNftOwnershipId, getOrCreateOwnership } from '../modules/ownership';
+import { updateERC1155StatsForTransfer } from '../modules/stats';
+import { updateERC1155Ownership } from '../modules/ownership';
 import { updateRelatedAuction } from '../modules/auction';
 
 export function handleTransferSingle(event: TransferSingle): void {
   let nftId = getNFTId(event.address.toHexString(), event.params.id.toString());
   let nft = <NFT>NFT.load(nftId);
-
-  let nftOwnership = getOrCreateOwnership(nft, event.params.to);
-  nftOwnership.value = nftOwnership.value.plus(event.params.value);
-  nftOwnership.save();
-
-  let sourceOwnership = NFTOwnership.load(
-    getNftOwnershipId(nftId, event.params.from.toHexString())
-  );
-  if (sourceOwnership) {
-    sourceOwnership.value = sourceOwnership.value.minus(event.params.value);
-    sourceOwnership.save();
-  }
-
-  if (isMintEvent(event.params.from)) {
-    addContractCount(
-      event.address.toHexString(),
-      event.params.value,
-      BigInt.fromI32(0)
-    );
-  } else if (isBurnEvent(event.params.to)) {
-    removeContractCount(
-      event.address.toHexString(),
-      event.params.value,
-      BigInt.fromI32(0)
-    );
-  }
 
   if (
     event.transaction.to !== null &&
@@ -60,6 +32,18 @@ export function handleTransferSingle(event: TransferSingle): void {
   }
 
   createAccount(event.params.to);
+  updateERC1155StatsForTransfer(
+    nft.contractId.toHexString(),
+    event.params.from,
+    event.params.to,
+    event.params.value
+  );
+  updateERC1155Ownership(
+    nft,
+    event.params.from,
+    event.params.to,
+    event.params.value
+  );
   createERC1155TransferActivity(nft, event);
 }
 

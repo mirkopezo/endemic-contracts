@@ -10,8 +10,12 @@ import {
   handleAuctionCreatedForNFT,
 } from '../modules/nft';
 import { createAuctionActivity } from '../modules/activity';
-import { addContractCount, removeContractCount } from '../modules/count';
-import { BigInt, log, store } from '@graphprotocol/graph-ts';
+import {
+  updateStatsForAuctionCancel,
+  updateStatsForAuctionCompleted,
+  updateStatsForAuctionCreate,
+} from '../modules/stats';
+import { BigInt, store } from '@graphprotocol/graph-ts';
 import { getOrCreateOwnership } from '../modules/ownership';
 
 export function handleAuctionCreated(event: AuctionCreated): void {
@@ -25,10 +29,10 @@ export function handleAuctionCreated(event: AuctionCreated): void {
   let auction = Auction.load(event.params.id.toHexString());
   if (!auction) {
     auction = new Auction(event.params.id.toHexString());
-    addContractCount(
+  } else {
+    updateStatsForAuctionCancel(
       nft.contractId.toHexString(),
-      BigInt.fromI32(0),
-      event.params.amount
+      auction.tokenAmount
     );
   }
 
@@ -51,6 +55,10 @@ export function handleAuctionCreated(event: AuctionCreated): void {
   nftOwnership.nftIsOnSale = nft.isOnSale;
   nftOwnership.save();
 
+  updateStatsForAuctionCreate(
+    nft.contractId.toHexString(),
+    event.params.amount
+  );
   createAuctionActivity(auction, nft, 'auctionCreate', event);
 }
 
@@ -76,9 +84,9 @@ export function handleAuctionSuccessful(event: AuctionSuccessful): void {
     nft.save();
   }
 
-  removeContractCount(
+  updateStatsForAuctionCompleted(
     nft.contractId.toHexString(),
-    BigInt.fromI32(0),
+    auction.totalPrice!,
     event.params.amount
   );
 
@@ -100,9 +108,8 @@ export function handleAuctionCancelled(event: AuctionCancelled): void {
 
   createAuctionActivity(auction, nft, 'auctionCancel', event);
 
-  removeContractCount(
+  updateStatsForAuctionCancel(
     nft.contractId.toHexString(),
-    BigInt.fromI32(0),
     auction.tokenAmount
   );
 }

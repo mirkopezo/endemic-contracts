@@ -99,10 +99,11 @@ type Activity @entity {
   from: Bytes!
 }
 
-type ContractsCounts @entity {
+type CollectionStats @entity {
   id: ID!
   totalCount: BigInt!
   onSaleCount: BigInt!
+  volumeTraded: BigInt!
 }
 
 enum ActivityType @entity {

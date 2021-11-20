@@ -1,5 +1,6 @@
-import { store, Bytes } from '@graphprotocol/graph-ts';
+import { store, Bytes, BigInt, Address } from '@graphprotocol/graph-ts';
 import { NFT, NFTOwnership } from '../../generated/schema';
+import { isMintEvent } from './nft';
 
 export function getNftOwnershipId(
   nftId: string,
@@ -29,4 +30,39 @@ export function getOrCreateOwnership(nft: NFT, accountId: Bytes): NFTOwnership {
   }
 
   return nftOwnership;
+}
+
+export function updateERC721Ownership(
+  nft: NFT,
+  fromAccountId: Address,
+  toAccountId: Address
+): void {
+  if (!isMintEvent(fromAccountId)) {
+    deleteOwnership(nft.id, fromAccountId);
+  }
+
+  let nftOwnership = getOrCreateOwnership(nft, toAccountId);
+  nftOwnership.value = BigInt.fromI32(1);
+  nftOwnership.nftBurned = nft.burned;
+  nftOwnership.nftIsOnSale = nft.isOnSale;
+  nftOwnership.save();
+}
+
+export function updateERC1155Ownership(
+  nft: NFT,
+  fromAccountId: Address,
+  toAccountId: Address,
+  tokenAmount: BigInt
+): void {
+  let nftOwnership = getOrCreateOwnership(nft, toAccountId);
+  nftOwnership.value = nftOwnership.value.plus(tokenAmount);
+  nftOwnership.save();
+
+  let sourceOwnership = NFTOwnership.load(
+    getNftOwnershipId(nft.id, fromAccountId.toHexString())
+  );
+  if (sourceOwnership) {
+    sourceOwnership.value = sourceOwnership.value.minus(tokenAmount);
+    sourceOwnership.save();
+  }
 }

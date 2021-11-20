@@ -17,8 +17,8 @@ import { updateRelatedAuction } from '../modules/auction';
 import { createAccount } from '../modules/account';
 import { createERC721TransferActivity } from '../modules/activity';
 import { createThirdPartyNFTContract } from '../modules/nftContract';
-import { addContractCount, removeContractCount } from '../modules/count';
-import { deleteOwnership, getOrCreateOwnership } from '../modules/ownership';
+import { updateERC721StatsForTransfer } from '../modules/stats';
+import { updateERC721Ownership } from '../modules/ownership';
 
 export function handleTransfer(event: Transfer): void {
   if (event.params.tokenId.toString() == '') {
@@ -62,12 +62,6 @@ export function handleTransfer(event: Transfer): void {
     nft.tokenURI = tokenURI;
     nft.supply = BigInt.fromI32(1);
 
-    addContractCount(
-      event.address.toHexString(),
-      BigInt.fromI32(1),
-      BigInt.fromI32(0)
-    );
-
     let metaData = readTokenMetadataFromIPFS(tokenURI);
     if (metaData != null) {
       nft.image = metaData.image;
@@ -78,11 +72,6 @@ export function handleTransfer(event: Transfer): void {
     }
   } else if (isBurnEvent(event.params.to)) {
     nft.burned = true;
-    removeContractCount(
-      event.address.toHexString(),
-      BigInt.fromI32(1),
-      BigInt.fromI32(0)
-    );
   }
 
   if (
@@ -96,17 +85,12 @@ export function handleTransfer(event: Transfer): void {
   nft.save();
 
   createAccount(event.params.to);
-
-  if (!isMintEvent(event.params.from)) {
-    deleteOwnership(id, event.params.from);
-  }
-
-  let nftOwnership = getOrCreateOwnership(nft, event.params.to);
-  nftOwnership.value = BigInt.fromI32(1);
-  nftOwnership.nftBurned = nft.burned;
-  nftOwnership.nftIsOnSale = nft.isOnSale;
-  nftOwnership.save();
-
+  updateERC721StatsForTransfer(
+    nft.contractId.toHexString(),
+    event.params.from,
+    event.params.to
+  );
+  updateERC721Ownership(nft, event.params.from, event.params.to);
   createERC721TransferActivity(nft, event);
 }
 
@@ -115,7 +99,7 @@ export function handleMint(event: Mint): void {
     event.address.toHexString(),
     event.params.tokenId.toString()
   );
-  let nft = <NFT>NFT.load(id);
+  let nft = NFT.load(id)!;
 
   nft.artist = event.params.artistId.toHex();
   nft.artistId = event.params.artistId;
