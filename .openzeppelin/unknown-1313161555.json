@@ -54,6 +54,11 @@
       "address": "0xB59AFE0799d7936Da81b24ACF2D843D8309491e6",
       "txHash": "0x8bfb3b84b256b0bea273ce4d309466cb04b39ee9302bdc0d15bc4ff5755d8835",
       "kind": "transparent"
+    },
+    {
+      "address": "0x192A5Dc88b6d6e469EB701C305d14f188dF09644",
+      "txHash": "0xd5e3c0a16a4f33b5c685f7c528c2075d53816347bdc7085d30470f822f95b622",
+      "kind": "transparent"
     }
   ],
   "impls": {
@@ -958,6 +963,220 @@
             ]
           },
           "t_contract(IEndemicMasterNFT)7330": {
+            "label": "contract IEndemicMasterNFT"
+          },
+          "t_mapping(t_address,t_mapping(t_uint256,t_bool))": {
+            "label": "mapping(address => mapping(uint256 => bool))"
+          },
+          "t_mapping(t_uint256,t_bool)": {
+            "label": "mapping(uint256 => bool)"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]"
+          }
+        }
+      }
+    },
+    "537f616d2861a787c8fe22ca898fc1522a573cf65e13c7d7b1bc41217ecf8ddc": {
+      "address": "0xDb9a4e1c30EE69c467c2f7C3B67deF3c94fe757C",
+      "txHash": "0x751bc3ae01ec9396b13ab71c9007c08d8fdcd308764612a538a86561055ad4af",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:21"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:26"
+          },
+          {
+            "contract": "ContextUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol:30"
+          },
+          {
+            "contract": "PausableUpgradeable",
+            "label": "_paused",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol:28"
+          },
+          {
+            "contract": "PausableUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol:96"
+          },
+          {
+            "contract": "OwnableUpgradeable",
+            "label": "_owner",
+            "type": "t_address",
+            "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:21"
+          },
+          {
+            "contract": "OwnableUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:77"
+          },
+          {
+            "contract": "TransferManager",
+            "label": "claimEthAddress",
+            "type": "t_address",
+            "src": "contracts/marketplace/TransferManager.sol:11"
+          },
+          {
+            "contract": "TransferManager",
+            "label": "masterNFTShares",
+            "type": "t_uint256",
+            "src": "contracts/marketplace/TransferManager.sol:12"
+          },
+          {
+            "contract": "TransferManager",
+            "label": "masterNFT",
+            "type": "t_contract(IEndemicMasterNFT)9757",
+            "src": "contracts/marketplace/TransferManager.sol:13"
+          },
+          {
+            "contract": "TransferManager",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "contracts/marketplace/TransferManager.sol:69"
+          },
+          {
+            "contract": "FeeManager",
+            "label": "makerFee",
+            "type": "t_uint256",
+            "src": "contracts/marketplace/FeeManager.sol:8"
+          },
+          {
+            "contract": "FeeManager",
+            "label": "initialSaleCut",
+            "type": "t_uint256",
+            "src": "contracts/marketplace/FeeManager.sol:9"
+          },
+          {
+            "contract": "FeeManager",
+            "label": "masterNftCut",
+            "type": "t_uint256",
+            "src": "contracts/marketplace/FeeManager.sol:10"
+          },
+          {
+            "contract": "FeeManager",
+            "label": "masterNFT",
+            "type": "t_contract(IEndemicMasterNFT)9757",
+            "src": "contracts/marketplace/FeeManager.sol:11"
+          },
+          {
+            "contract": "FeeManager",
+            "label": "_tradedTokens",
+            "type": "t_mapping(t_address,t_mapping(t_uint256,t_bool))",
+            "src": "contracts/marketplace/FeeManager.sol:13"
+          },
+          {
+            "contract": "FeeManager",
+            "label": "takerFee",
+            "type": "t_uint256",
+            "src": "contracts/marketplace/FeeManager.sol:14"
+          },
+          {
+            "contract": "FeeManager",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "contracts/marketplace/FeeManager.sol:112"
+          },
+          {
+            "contract": "MarketplaceCore",
+            "label": "idToAuction",
+            "type": "t_mapping(t_bytes32,t_struct(Auction)10090_storage)",
+            "src": "contracts/marketplace/MarketplaceCore.sol:21"
+          },
+          {
+            "contract": "MarketplaceCore",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "contracts/marketplace/MarketplaceCore.sol:285"
+          },
+          {
+            "contract": "Marketplace",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "contracts/marketplace/Marketplace.sol:42"
+          }
+        ],
+        "types": {
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_mapping(t_bytes32,t_struct(Auction)10090_storage)": {
+            "label": "mapping(bytes32 => struct LibAuction.Auction)"
+          },
+          "t_bytes32": {
+            "label": "bytes32"
+          },
+          "t_struct(Auction)10090_storage": {
+            "label": "struct LibAuction.Auction",
+            "members": [
+              {
+                "label": "id",
+                "type": "t_bytes32"
+              },
+              {
+                "label": "contractId",
+                "type": "t_address"
+              },
+              {
+                "label": "tokenId",
+                "type": "t_uint256"
+              },
+              {
+                "label": "seller",
+                "type": "t_address"
+              },
+              {
+                "label": "startingPrice",
+                "type": "t_uint256"
+              },
+              {
+                "label": "endingPrice",
+                "type": "t_uint256"
+              },
+              {
+                "label": "duration",
+                "type": "t_uint256"
+              },
+              {
+                "label": "amount",
+                "type": "t_uint256"
+              },
+              {
+                "label": "startedAt",
+                "type": "t_uint256"
+              },
+              {
+                "label": "assetClass",
+                "type": "t_bytes4"
+              }
+            ]
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_bytes4": {
+            "label": "bytes4"
+          },
+          "t_contract(IEndemicMasterNFT)9757": {
             "label": "contract IEndemicMasterNFT"
           },
           "t_mapping(t_address,t_mapping(t_uint256,t_bool))": {
