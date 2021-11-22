@@ -14,7 +14,11 @@ import {
 } from '../modules/nft';
 import { createAccount } from '../modules/account';
 import { createERC1155TransferActivity } from '../modules/activity';
-import { updateERC1155StatsForTransfer } from '../modules/stats';
+import { updateERC1155StatsForTransfer } from '../modules/collectionStats';
+import {
+  updateStatsForTransfer as updateUserStatsForTransfer,
+  updateStatsForCreate as updateUserStatsForCreate,
+} from '../modules/userStats';
 import { updateERC1155Ownership } from '../modules/ownership';
 import { updateRelatedAuction } from '../modules/auction';
 
@@ -32,6 +36,7 @@ export function handleTransferSingle(event: TransferSingle): void {
   }
 
   createAccount(event.params.to);
+  createERC1155TransferActivity(nft, event);
   updateERC1155StatsForTransfer(
     nft.contractId.toHexString(),
     event.params.from,
@@ -44,7 +49,11 @@ export function handleTransferSingle(event: TransferSingle): void {
     event.params.to,
     event.params.value
   );
-  createERC1155TransferActivity(nft, event);
+  updateUserStatsForTransfer(
+    event.params.from,
+    event.params.to,
+    event.params.value
+  );
 }
 
 export function handleCreate(event: Create): void {
@@ -93,4 +102,6 @@ export function handleCreate(event: Create): void {
   }
 
   nft.save();
+
+  updateUserStatsForCreate(event.params.artistId, BigInt.fromI32(1));
 }

@@ -14,6 +14,12 @@ export function isBurnEvent(to: Address): boolean {
   return to.toHexString() == addresses.Null;
 }
 
+export function isTransferEvent(from: Address, to: Address): boolean {
+  return (
+    from.toHexString() != addresses.Null && to.toHexString() != addresses.Null
+  );
+}
+
 export function getNFTId(contractAddress: string, tokenId: string): string {
   return contractAddress + '-' + tokenId;
 }

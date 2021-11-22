@@ -10,11 +10,8 @@ import {
   handleAuctionCreatedForNFT,
 } from '../modules/nft';
 import { createAuctionActivity } from '../modules/activity';
-import {
-  updateStatsForAuctionCancel,
-  updateStatsForAuctionCompleted,
-  updateStatsForAuctionCreate,
-} from '../modules/stats';
+import * as collectionStats from '../modules/collectionStats';
+import * as userStats from '../modules/userStats';
 import { BigInt, store } from '@graphprotocol/graph-ts';
 import { getOrCreateOwnership } from '../modules/ownership';
 
@@ -30,8 +27,12 @@ export function handleAuctionCreated(event: AuctionCreated): void {
   if (!auction) {
     auction = new Auction(event.params.id.toHexString());
   } else {
-    updateStatsForAuctionCancel(
+    collectionStats.updateStatsForAuctionCancel(
       nft.contractId.toHexString(),
+      auction.tokenAmount
+    );
+    userStats.updateStatsForAuctionCancel(
+      event.params.seller.toHexString(),
       auction.tokenAmount
     );
   }
@@ -52,13 +53,18 @@ export function handleAuctionCreated(event: AuctionCreated): void {
 
   let nftOwnership = getOrCreateOwnership(nft, auction.seller);
   nftOwnership.nftPrice = nft.price;
-  nftOwnership.nftIsOnSale = nft.isOnSale;
+  nftOwnership.nftIsOnSale = true;
   nftOwnership.save();
 
-  updateStatsForAuctionCreate(
+  collectionStats.updateStatsForAuctionCreate(
     nft.contractId.toHexString(),
     event.params.amount
   );
+  userStats.updateStatsForAuctionCreate(
+    event.params.seller.toHexString(),
+    auction.tokenAmount
+  );
+
   createAuctionActivity(auction, nft, 'auctionCreate', event);
 }
 
@@ -84,8 +90,15 @@ export function handleAuctionSuccessful(event: AuctionSuccessful): void {
     nft.save();
   }
 
-  updateStatsForAuctionCompleted(
+  collectionStats.updateStatsForAuctionCompleted(
     nft.contractId.toHexString(),
+    auction.totalPrice!,
+    event.params.amount
+  );
+
+  userStats.updateStatsForAuctionCompleted(
+    auction.buyer!.toHexString(),
+    auction.seller.toHexString(),
     auction.totalPrice!,
     event.params.amount
   );
@@ -102,14 +115,19 @@ export function handleAuctionCancelled(event: AuctionCancelled): void {
   nft.save();
 
   let nftOwnership = getOrCreateOwnership(nft, auction.seller);
-  nftOwnership.nftIsOnSale = nft.isOnSale;
+  nftOwnership.nftIsOnSale = false;
   nftOwnership.nftPrice = nft.price;
   nftOwnership.save();
 
   createAuctionActivity(auction, nft, 'auctionCancel', event);
 
-  updateStatsForAuctionCancel(
+  collectionStats.updateStatsForAuctionCancel(
     nft.contractId.toHexString(),
+    auction.tokenAmount
+  );
+
+  userStats.updateStatsForAuctionCancel(
+    auction.seller.toHexString(),
     auction.tokenAmount
   );
 }

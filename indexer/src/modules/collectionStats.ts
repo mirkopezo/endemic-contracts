@@ -1,14 +1,14 @@
-import { Address, BigInt, Bytes } from '@graphprotocol/graph-ts';
-import { Auction, CollectionStats, NFT } from '../../generated/schema';
+import { Address, BigInt } from '@graphprotocol/graph-ts';
+import { CollectionStatistic } from '../../generated/schema';
 import { isBurnEvent, isMintEvent } from './nft';
 
 export function getOrCreateColectionStats(
   contractAddress: string
-): CollectionStats {
-  let stats = CollectionStats.load(contractAddress);
+): CollectionStatistic {
+  let stats = CollectionStatistic.load(contractAddress);
 
   if (!stats) {
-    stats = new CollectionStats(contractAddress);
+    stats = new CollectionStatistic(contractAddress);
     stats.onSaleCount = BigInt.fromI32(0);
     stats.totalCount = BigInt.fromI32(0);
     stats.volumeTraded = BigInt.fromI32(0);

@@ -99,11 +99,20 @@ type Activity @entity {
   from: Bytes!
 }
 
-type CollectionStats @entity {
+type CollectionStatistic @entity {
   id: ID!
   totalCount: BigInt!
   onSaleCount: BigInt!
   volumeTraded: BigInt!
+}
+
+type UserStatistic @entity {
+  id: ID!
+  createdCount: BigInt!
+  ownedCount: BigInt!
+  onSaleCount: BigInt!
+  makerVolume: BigInt!
+  takerVolume: BigInt!
 }
 
 enum ActivityType @entity {

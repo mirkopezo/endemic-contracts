@@ -17,7 +17,12 @@ import { updateRelatedAuction } from '../modules/auction';
 import { createAccount } from '../modules/account';
 import { createERC721TransferActivity } from '../modules/activity';
 import { createThirdPartyNFTContract } from '../modules/nftContract';
-import { updateERC721StatsForTransfer } from '../modules/stats';
+import { updateERC721StatsForTransfer } from '../modules/collectionStats';
+import {
+  updateStatsForTransfer as updateUserStatsForTransfer,
+  updateStatsForCreate as updateUserStatsForCreate,
+} from '../modules/userStats';
+
 import { updateERC721Ownership } from '../modules/ownership';
 
 export function handleTransfer(event: Transfer): void {
@@ -90,6 +95,11 @@ export function handleTransfer(event: Transfer): void {
     event.params.from,
     event.params.to
   );
+  updateUserStatsForTransfer(
+    event.params.from,
+    event.params.to,
+    BigInt.fromI32(1)
+  );
   updateERC721Ownership(nft, event.params.from, event.params.to);
   createERC721TransferActivity(nft, event);
 }
@@ -105,4 +115,6 @@ export function handleMint(event: Mint): void {
   nft.artistId = event.params.artistId;
 
   nft.save();
+
+  updateUserStatsForCreate(event.params.artistId, BigInt.fromI32(1));
 }

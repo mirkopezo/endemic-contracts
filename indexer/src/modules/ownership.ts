@@ -26,7 +26,7 @@ export function getOrCreateOwnership(nft: NFT, accountId: Bytes): NFTOwnership {
     nftOwnership.nftContractId = nft.contractId;
     nftOwnership.nftBurned = nft.burned;
     nftOwnership.nftCreatedAt = nft.createdAt;
-    nftOwnership.nftIsOnSale = nft.isOnSale;
+    nftOwnership.nftIsOnSale = false;
   }
 
   return nftOwnership;
@@ -44,7 +44,7 @@ export function updateERC721Ownership(
   let nftOwnership = getOrCreateOwnership(nft, toAccountId);
   nftOwnership.value = BigInt.fromI32(1);
   nftOwnership.nftBurned = nft.burned;
-  nftOwnership.nftIsOnSale = nft.isOnSale;
+  nftOwnership.nftIsOnSale = false;
   nftOwnership.save();
 }
 
