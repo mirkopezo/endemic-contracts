@@ -6,6 +6,7 @@ const {
   deployMarketplace,
   deployEndemicMasterNFT,
   deployEndemicERC1155,
+  deployEndemicToken,
 } = require('./helpers/deploy');
 const { ERC1155_ASSET_CLASS, ERC721_ASSET_CLASS } = require('./helpers/ids');
 
@@ -15,8 +16,10 @@ describe('Marketplace', function () {
     nftContract,
     nftContract2,
     erc1155Contract,
-    erc1155Contract2;
+    erc1155Contract2,
+    wrappedNEAR;
   let owner, user1, user2, user3, minter, signer;
+  let feeAddress = '0x0c6b78ed2b909E7Fc7D0d0BdA0c8AeEA3f367E0D';
 
   async function mint(id, recipient) {
     await nftContract
@@ -50,10 +53,13 @@ describe('Marketplace', function () {
     [owner, user1, user2, user3, minter, signer, ...otherSigners] =
       await ethers.getSigners();
 
+    erc20Token = await deployEndemicToken(user1);
+
     masterNftContract = await deployEndemicMasterNFT(owner);
     marketplace = await deployMarketplace(
       owner,
       masterNftContract.address,
+      erc20Token.address,
       makerFee,
       takerFee,
       initialFee
@@ -66,6 +72,9 @@ describe('Marketplace', function () {
 
     await mint(1, user1.address);
     await mintERC1155(user1.address, 3);
+
+    await erc20Token.transfer(owner.address, ethers.utils.parseUnits('1000')); // 1000 END
+    await erc20Token.transfer(user2.address, ethers.utils.parseUnits('1000')); // 1000 END
   }
 
   describe('Initial State', function () {
@@ -502,26 +511,36 @@ describe('Marketplace', function () {
         1,
         user1.address
       );
+
+      await erc20Token
+        .connect(user1)
+        .approve(
+          marketplace.address,
+          await erc20Token.balanceOf(user1.address)
+        );
+
+      await erc20Token
+        .connect(user2)
+        .approve(
+          marketplace.address,
+          await erc20Token.balanceOf(user2.address)
+        );
     });
 
     it('should fail to bid with insufficient value', async function () {
-      await expect(
-        marketplace.connect(user2).bid(erc721AuctionId, 1, {
-          value: ethers.utils.parseUnits('0.01'),
-        })
-      ).to.be.revertedWith('Bid amount can not be lower then auction price');
+      await erc20Token.connect(user2).approve(marketplace.address, 0);
 
       await expect(
-        marketplace.connect(user2).bid(erc1155AuctionId, 1, {
-          value: ethers.utils.parseUnits('0.01'),
-        })
-      ).to.be.revertedWith('Bid amount can not be lower then auction price');
+        marketplace.connect(user2).bid(erc721AuctionId, 1)
+      ).to.be.revertedWith('ERC20: transfer amount exceeds allowance');
 
       await expect(
-        marketplace.connect(user2).bid(erc1155AuctionId, 2, {
-          value: ethers.utils.parseUnits('0.103'),
-        })
-      ).to.be.revertedWith('Bid amount can not be lower then auction price');
+        marketplace.connect(user2).bid(erc1155AuctionId, 1)
+      ).to.be.revertedWith('ERC20: transfer amount exceeds allowance');
+
+      await expect(
+        marketplace.connect(user2).bid(erc1155AuctionId, 2)
+      ).to.be.revertedWith('ERC20: transfer amount exceeds allowance');
     });
 
     it('should fail to bid if auction has been concluded', async function () {
@@ -529,28 +548,22 @@ describe('Marketplace', function () {
       await marketplace.connect(user1).cancelAuction(erc1155AuctionId);
 
       await expect(
-        marketplace.connect(user2).bid(erc721AuctionId, 1, {
-          value: ethers.utils.parseUnits('0.103'),
-        })
+        marketplace.connect(user2).bid(erc721AuctionId, 1)
       ).to.be.revertedWith('NFT is not on auction');
 
       await expect(
-        marketplace.connect(user2).bid(erc1155AuctionId, 1, {
-          value: ethers.utils.parseUnits('0.103'),
-        })
+        marketplace.connect(user2).bid(erc1155AuctionId, 1)
       ).to.be.revertedWith('NFT is not on auction');
     });
 
     it('should be able to bid on ERC721', async function () {
-      const user1Bal1 = await user1.getBalance();
+      const user1Bal1 = await erc20Token.balanceOf(user1.address);
 
-      await marketplace.connect(user2).bid(erc721AuctionId, 1, {
-        value: ethers.utils.parseUnits('0.103'),
-      });
+      await marketplace.connect(user2).bid(erc721AuctionId, 1);
 
       // User1 should receive 100 wei, fee is zero
 
-      const user1Bal2 = await user1.getBalance();
+      const user1Bal2 = await erc20Token.balanceOf(user1.address);
       const user1Diff = user1Bal2.sub(user1Bal1);
       expect(user1Diff.toString()).to.equal(ethers.utils.parseUnits('0.1'));
 
@@ -564,11 +577,9 @@ describe('Marketplace', function () {
     });
 
     it('should be able to bid on ERC1155', async function () {
-      const user1Bal1 = await user1.getBalance();
+      const user1Bal1 = await erc20Token.balanceOf(user1.address);
 
-      await marketplace.connect(user2).bid(erc1155AuctionId, 1, {
-        value: ethers.utils.parseUnits('0.103'),
-      });
+      await marketplace.connect(user2).bid(erc1155AuctionId, 1);
 
       // Bidder should own NFT
       expect(await erc1155Contract.balanceOf(user2.address, 1)).to.equal(1);
@@ -578,9 +589,7 @@ describe('Marketplace', function () {
       expect(erc1155Auction.amount).to.equal('2');
 
       // Buy two more
-      await marketplace.connect(user2).bid(erc1155AuctionId, 2, {
-        value: ethers.utils.parseUnits('0.206'),
-      });
+      await marketplace.connect(user2).bid(erc1155AuctionId, 2);
 
       expect(await erc1155Contract.balanceOf(user2.address, 1)).to.equal(3);
 
@@ -589,69 +598,50 @@ describe('Marketplace', function () {
         'Not on auction'
       );
 
-      const user1Bal2 = await user1.getBalance();
+      const user1Bal2 = await erc20Token.balanceOf(user1.address);
       const user1Diff = user1Bal2.sub(user1Bal1);
       expect(user1Diff.toString()).to.equal(ethers.utils.parseUnits('0.3'));
     });
 
     it('should be able to bid at endingPrice if auction has passed duration', async function () {
-      const user1Bal1 = await user1.getBalance();
+      const user1Bal1 = await erc20Token.balanceOf(user1.address);
       await network.provider.send('evm_increaseTime', [200]);
 
-      await marketplace.connect(user2).bid(erc721AuctionId, 1, {
-        value: ethers.utils.parseUnits('0.103'),
-      });
+      await marketplace.connect(user2).bid(erc721AuctionId, 1);
 
-      await marketplace.connect(user2).bid(erc1155AuctionId, 1, {
-        value: ethers.utils.parseUnits('0.103'),
-      });
+      await marketplace.connect(user2).bid(erc1155AuctionId, 1);
 
       expect(await nftContract.ownerOf(1)).to.equal(user2.address);
       expect(await erc1155Contract.balanceOf(user2.address, 1)).to.equal(1);
 
-      const user1Bal2 = await user1.getBalance();
+      const user1Bal2 = await erc20Token.balanceOf(user1.address);
       const user1Diff = user1Bal2.sub(user1Bal1);
       expect(user1Diff.toString()).to.equal(ethers.utils.parseUnits('0.2'));
     });
 
     it('should fail to bid after someone else has bid', async function () {
-      await marketplace.connect(user2).bid(erc721AuctionId, 1, {
-        value: ethers.utils.parseUnits('0.103'),
-      });
+      await marketplace.connect(user2).bid(erc721AuctionId, 1);
       await expect(
-        marketplace.connect(user3).bid(erc721AuctionId, 1, {
-          value: ethers.utils.parseUnits('0.103'),
-        })
+        marketplace.connect(user3).bid(erc721AuctionId, 1)
       ).to.be.revertedWith('NFT is not on auction');
 
-      await marketplace.connect(user2).bid(erc1155AuctionId, 3, {
-        value: ethers.utils.parseUnits('0.309'),
-      });
+      await marketplace.connect(user2).bid(erc1155AuctionId, 3);
       await expect(
-        marketplace.connect(user3).bid(erc1155AuctionId, 1, {
-          value: ethers.utils.parseUnits('0.103'),
-        })
+        marketplace.connect(user3).bid(erc1155AuctionId, 1)
       ).to.be.revertedWith('NFT is not on auction');
     });
 
     it('should be able to bid in middle of auction', async function () {
-      const user1Bal1 = await user1.getBalance();
       await network.provider.send('evm_increaseTime', [60]);
-      await marketplace.connect(user2).bid(erc721AuctionId, 1, {
-        value: ethers.utils.parseUnits('0.103'),
-      });
-      await marketplace.connect(user2).bid(erc1155AuctionId, 2, {
-        value: ethers.utils.parseUnits('0.206'),
-      });
+      await marketplace.connect(user2).bid(erc721AuctionId, 1);
+      await marketplace.connect(user2).bid(erc1155AuctionId, 2);
 
       expect(await nftContract.ownerOf(1)).to.equal(user2.address);
       expect(await erc1155Contract.balanceOf(user2.address, 1)).to.equal(2);
     });
 
     it('should trigger an event after successful bid', async function () {
-      const bid1 = marketplace.connect(user2).bid(erc721AuctionId, 1, {
-        value: ethers.utils.parseUnits('0.103'),
-      });
+      const bid1 = marketplace.connect(user2).bid(erc721AuctionId, 1);
 
       await expect(bid1)
         .to.emit(marketplace, 'AuctionSuccessful')
@@ -662,9 +652,7 @@ describe('Marketplace', function () {
           1
         );
 
-      const bid2 = marketplace.connect(user2).bid(erc1155AuctionId, 2, {
-        value: ethers.utils.parseUnits('0.206'),
-      });
+      const bid2 = marketplace.connect(user2).bid(erc1155AuctionId, 2);
 
       await expect(bid2)
         .to.emit(marketplace, 'AuctionSuccessful')
@@ -785,13 +773,27 @@ describe('Marketplace', function () {
       await erc1155Contract
         .connect(user1)
         .setApprovalForAll(marketplace.address, true);
+
+      await erc20Token
+        .connect(user1)
+        .approve(
+          marketplace.address,
+          await erc20Token.balanceOf(user1.address)
+        );
+
+      await erc20Token
+        .connect(user2)
+        .approve(
+          marketplace.address,
+          await erc20Token.balanceOf(user2.address)
+        );
     });
 
     it('should take cut on initial sale', async function () {
       // saves current contract and user1 balances and creates auction
-      const contractBal1 = await marketplace.provider.getBalance(
-        marketplace.address
-      );
+      const contractBal1 = await erc20Token.balanceOf(feeAddress);
+      const user1Bal1 = await erc20Token.balanceOf(user1.address);
+
       await marketplace
         .connect(user1)
         .createAuction(
@@ -809,16 +811,18 @@ describe('Marketplace', function () {
         user1.address
       );
 
-      const user1Bal1 = await user1.getBalance();
+      // 22% of 0.2 + 3% fee
+      // 22% of 0.2 maker fee= 0.044ETH
+      // 0.2 + 3% taker fee = 0.006
+      // fees = 0.05
+      // seller gets 0.2 - 22% = 0.156
+      // buyer pays 0.2 + 3% = 0.206
 
       // buys NFT and calculates price diff on contract and user1 wallet
-      await marketplace.connect(user2).bid(auctionid, 1, {
-        value: ethers.utils.parseUnits('0.206'),
-      });
-      const contractBal2 = await marketplace.provider.getBalance(
-        marketplace.address
-      );
-      const user1Bal2 = await user1.getBalance();
+      await marketplace.connect(user2).bid(auctionid, 1);
+
+      const contractBal2 = await erc20Token.balanceOf(feeAddress);
+      const user1Bal2 = await erc20Token.balanceOf(user1.address);
       const token2Owner = await nftContract.ownerOf(1);
       const contractDiff = contractBal2.sub(contractBal1);
 
@@ -853,9 +857,7 @@ describe('Marketplace', function () {
       );
 
       // Buy with user 2
-      await marketplace.connect(user2).bid(auctionid, 1, {
-        value: ethers.utils.parseUnits('1.03'),
-      });
+      await marketplace.connect(user2).bid(auctionid, 1);
 
       // Auction again with user 2
       await nftContract.connect(user2).approve(marketplace.address, 1);
@@ -878,21 +880,15 @@ describe('Marketplace', function () {
       );
 
       // Grab current balance of seller and contract
-      const user2Bal1 = await user2.getBalance();
-      const contractBal1 = await marketplace.provider.getBalance(
-        marketplace.address
-      );
+      const user2Bal1 = await erc20Token.balanceOf(user2.address);
+      const contractBal1 = await erc20Token.balanceOf(feeAddress);
 
       // Buy with user 3
-      await marketplace.connect(user3).bid(auctionid2, 1, {
-        value: ethers.utils.parseUnits('0.515'),
-      });
+      await marketplace.connect(user3).bid(auctionid2, 1);
 
       //Grab updated balances of seller and contract
-      const contractBal2 = await marketplace.provider.getBalance(
-        marketplace.address
-      );
-      const user2Bal2 = await user2.getBalance();
+      const contractBal2 = await erc20Token.balanceOf(feeAddress);
+      const user2Bal2 = await erc20Token.balanceOf(user2.address);
 
       const contractDiff = contractBal2.sub(contractBal1);
       const user2Diff = user2Bal2.sub(user2Bal1);
@@ -941,9 +937,7 @@ describe('Marketplace', function () {
         user1.address
       );
 
-      await marketplace.connect(user2).bid(auctionid, 1, {
-        value: ethers.utils.parseUnits('1.03'),
-      });
+      await marketplace.connect(user2).bid(auctionid, 1);
 
       // Initial sale completed, now fee should be 2.5%
       const marketplaceFee = await marketplace.getMakerFee(
@@ -986,13 +980,9 @@ describe('Marketplace', function () {
       );
 
       // Grab current marketpalce balance
-      const contractBal1 = await marketplace.provider.getBalance(
-        marketplace.address
-      );
+      const contractBal1 = await erc20Token.balanceOf(feeAddress);
 
-      await marketplace.connect(user2).bid(auctionid, 1, {
-        value: ethers.utils.parseUnits('2.2'),
-      });
+      await marketplace.connect(user2).bid(auctionid, 1);
 
       // Contract now has 0.4 + 0.2 = 0.6 ETH
       // Create another auction
@@ -1016,19 +1006,15 @@ describe('Marketplace', function () {
       );
 
       // Grab current balance of seller
-      const user2Bal1 = await user2.getBalance();
+      const user2Bal1 = await erc20Token.balanceOf(user2.address);
 
       // Bid it
-      await marketplace.connect(user3).bid(auctionid2, 1, {
-        value: ethers.utils.parseUnits('1.1'),
-      });
+      await marketplace.connect(user3).bid(auctionid2, 1);
 
       // Contract nw has 0.1 + 0.05
       //Grab updated balances of seller and contract
-      const contractBal2 = await marketplace.provider.getBalance(
-        marketplace.address
-      );
-      const user2Bal2 = await user2.getBalance();
+      const contractBal2 = await erc20Token.balanceOf(feeAddress);
+      const user2Bal2 = await erc20Token.balanceOf(user2.address);
 
       const contractDiff = contractBal2.sub(contractBal1);
       const user2Diff = user2Bal2.sub(user2Bal1);
@@ -1063,10 +1049,8 @@ describe('Marketplace', function () {
         );
 
       // Grab balances
-      const contractBal1 = await marketplace.provider.getBalance(
-        marketplace.address
-      );
-      const user1Bal1 = await user1.getBalance();
+      const contractBal1 = await erc20Token.balanceOf(feeAddress);
+      const user1Bal1 = await erc20Token.balanceOf(user1.address);
 
       const auctionid = await marketplace.createAuctionId(
         nftContract.address,
@@ -1075,15 +1059,11 @@ describe('Marketplace', function () {
       );
 
       // Buy NFT
-      await marketplace.connect(user3).bid(auctionid, 1, {
-        value: ethers.utils.parseUnits('0.206'),
-      });
+      await marketplace.connect(user3).bid(auctionid, 1);
 
       // Grab updated balances
-      const contractBal2 = await marketplace.provider.getBalance(
-        marketplace.address
-      );
-      const user1Bal2 = await user1.getBalance();
+      const contractBal2 = await erc20Token.balanceOf(feeAddress);
+      const user1Bal2 = await erc20Token.balanceOf(user1.address);
 
       // Only taker fee is taken (3%)
       const contractDiff = contractBal2.sub(contractBal1);
@@ -1123,10 +1103,8 @@ describe('Marketplace', function () {
         );
 
       // Grab balances
-      const contractBal1 = await marketplace.provider.getBalance(
-        marketplace.address
-      );
-      const user1Bal1 = await user1.getBalance();
+      const contractBal1 = await erc20Token.balanceOf(feeAddress);
+      const user1Bal1 = await erc20Token.balanceOf(user1.address);
 
       const auctionid = await marketplace.createAuctionId(
         nftContract.address,
@@ -1141,18 +1119,12 @@ describe('Marketplace', function () {
       );
 
       // Buy NFT
-      await marketplace.connect(user3).bid(auctionid, 1, {
-        value: ethers.utils.parseUnits('0.2'),
-      });
-      await marketplace.connect(user3).bid(auctionid2, 1, {
-        value: ethers.utils.parseUnits('0.2'),
-      });
+      await marketplace.connect(user3).bid(auctionid, 1);
+      await marketplace.connect(user3).bid(auctionid2, 1);
 
       // Grab updated balances
-      const contractBal2 = await marketplace.provider.getBalance(
-        marketplace.address
-      );
-      const user1Bal2 = await user1.getBalance();
+      const contractBal2 = await erc20Token.balanceOf(feeAddress);
+      const user1Bal2 = await erc20Token.balanceOf(user1.address);
 
       // Fee shouldn't be taken, diff is zero
       const contractDiff = contractBal2.sub(contractBal1);
@@ -1177,10 +1149,8 @@ describe('Marketplace', function () {
           ERC721_ASSET_CLASS
         );
 
-      const user1Bal1 = await user1.getBalance();
-      const contractBal1 = await marketplace.provider.getBalance(
-        marketplace.address
-      );
+      const user1Bal1 = await erc20Token.balanceOf(user1.address);
+      const contractBal1 = await erc20Token.balanceOf(feeAddress);
 
       const auctionid = await marketplace.createAuctionId(
         nftContract.address,
@@ -1189,22 +1159,18 @@ describe('Marketplace', function () {
       );
 
       // Buy NFT
-      await marketplace.connect(user3).bid(auctionid, 1, {
-        value: ethers.utils.parseUnits('1.03'),
-      });
+      await marketplace.connect(user3).bid(auctionid, 1);
 
       // Contract has 0.03 from taker fee + 0.22 from maker fee
       // Master key share is 5% of 0.25
       await marketplace.connect(owner).claimETH();
-      const user1Bal2 = await user1.getBalance();
+      const user1Bal2 = await erc20Token.balanceOf(user1.address);
 
       const claimEthBalance = await marketplace.provider.getBalance(
         '0x0c6b78ed2b909E7Fc7D0d0BdA0c8AeEA3f367E0D'
       );
 
-      const contractBal2 = await marketplace.provider.getBalance(
-        marketplace.address
-      );
+      const contractBal2 = await erc20Token.balanceOf(feeAddress);
 
       expect(user1Bal2.sub(user1Bal1).toString()).to.equal(
         ethers.utils.parseUnits('0.78')
@@ -1244,9 +1210,7 @@ describe('Marketplace', function () {
         user1.address
       );
 
-      await marketplace.connect(user2).bid(auctionid, 1, {
-        value: ethers.utils.parseUnits('1.03'),
-      });
+      await marketplace.connect(user2).bid(auctionid, 1);
 
       let currentBalances = [];
 

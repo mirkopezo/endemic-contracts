@@ -101,11 +101,7 @@ abstract contract MarketplaceCore is
         );
     }
 
-    function bid(bytes32 _id, uint256 _tokenAmount)
-        external
-        payable
-        whenNotPaused
-    {
+    function bid(bytes32 _id, uint256 _tokenAmount) external whenNotPaused {
         LibAuction.Auction storage auction = idToAuction[_id];
 
         require(LibAuction.isOnAuction(auction), "NFT is not on auction");
@@ -267,11 +263,12 @@ abstract contract MarketplaceCore is
             );
 
             uint256 fees = makerCut + takerCut;
-            uint256 sellerProceeds = _price - fees;
+            uint256 sellerProceeds = _priceWithoutFees - makerCut;
+
+            _addMasterNFTContractShares(fees);
 
             if (fees > 0) {
-                _addMasterNFTContractShares(fees);
-                _transferWrappedNear(_buyer, address(this), fees);
+                _transferWrappedNear(_buyer, claimFeeAddress, fees);
             }
 
             _transferWrappedNear(_buyer, _seller, sellerProceeds);

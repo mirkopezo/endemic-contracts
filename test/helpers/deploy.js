@@ -83,6 +83,7 @@ const deployEndemicERC1155 = async (deployer) => {
 const deployMarketplace = async (
   deployer,
   masterNFTAddress,
+  erc20TokenAddress,
   makerFee = 250, // 2.5% maker fee
   takerFee = 300, // 3% taker fee
   initialFee = 2200 // 22% initial marketplace cut
@@ -90,7 +91,7 @@ const deployMarketplace = async (
   const Marketplace = await ethers.getContractFactory('Marketplace');
   const marketplaceContract = await upgrades.deployProxy(
     Marketplace,
-    [makerFee, takerFee, initialFee, 500, masterNFTAddress],
+    [makerFee, takerFee, initialFee, 500, masterNFTAddress, erc20TokenAddress],
     {
       deployer,
       initializer: '__Marketplace_init',

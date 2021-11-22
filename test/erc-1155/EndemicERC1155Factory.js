@@ -6,6 +6,7 @@ const {
   deployEndemicERC1155,
   deployMarketplace,
   deployEndemicMasterNFT,
+  deployEndemicToken,
 } = require('../helpers/deploy');
 
 describe('EndemicERC1155Factory', function () {
@@ -17,9 +18,12 @@ describe('EndemicERC1155Factory', function () {
     [owner, user, signer] = await ethers.getSigners();
 
     const masterNftContract = await deployEndemicMasterNFT(owner);
+    const erc20Token = await deployEndemicToken(user);
+
     const marketplace = await deployMarketplace(
       owner,
-      masterNftContract.address
+      masterNftContract.address,
+      erc20Token.address
     );
 
     const implContract = await deployEndemicERC1155(owner, signer.address);

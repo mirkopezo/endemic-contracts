@@ -9,28 +9,20 @@ import "../erc-20/IERC20.sol";
 import "./LibAuction.sol";
 
 abstract contract TransferManager is OwnableUpgradeable {
-    address claimEthAddress;
-    uint256 masterNFTShares;
-    IEndemicMasterNFT private masterNFT;
-    IERC20 private wrappedNEAR;
+    address internal claimFeeAddress;
+    uint256 internal masterNFTShares;
+    IEndemicMasterNFT internal masterNFT;
+    IERC20 internal wrappedNEAR;
 
     function __TransferManager___init_unchained(
-        address _claimEthAddress,
+        address _claimFeeAddress,
         IEndemicMasterNFT _masterNFT,
         IERC20 _wrappedNEAR
     ) internal initializer {
-        claimEthAddress = _claimEthAddress;
+        claimFeeAddress = _claimFeeAddress;
         masterNFT = _masterNFT;
         wrappedNEAR = _wrappedNEAR;
     }
-
-    // function claimFees() external onlyOwner {
-    //     uint256 claimableETH = address(this).balance - masterNFTShares;
-    //     (bool success, ) = payable(claimEthAddress).call{value: claimableETH}(
-    //         ""
-    //     );
-    //     require(success, "Transfer failed.");
-    // }
 
     // function distributeMasterNFTShares() external onlyOwner {
     //     require(address(this).balance >= masterNFTShares, "Not enough funds");
