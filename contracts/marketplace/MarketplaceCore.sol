@@ -260,8 +260,10 @@ abstract contract MarketplaceCore is
                 _tokenId
             );
 
+            uint256 fees = takerCut + makerCut;
             uint256 sellerProceeds = _price - makerCut;
-            _addMasterNFTContractShares(makerCut + takerCut);
+
+            _addMasterNFTContractShares(fees);
 
             (bool success, ) = payable(_seller).call{value: sellerProceeds}("");
             require(success, "Transfer failed.");

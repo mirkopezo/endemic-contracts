@@ -809,6 +809,13 @@ describe('Marketplace', function () {
         user1.address
       );
 
+      // 22% of 0.2 + 3% fee
+      // 22% of 0.2 maker fee= 0.044ETH
+      // 0.2 + 3% taker fee = 0.006
+      // fees = 0.05
+      // seller gets 0.2 - 22% = 0.156
+      // buyer pays 0.2 + 3% = 0.206
+
       const user1Bal1 = await user1.getBalance();
 
       // buys NFT and calculates price diff on contract and user1 wallet
