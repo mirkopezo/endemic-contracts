@@ -3,6 +3,7 @@ pragma solidity ^0.8.4;
 
 import "./MarketplaceCore.sol";
 import "../erc-721/IEndemicMasterNFT.sol";
+import "../erc-20/IERC20.sol";
 
 contract Marketplace is MarketplaceCore {
     /// @param _makerFee - percent fee the marketplace takes on each auction from seller
@@ -16,7 +17,8 @@ contract Marketplace is MarketplaceCore {
         uint256 _takerFee,
         uint256 _initialSaleCut,
         uint256 _masterKeyCut,
-        IEndemicMasterNFT _masterNFTContract
+        IEndemicMasterNFT _masterNFTContract,
+        IERC20 _wrappedNEAR
     ) external initializer {
         require(_makerFee <= 10000);
         require(_takerFee <= 10000);
@@ -28,7 +30,8 @@ contract Marketplace is MarketplaceCore {
         __Ownable_init_unchained();
         __TransferManager___init_unchained(
             0x0c6b78ed2b909E7Fc7D0d0BdA0c8AeEA3f367E0D,
-            _masterNFTContract
+            _masterNFTContract,
+            _wrappedNEAR
         );
         __FeeManager___init_unchained(
             _makerFee,

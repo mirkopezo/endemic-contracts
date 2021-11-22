@@ -130,11 +130,8 @@ abstract contract MarketplaceCore is
             auction.seller
         );
 
-        uint256 price = LibAuction.currentPrice(auction) * _tokenAmount;
-        require(
-            msg.value >= price,
-            "Bid amount can not be lower then auction price"
-        );
+        uint256 priceWithoutFees = LibAuction.currentPrice(auction) *
+            _tokenAmount;
 
         address seller = auction.seller;
         bytes32 auctionId = auction.id;
@@ -150,7 +147,13 @@ abstract contract MarketplaceCore is
             revert("Invalid asset class");
         }
 
-        _handlePayment(contractId, tokenId, seller, _msgSender(), price);
+        _handlePayment(
+            contractId,
+            tokenId,
+            seller,
+            _msgSender(),
+            priceWithoutFees
+        );
 
         _transfer(
             seller,
@@ -161,7 +164,12 @@ abstract contract MarketplaceCore is
             assetClass
         );
 
-        emit AuctionSuccessful(auctionId, price, _msgSender(), _tokenAmount);
+        emit AuctionSuccessful(
+            auctionId,
+            priceWithoutFees,
+            _msgSender(),
+            _tokenAmount
+        );
     }
 
     function cancelAuction(bytes32 _id) external {
@@ -247,24 +255,25 @@ abstract contract MarketplaceCore is
         uint256 _tokenId,
         address _seller,
         address _buyer,
-        uint256 _price
+        uint256 _priceWithoutFees
     ) internal {
-        if (_price > 0) {
-            uint256 takerCut = _computeTakerCut(_price, _buyer);
-            require(msg.value >= _price + takerCut, "Not enough funds sent");
+        if (_priceWithoutFees > 0) {
+            uint256 takerCut = _computeTakerCut(_priceWithoutFees, _buyer);
+            // require(msg.value >= _price + takerCut, "Not enough funds sent");
 
             uint256 makerCut = _computeMakerCut(
-                _price,
+                _priceWithoutFees,
                 _seller,
                 _nftContract,
                 _tokenId
             );
 
-            uint256 sellerProceeds = _price - makerCut;
-            _addMasterNFTContractShares(makerCut + takerCut);
+            uint256 fees = makerCut + takerCut;
+            uint256 sellerProceeds = _price - fees;
+            _addMasterNFTContractShares(fees);
 
-            (bool success, ) = payable(_seller).call{value: sellerProceeds}("");
-            require(success, "Transfer failed.");
+            _transferWrappedNear(_buyer, _seller, sellerProceeds);
+            _transferWrappedNear(_buyer, address(this), fees);
         } else {
             revert("Invalid price");
         }
