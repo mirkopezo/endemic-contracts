@@ -259,8 +259,6 @@ abstract contract MarketplaceCore is
     ) internal {
         if (_priceWithoutFees > 0) {
             uint256 takerCut = _computeTakerCut(_priceWithoutFees, _buyer);
-            // require(msg.value >= _price + takerCut, "Not enough funds sent");
-
             uint256 makerCut = _computeMakerCut(
                 _priceWithoutFees,
                 _seller,
@@ -270,10 +268,13 @@ abstract contract MarketplaceCore is
 
             uint256 fees = makerCut + takerCut;
             uint256 sellerProceeds = _price - fees;
-            _addMasterNFTContractShares(fees);
+
+            if (fees > 0) {
+                _addMasterNFTContractShares(fees);
+                _transferWrappedNear(_buyer, address(this), fees);
+            }
 
             _transferWrappedNear(_buyer, _seller, sellerProceeds);
-            _transferWrappedNear(_buyer, address(this), fees);
         } else {
             revert("Invalid price");
         }
