@@ -75,6 +75,7 @@ describe('Marketplace', function () {
 
     await erc20Token.transfer(owner.address, ethers.utils.parseUnits('1000')); // 1000 END
     await erc20Token.transfer(user2.address, ethers.utils.parseUnits('1000')); // 1000 END
+    await erc20Token.transfer(user3.address, ethers.utils.parseUnits('1000')); // 1000 END
   }
 
   describe('Initial State', function () {
@@ -787,6 +788,13 @@ describe('Marketplace', function () {
           marketplace.address,
           await erc20Token.balanceOf(user2.address)
         );
+
+      await erc20Token
+        .connect(user3)
+        .approve(
+          marketplace.address,
+          await erc20Token.balanceOf(user3.address)
+        );
     });
 
     it('should take cut on initial sale', async function () {
@@ -1135,102 +1143,6 @@ describe('Marketplace', function () {
       // Seller got full amount
       const user1Diff = user1Bal2.sub(user1Bal1);
       expect(user1Diff.toString()).to.equal(ethers.utils.parseUnits('0.312'));
-    });
-    it('should be able to withdraw funds to claim address', async function () {
-      await marketplace
-        .connect(user1)
-        .createAuction(
-          nftContract.address,
-          1,
-          ethers.utils.parseUnits('1'),
-          ethers.utils.parseUnits('1'),
-          1000,
-          1,
-          ERC721_ASSET_CLASS
-        );
-
-      const user1Bal1 = await erc20Token.balanceOf(user1.address);
-      const contractBal1 = await erc20Token.balanceOf(feeAddress);
-
-      const auctionid = await marketplace.createAuctionId(
-        nftContract.address,
-        1,
-        user1.address
-      );
-
-      // Buy NFT
-      await marketplace.connect(user3).bid(auctionid, 1);
-
-      // Contract has 0.03 from taker fee + 0.22 from maker fee
-      // Master key share is 5% of 0.25
-      await marketplace.connect(owner).claimETH();
-      const user1Bal2 = await erc20Token.balanceOf(user1.address);
-
-      const claimEthBalance = await marketplace.provider.getBalance(
-        '0x0c6b78ed2b909E7Fc7D0d0BdA0c8AeEA3f367E0D'
-      );
-
-      const contractBal2 = await erc20Token.balanceOf(feeAddress);
-
-      expect(user1Bal2.sub(user1Bal1).toString()).to.equal(
-        ethers.utils.parseUnits('0.78')
-      );
-      // 5% should stay in the contract for master key shares
-      expect(contractBal2.sub(contractBal1).toString()).to.equal(
-        ethers.utils.parseUnits('0.0125')
-      );
-
-      // 95% should be claimed
-      expect(claimEthBalance.toString()).to.equal(
-        ethers.utils.parseUnits('0.2375')
-      );
-    });
-
-    it('should be able to distribute master nft shares', async function () {
-      await masterNftContract
-        .connect(owner)
-        .addDistributor(marketplace.address);
-
-      // Create auction and buy NFT
-      await marketplace
-        .connect(user1)
-        .createAuction(
-          nftContract.address,
-          1,
-          ethers.utils.parseUnits('1'),
-          ethers.utils.parseUnits('1'),
-          60,
-          1,
-          ERC721_ASSET_CLASS
-        );
-
-      const auctionid = await marketplace.createAuctionId(
-        nftContract.address,
-        1,
-        user1.address
-      );
-
-      await marketplace.connect(user2).bid(auctionid, 1);
-
-      let currentBalances = [];
-
-      for (let i = 0; i < 3; i++) {
-        await masterNftContract.connect(owner).mintNFT(otherSigners[i].address);
-
-        let balanceOfAccount = await otherSigners[i].getBalance();
-        currentBalances.push(balanceOfAccount);
-      }
-
-      //Distribute fee, 5% of 22% of 1000 = 11
-      await marketplace.connect(owner).distributeMasterNFTShares();
-
-      // Check update balances
-      for (let i = 0; i < 3; i++) {
-        let updatedBalance = await otherSigners[i].getBalance();
-        expect(updatedBalance.sub(currentBalances[i]).toString()).to.equal(
-          ethers.utils.parseUnits('0.004166666666666666')
-        );
-      }
     });
   });
 

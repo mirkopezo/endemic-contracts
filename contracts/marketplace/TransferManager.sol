@@ -24,12 +24,6 @@ abstract contract TransferManager is OwnableUpgradeable {
         wrappedNEAR = _wrappedNEAR;
     }
 
-    // function distributeMasterNFTShares() external onlyOwner {
-    //     require(address(this).balance >= masterNFTShares, "Not enough funds");
-    //     masterNFT.distributeShares{value: masterNFTShares}();
-    //     masterNFTShares = 0;
-    // }
-
     function getAvailableMasterNftShares()
         external
         view

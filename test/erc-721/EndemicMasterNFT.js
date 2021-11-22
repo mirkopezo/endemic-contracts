@@ -9,7 +9,6 @@ describe('EndemicMasterNFT', function () {
     [owner, minter, user, ...otherSigners] = await ethers.getSigners();
 
     masterNftContract = await deployEndemicMasterNFT(owner);
-    await masterNftContract.addDistributor(owner.address);
   });
 
   it('should have correct initial data', async function () {
@@ -120,92 +119,6 @@ describe('EndemicMasterNFT', function () {
 
       await expect(masterNftContract.connect(owner).burn(tokenId)).to.be
         .reverted;
-    });
-  });
-
-  describe('Shares distribution', async () => {
-    it('should distribute shares to all token owners', async () => {
-      // Mint 5 master NFT-s.
-      let currentBalances = [];
-
-      for (let i = 0; i < 5; i++) {
-        await masterNftContract.connect(owner).mintNFT(otherSigners[i].address);
-
-        let balanceOfAccount = await otherSigners[i].getBalance();
-        currentBalances.push(balanceOfAccount);
-      }
-
-      // Distribute 1 ether
-      await masterNftContract.connect(owner).distributeShares({
-        value: ethers.utils.parseUnits('1'),
-      });
-
-      // Check updated balances
-      for (let i = 0; i < 5; i++) {
-        let updatedBalance = await otherSigners[i].getBalance();
-        expect(updatedBalance.sub(currentBalances[i]).toString()).to.equal(
-          ethers.utils.parseUnits((1 / 5).toString())
-        );
-      }
-    });
-
-    it('should fail to distribute shares if distributor is not a caller', async () => {
-      await expect(
-        masterNftContract.connect(user).distributeShares({
-          value: 1000,
-        })
-      ).to.be.revertedWith('Caller is not the distributor');
-    });
-  });
-
-  describe('Public Mint', () => {
-    it('cant mint if sale is not active', async () => {
-      await expect(
-        masterNftContract.publicMintNFT({
-          value: ethers.utils.parseUnits('1'),
-        })
-      ).to.be.revertedWith('Sale must be active');
-    });
-
-    it('can mint for eth', async () => {
-      await masterNftContract.toggleSaleState();
-
-      await masterNftContract.connect(user).publicMintNFT({
-        value: ethers.utils.parseUnits('15'),
-      });
-
-      const tokenId = await masterNftContract.tokenOfOwnerByIndex(
-        user.address,
-        0
-      );
-
-      expect(tokenId).to.eq('1');
-    });
-
-    it('cant mint for invalid value', async () => {
-      await masterNftContract.toggleSaleState();
-
-      await expect(
-        masterNftContract.connect(user).publicMintNFT({
-          value: ethers.utils.parseUnits('14'),
-        })
-      ).to.be.revertedWith('ETH sent is incorrect');
-    });
-  });
-
-  describe('Owner functions', () => {
-    it('should set sale price', async () => {
-      await masterNftContract.setSalePrice(ethers.utils.parseUnits('1'));
-      expect(await masterNftContract.price()).to.equal(
-        ethers.utils.parseUnits('1')
-      );
-    });
-
-    it('should set sale price', async () => {
-      await masterNftContract.setSalePrice(ethers.utils.parseUnits('1'));
-      expect(await masterNftContract.price()).to.equal(
-        ethers.utils.parseUnits('1')
-      );
     });
   });
 });
