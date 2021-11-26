@@ -34,6 +34,15 @@ export function updateStatsForTransfer(
   toUserStats.save();
 }
 
+export function updateCreatedStatsForBurn(
+  userAddress: string,
+  tokenAmount: BigInt
+): void {
+  let userStats = getOrCreateUserStats(userAddress);
+  userStats.createdCount = userStats.createdCount.minus(tokenAmount);
+  userStats.save();
+}
+
 export function updateStatsForCreate(
   userAddress: Address,
   tokenAmount: BigInt

@@ -4,6 +4,8 @@ import { Marketplace } from '../../generated/Marketplace/Marketplace';
 import { EndemicERC1155 } from '../../generated/templates/EndemicERC1155/EndemicERC1155';
 import * as addresses from '../data/addresses';
 import { handleAuctionCompletedForNFT } from './nft';
+import * as userStats from './userStats';
+import * as collectionStats from './collectionStats';
 
 export function getAuctionId(contractAddress: string, tokenId: string): string {
   return contractAddress + '-' + tokenId;
@@ -47,6 +49,16 @@ export function updateRelatedAuction(
     }
   } else {
     handleAuctionCompletedForNFT(nft, auctionIdValue);
+
+    userStats.updateStatsForAuctionCancel(
+      auction.seller.toHexString(),
+      BigInt.fromI32(1)
+    );
+    collectionStats.updateStatsForAuctionCancel(
+      nft.contractId.toHexString(),
+      auction.tokenAmount
+    );
+
     store.remove('Auction', auctionIdValue);
   }
 }

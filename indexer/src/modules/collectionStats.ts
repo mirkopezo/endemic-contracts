@@ -18,27 +18,7 @@ export function getOrCreateColectionStats(
   return stats;
 }
 
-export function updateERC721StatsForTransfer(
-  contractAddress: string,
-  from: Address,
-  to: Address
-): void {
-  let collectionStats = getOrCreateColectionStats(contractAddress);
-
-  if (isMintEvent(from)) {
-    collectionStats.totalCount = collectionStats.totalCount.plus(
-      BigInt.fromI32(1)
-    );
-    collectionStats.save();
-  } else if (isBurnEvent(to)) {
-    collectionStats.totalCount = collectionStats.totalCount.minus(
-      BigInt.fromI32(1)
-    );
-    collectionStats.save();
-  }
-}
-
-export function updateERC1155StatsForTransfer(
+export function updateStatsForTransfer(
   contractAddress: string,
   from: Address,
   to: Address,

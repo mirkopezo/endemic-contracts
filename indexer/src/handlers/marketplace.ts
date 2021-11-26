@@ -10,10 +10,13 @@ import {
   handleAuctionCreatedForNFT,
 } from '../modules/nft';
 import { createAuctionActivity } from '../modules/activity';
-import * as collectionStats from '../modules/collectionStats';
-import * as userStats from '../modules/userStats';
-import { BigInt, store } from '@graphprotocol/graph-ts';
+import { BigInt, log, store } from '@graphprotocol/graph-ts';
 import { getOrCreateOwnership } from '../modules/ownership';
+import {
+  updateStatsForAuctionCancel,
+  updateStatsForAuctionCompleted,
+  updateStatsForAuctionCreate,
+} from '../modules/stats';
 
 export function handleAuctionCreated(event: AuctionCreated): void {
   let nftId = getNFTId(
@@ -21,20 +24,17 @@ export function handleAuctionCreated(event: AuctionCreated): void {
     event.params.tokenId.toString()
   );
 
-  let nft = NFT.load(nftId)!;
+  let nft = NFT.load(nftId);
+  if (nft == null) {
+    log.warning('NFT {} not available', [nftId]);
+    return;
+  }
 
   let auction = Auction.load(event.params.id.toHexString());
   if (!auction) {
     auction = new Auction(event.params.id.toHexString());
   } else {
-    collectionStats.updateStatsForAuctionCancel(
-      nft.contractId.toHexString(),
-      auction.tokenAmount
-    );
-    userStats.updateStatsForAuctionCancel(
-      event.params.seller.toHexString(),
-      auction.tokenAmount
-    );
+    updateStatsForAuctionCancel(nft, auction);
   }
 
   auction.startedAt = event.block.timestamp;
@@ -56,21 +56,21 @@ export function handleAuctionCreated(event: AuctionCreated): void {
   nftOwnership.nftIsOnSale = true;
   nftOwnership.save();
 
-  collectionStats.updateStatsForAuctionCreate(
-    nft.contractId.toHexString(),
-    event.params.amount
-  );
-  userStats.updateStatsForAuctionCreate(
-    event.params.seller.toHexString(),
-    auction.tokenAmount
-  );
-
+  updateStatsForAuctionCreate(auction, nft.contractId.toHexString());
   createAuctionActivity(auction, nft, 'auctionCreate', event);
 }
 
 export function handleAuctionSuccessful(event: AuctionSuccessful): void {
-  let auction = Auction.load(event.params.id.toHexString())!;
-  let nft = NFT.load(auction.nft)!;
+  let auction = Auction.load(event.params.id.toHexString());
+  if (auction == null) {
+    log.warning('Auction {} not available', [event.params.id.toHexString()]);
+    return;
+  }
+  let nft = NFT.load(auction.nft);
+  if (nft == null) {
+    log.warning('NFT {} not available', [auction.nft]);
+    return;
+  }
 
   auction.soldAt = event.block.timestamp;
   auction.buyer = event.params.winner;
@@ -90,27 +90,23 @@ export function handleAuctionSuccessful(event: AuctionSuccessful): void {
     nft.save();
   }
 
-  collectionStats.updateStatsForAuctionCompleted(
-    nft.contractId.toHexString(),
-    auction.totalPrice!,
-    event.params.amount
-  );
-
-  userStats.updateStatsForAuctionCompleted(
-    auction.buyer!.toHexString(),
-    auction.seller.toHexString(),
-    auction.totalPrice!,
-    event.params.amount
-  );
-
+  updateStatsForAuctionCompleted(auction, nft, event.params.amount);
   createAuctionActivity(auction, nft, 'auctionSuccess', event);
 }
 
 export function handleAuctionCancelled(event: AuctionCancelled): void {
-  let auction = Auction.load(event.params.id.toHexString())!;
+  let auction = Auction.load(event.params.id.toHexString());
+  if (auction == null) {
+    log.warning('Auction {} not available', [event.params.id.toHexString()]);
+    return;
+  }
   store.remove('Auction', auction.id);
 
-  let nft = NFT.load(auction.nft)!;
+  let nft = NFT.load(auction.nft);
+  if (nft == null) {
+    log.warning('NFT {} not available', [auction.nft]);
+    return;
+  }
   handleAuctionCompletedForNFT(nft, auction.id);
   nft.save();
 
@@ -119,15 +115,6 @@ export function handleAuctionCancelled(event: AuctionCancelled): void {
   nftOwnership.nftPrice = nft.price;
   nftOwnership.save();
 
+  updateStatsForAuctionCancel(nft, auction);
   createAuctionActivity(auction, nft, 'auctionCancel', event);
-
-  collectionStats.updateStatsForAuctionCancel(
-    nft.contractId.toHexString(),
-    auction.tokenAmount
-  );
-
-  userStats.updateStatsForAuctionCancel(
-    auction.seller.toHexString(),
-    auction.tokenAmount
-  );
 }

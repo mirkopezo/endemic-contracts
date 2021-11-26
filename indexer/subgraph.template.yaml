@@ -50,27 +50,27 @@ dataSources:
           handler: handleCreated
       file: ./src/handlers/erc721Factory.ts
 
-  - kind: ethereum/contract
-    name: EndemicERC1155Factory
-    network: {{network}}
-    source:
-      address: "{{erc1155FactoryAddress}}"
-      abi: EndemicERC1155Factory
-      startBlock: {{startBlock}}
-    mapping:
-      kind: ethereum/events
-      apiVersion: 0.0.5
-      language: wasm/assemblyscript
-      entities:
-        - NFTContract
-        - Account
-      abis:
-        - name: EndemicERC1155Factory
-          file: ./abis/EndemicERC1155Factory.json
-      eventHandlers:
-        - event: Created(indexed address,indexed address,string,string,string)
-          handler: handleCreated
-      file: ./src/handlers/erc1155Factory.ts
+  # - kind: ethereum/contract
+  #   name: EndemicERC1155Factory
+  #   network: {{network}}
+  #   source:
+  #     address: "{{erc1155FactoryAddress}}"
+  #     abi: EndemicERC1155Factory
+  #     startBlock: {{startBlock}}
+  #   mapping:
+  #     kind: ethereum/events
+  #     apiVersion: 0.0.5
+  #     language: wasm/assemblyscript
+  #     entities:
+  #       - NFTContract
+  #       - Account
+  #     abis:
+  #       - name: EndemicERC1155Factory
+  #         file: ./abis/EndemicERC1155Factory.json
+  #     eventHandlers:
+  #       - event: Created(indexed address,indexed address,string,string,string)
+  #         handler: handleCreated
+  #     file: ./src/handlers/erc1155Factory.ts
 
 {{#collections}}
   - kind: ethereum/contract

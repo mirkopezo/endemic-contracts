@@ -14,13 +14,10 @@ import {
 } from '../modules/nft';
 import { createAccount } from '../modules/account';
 import { createERC1155TransferActivity } from '../modules/activity';
-import { updateERC1155StatsForTransfer } from '../modules/collectionStats';
-import {
-  updateStatsForTransfer as updateUserStatsForTransfer,
-  updateStatsForCreate as updateUserStatsForCreate,
-} from '../modules/userStats';
+import { updateStatsForCreate as updateUserStatsForCreate } from '../modules/userStats';
 import { updateERC1155Ownership } from '../modules/ownership';
 import { updateRelatedAuction } from '../modules/auction';
+import { updateStatsForTransfer } from '../modules/stats';
 
 export function handleTransferSingle(event: TransferSingle): void {
   let nftId = getNFTId(event.address.toHexString(), event.params.id.toString());
@@ -37,19 +34,14 @@ export function handleTransferSingle(event: TransferSingle): void {
 
   createAccount(event.params.to);
   createERC1155TransferActivity(nft, event);
-  updateERC1155StatsForTransfer(
-    nft.contractId.toHexString(),
+  updateStatsForTransfer(
+    nft,
     event.params.from,
     event.params.to,
     event.params.value
   );
   updateERC1155Ownership(
     nft,
-    event.params.from,
-    event.params.to,
-    event.params.value
-  );
-  updateUserStatsForTransfer(
     event.params.from,
     event.params.to,
     event.params.value

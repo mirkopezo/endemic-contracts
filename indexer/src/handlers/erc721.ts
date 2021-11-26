@@ -17,13 +17,10 @@ import { updateRelatedAuction } from '../modules/auction';
 import { createAccount } from '../modules/account';
 import { createERC721TransferActivity } from '../modules/activity';
 import { createThirdPartyNFTContract } from '../modules/nftContract';
-import { updateERC721StatsForTransfer } from '../modules/collectionStats';
-import {
-  updateStatsForTransfer as updateUserStatsForTransfer,
-  updateStatsForCreate as updateUserStatsForCreate,
-} from '../modules/userStats';
+import { updateStatsForCreate as updateUserStatsForCreate } from '../modules/userStats';
 
 import { updateERC721Ownership } from '../modules/ownership';
+import { updateStatsForTransfer } from '../modules/stats';
 
 export function handleTransfer(event: Transfer): void {
   if (event.params.tokenId.toString() == '') {
@@ -90,12 +87,8 @@ export function handleTransfer(event: Transfer): void {
   nft.save();
 
   createAccount(event.params.to);
-  updateERC721StatsForTransfer(
-    nft.contractId.toHexString(),
-    event.params.from,
-    event.params.to
-  );
-  updateUserStatsForTransfer(
+  updateStatsForTransfer(
+    nft,
     event.params.from,
     event.params.to,
     BigInt.fromI32(1)
