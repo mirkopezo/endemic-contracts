@@ -1,9 +1,13 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.4;
 
+import "@openzeppelin/contracts-upgradeable/utils/CountersUpgradeable.sol";
 import "./ERC721Base.sol";
 
 contract EndemicNFT is ERC721Base {
+    using CountersUpgradeable for CountersUpgradeable.Counter;
+    CountersUpgradeable.Counter private _tokenIdCounter;
+
     function __EndemicNFT_init(
         string memory name,
         string memory symbol,
@@ -32,7 +36,9 @@ contract EndemicNFT is ERC721Base {
             "mint caller is not owner nor approved"
         );
 
-        uint256 tokenId = totalSupply() + 1;
+        _tokenIdCounter.increment();
+        uint256 tokenId = _tokenIdCounter.current();
+
         _safeMint(recipient, tokenId);
         _setTokenURI(tokenId, tokenURI);
 

@@ -131,3 +131,4 @@ type _Schema_
     algorithm: proximityRank
     include: [{ entity: "NFT", fields: [{ name: "name" }, { name: "id" }] }]
   )
+
