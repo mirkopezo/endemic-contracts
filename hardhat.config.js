@@ -22,6 +22,11 @@ module.exports = {
   defaultNetwork: 'hardhat',
   networks: {
     hardhat: {},
+    mainnet_aurora: {
+      url: 'https://mainnet.aurora.dev',
+      accounts: [`0x${process.env.MAINNET_PRIVATE_KEY}`],
+      chainId: 1313161555,
+    }
     testnet_aurora: {
       url: 'https://testnet.aurora.dev',
       accounts: [`0x${process.env.PRIVATE_KEY}`],

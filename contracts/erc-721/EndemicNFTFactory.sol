@@ -11,7 +11,6 @@ import "./EndemicNFT.sol";
 contract EndemicNFTFactory is AccessControl, Pausable {
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
     IBeacon public beacon;
-    address defaultSigner;
     address marketplaceContract;
 
     constructor(IBeacon _beacon, address _marketplaceContract) {

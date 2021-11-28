@@ -1,5 +1,5 @@
 const { ethers, network, upgrades } = require('hardhat');
-const { getForNetwork } = require('./utils/addresses');
+const { getForNetwork } = require('../utils/addresses');
 
 async function main() {
   const [deployer] = await ethers.getSigners();

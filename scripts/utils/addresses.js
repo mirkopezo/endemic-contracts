@@ -4,7 +4,7 @@ const testnet_aurora = {
   endemicNftProxy: '0x521A502FE8BbE7865526DfB6EBCE92aB740200A8',
   endemicNftBeacon: '0x9680E47d863F5d5FEdEfeB2b5e161655df0c69b6',
   marketplaceProxy: '0x192A5Dc88b6d6e469EB701C305d14f188dF09644',
-  endemicNftFactory: '0x18F1Df65254eFc7031C30747de3D112B9E2A51B9',
+  endemicNftFactory: '0x55ca3a050BE0f58F8C63b45C278c3270e249b0ea',
   endemicErc20: '0x8F55D345458028d451C4f194E23c1B0150fa2567',
 
   endemicERC1155Proxy: '',
