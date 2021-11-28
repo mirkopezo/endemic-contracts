@@ -4,7 +4,7 @@ deployMasterKeysCollection:
 
 .PHONY: deployInitialErc721
 deployInitialErc721:
-	npx hardhat run scripts/derc-721/eploy-erc721-initial.js --network ${network}
+	npx hardhat run scripts/erc-721/deploy-erc721-initial.js --network ${network}
 
 .PHONY: deployEndemicCollection
 deployEndemicCollection:

@@ -1,6 +1,6 @@
 {
     "network": "aurora-testnet",
-    "nftFactoryAddress": "0x55ca3a050BE0f58F8C63b45C278c3270e249b0ea",
+    "nftFactoryAddress": "0xBA2D5636A3EE2C0528D0B4385d57E97Cb64B16e6",
     "marketplaceAddress": "0x192A5Dc88b6d6e469EB701C305d14f188dF09644",
     "erc1155FactoryAddress": "",
     "startBlock": 72141565,

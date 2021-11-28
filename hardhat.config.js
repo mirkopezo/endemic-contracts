@@ -26,7 +26,7 @@ module.exports = {
       url: 'https://mainnet.aurora.dev',
       accounts: [`0x${process.env.MAINNET_PRIVATE_KEY}`],
       chainId: 1313161555,
-    }
+    },
     testnet_aurora: {
       url: 'https://testnet.aurora.dev',
       accounts: [`0x${process.env.PRIVATE_KEY}`],

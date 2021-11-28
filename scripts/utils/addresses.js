@@ -1,10 +1,10 @@
 const testnet_aurora = {
   endemicMasterKeyProxy: '0x79356B3928fB4729F1F4e472AbE9C5a5f7Cd07c2',
   endemicCollection: '0xcAfDB0E39edCe1b9c336EcFd27f6636c890fA295',
-  endemicNftProxy: '0x521A502FE8BbE7865526DfB6EBCE92aB740200A8',
-  endemicNftBeacon: '0x9680E47d863F5d5FEdEfeB2b5e161655df0c69b6',
+  endemicNftProxy: '0x8F27e6c9f6053c8CcB4Ed355724acD9e3b1dC262',
+  endemicNftBeacon: '0x190FF6621404e1Ac72eE3F08AA3d88Dc5939a715',
   marketplaceProxy: '0x192A5Dc88b6d6e469EB701C305d14f188dF09644',
-  endemicNftFactory: '0x55ca3a050BE0f58F8C63b45C278c3270e249b0ea',
+  endemicNftFactory: '0xBA2D5636A3EE2C0528D0B4385d57E97Cb64B16e6',
   endemicErc20: '0x8F55D345458028d451C4f194E23c1B0150fa2567',
 
   endemicERC1155Proxy: '',

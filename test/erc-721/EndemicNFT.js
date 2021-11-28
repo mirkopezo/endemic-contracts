@@ -90,6 +90,42 @@ describe('EndemicNFT', function () {
           )
       ).to.be.revertedWith('mint caller is not owner nor approved');
     });
+
+    it('should mint an NFT after burn', async function () {
+      const tokenId = 1;
+
+      await lazyNftContract
+        .connect(owner)
+        .setApprovalForAll(user.address, true);
+
+      await lazyNftContract
+        .connect(user)
+        .mint(
+          user.address,
+          user2.address,
+          'bafybeigdyrzt5sfp7udm7hu76uh7y26nf3efuylqabf3oclgtqy55fbzdi'
+        );
+
+      await lazyNftContract.connect(user).burn(1);
+
+      await lazyNftContract
+        .connect(user)
+        .mint(
+          user.address,
+          user2.address,
+          'bafybeigdyrzt5sfp7udm7hu76uh7y26nf3efuylqabf3oclgtqy55fbzdi'
+        );
+
+      const nftOwnerAddress = await lazyNftContract.ownerOf(2);
+      expect(nftOwnerAddress).to.equal(user.address);
+
+      const tokenUri = await lazyNftContract.tokenURI(2);
+      expect(tokenUri).to.equal(
+        'ipfs://bafybeigdyrzt5sfp7udm7hu76uh7y26nf3efuylqabf3oclgtqy55fbzdi'
+      );
+
+      expect(await lazyNftContract.totalSupply()).to.equal('1');
+    });
   });
 
   it('sets default approver', async () => {
