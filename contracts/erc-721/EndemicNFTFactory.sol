@@ -4,9 +4,11 @@ pragma solidity ^0.8.4;
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/proxy/beacon/IBeacon.sol";
 import "@openzeppelin/contracts/proxy/beacon/BeaconProxy.sol";
+import "@openzeppelin/contracts/security/Pausable.sol";
+
 import "./EndemicNFT.sol";
 
-contract EndemicNFTFactory is AccessControl {
+contract EndemicNFTFactory is AccessControl, Pausable {
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
     IBeacon public beacon;
     address defaultSigner;
@@ -45,6 +47,7 @@ contract EndemicNFTFactory is AccessControl {
 
     function createToken(DeployParams calldata params)
         external
+        whenNotPaused
         onlyRole(MINTER_ROLE)
     {
         bytes memory data = abi.encodeWithSelector(
@@ -66,5 +69,13 @@ contract EndemicNFTFactory is AccessControl {
             params.symbol,
             params.category
         );
+    }
+
+    function pause() external onlyRole(DEFAULT_ADMIN_ROLE) {
+        _pause();
+    }
+
+    function unpause() external onlyRole(DEFAULT_ADMIN_ROLE) {
+        _unpause();
     }
 }

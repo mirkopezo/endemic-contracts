@@ -4,9 +4,10 @@ pragma solidity ^0.8.4;
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/proxy/beacon/IBeacon.sol";
 import "@openzeppelin/contracts/proxy/beacon/BeaconProxy.sol";
+import "@openzeppelin/contracts/security/Pausable.sol";
 import "./EndemicERC1155.sol";
 
-contract EndemicERC1155Factory is AccessControl {
+contract EndemicERC1155Factory is AccessControl, Pausable {
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
     IBeacon public beacon;
     address defaultSigner;
@@ -45,6 +46,7 @@ contract EndemicERC1155Factory is AccessControl {
 
     function createToken(DeployParams calldata params)
         external
+        whenNotPaused
         onlyRole(MINTER_ROLE)
     {
         bytes memory data = abi.encodeWithSelector(
@@ -66,5 +68,13 @@ contract EndemicERC1155Factory is AccessControl {
             params.symbol,
             params.category
         );
+    }
+
+    function pause() external onlyRole(DEFAULT_ADMIN_ROLE) {
+        _pause();
+    }
+
+    function unpause() external onlyRole(DEFAULT_ADMIN_ROLE) {
+        _unpause();
     }
 }
