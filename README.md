@@ -8,12 +8,5 @@ $ yarn test
 ## Indexer
 ```
 $ cd indexer
-$ yarn install
-$ yarn prepare:local
-$ yarn create-local
-$ yarn deploy-local
+$ yarn deploy:{network}
 ```
-
-## Need
-- Signer account
-- Contract upgrade admin account
