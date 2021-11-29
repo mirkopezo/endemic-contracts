@@ -1,7 +1,7 @@
 {
     "network": "rinkeby",
     "nftFactoryAddress": "0xb7452f9838f8fe74ee63446F50C608480F1683c6",
-    "marketplaceAddress": "0xb5a6A16E9b6b98E40B88603800810C0b10f093e0",
+    "marketplaceAddress": "0xb179972406ee40d0D94BBbc76Cf14a88d7780B08",
     "erc1155FactoryAddress": "0x2c4ba617735b8ccab49CBf7eCC0a33fF8245bE86",
     "startBlock": 9447173,
     "collections": [
