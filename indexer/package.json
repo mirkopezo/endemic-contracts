@@ -4,15 +4,12 @@
   "scripts": {
     "codegen": "graph codegen",
     "build": "graph build",
-    "deploy:rinkeby": "graph deploy mmarinovic/endemic-rinkeby --node https://api.thegraph.com/deploy/ --ipfs https://api.thegraph.com/ipfs/ ",
-    "deploy:testnet_aurora": "graph deploy endemic-nft/endemic-aurora-t3stnet --node https://api.thegraph.com/deploy/ --ipfs https://api.thegraph.com/ipfs/ ",
-    "deploy:test": "graph deploy mmarinovic/nft-rinkeby-erc1155 --node https://api.thegraph.com/deploy/ --ipfs https://api.thegraph.com/ipfs/ ",
-    "create:local": "graph create blank-development/nft-platform-ethereum --node http://127.0.0.1:8020 ",
-    "remove:local": "graph remove blank-development/nft-platform-ethereum --node http://127.0.0.1:8020",
-    "deploy:local": "graph deploy blank-development/nft-platform-ethereum --node http://127.0.0.1:8020 --ipfs http://localhost:5001 ",
     "prepare:rinkeby": "mustache configs/rinkeby.json subgraph.template.yaml > subgraph.yaml",
     "prepare:aurora_testnet": "mustache configs/aurora_testnet.json subgraph.template.yaml > subgraph.yaml",
-    "prepare:local": "mustache configs/local.json subgraph.template.yaml > subgraph.yaml"
+    "prepare:aurora": "mustache configs/aurora.json subgraph.template.yaml > subgraph.yaml",
+    "deploy:rinkeby": "npm run prepare:rinkeby && graph deploy mmarinovic/endemic-rinkeby --node https://api.thegraph.com/deploy/ --ipfs https://api.thegraph.com/ipfs/ ",
+    "deploy:aurora": "npm run prepare:aurora && graph deploy endemic-nft/endemic-aurora --node https://api.thegraph.com/deploy/ --ipfs https://api.thegraph.com/ipfs/ ",
+    "deploy:aurora_testnet": "npm run prepare:aurora_testnet && graph deploy endemic-nft/endemic-aurora-t3stnet --node https://api.thegraph.com/deploy/ --ipfs https://api.thegraph.com/ipfs/ "
   },
   "dependencies": {
     "@graphprotocol/graph-ts": "^0.23.1",
@@ -22,3 +19,5 @@
     "prettier": "^2.4.1"
   }
 }
+
+

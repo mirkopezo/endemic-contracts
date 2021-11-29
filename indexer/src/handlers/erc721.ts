@@ -3,7 +3,6 @@ import {
   Transfer,
   Mint,
 } from '../../generated/templates/EndemicNFT/EndemicNFT';
-
 import { NFT, NFTContract } from '../../generated/schema';
 import {
   getERC721TokenURI,
@@ -13,24 +12,25 @@ import {
   isMintEvent,
   isMarketplaceAddress,
 } from '../modules/nft';
-import { updateRelatedAuction } from '../modules/auction';
+import { removeActiveAuction } from '../modules/auction';
 import { createAccount } from '../modules/account';
 import { createERC721TransferActivity } from '../modules/activity';
 import { createThirdPartyNFTContract } from '../modules/nftContract';
 import { updateStatsForCreate as updateUserStatsForCreate } from '../modules/userStats';
-
 import { updateERC721Ownership } from '../modules/ownership';
 import { updateStatsForTransfer } from '../modules/stats';
 
 export function handleTransfer(event: Transfer): void {
-  if (event.params.tokenId.toString() == '') {
-    return;
-  }
+  log.warning('handleTransfer: {} to {}', [
+    event.params.from.toHexString(),
+    event.params.to.toHexString(),
+  ]);
 
   let id = getNFTId(
     event.address.toHexString(),
     event.params.tokenId.toString()
   );
+
   let tokenURI = getERC721TokenURI(event.address, event.params.tokenId);
   let nft = NFT.load(id);
 
@@ -81,7 +81,7 @@ export function handleTransfer(event: Transfer): void {
     !isMarketplaceAddress(event.transaction.to!.toHexString()) &&
     !isMintEvent(event.params.from)
   ) {
-    updateRelatedAuction(nft, event.params.from, BigInt.fromI32(1));
+    removeActiveAuction(nft, event.params.from, BigInt.fromI32(1));
   }
 
   nft.save();
@@ -93,8 +93,18 @@ export function handleTransfer(event: Transfer): void {
     event.params.to,
     BigInt.fromI32(1)
   );
+  log.warning('Updating ownership: {} to {}', [
+    event.params.from.toHexString(),
+    event.params.to.toHexString(),
+  ]);
   updateERC721Ownership(nft, event.params.from, event.params.to);
+  log.warning('Updating activity: {} to {}', [
+    event.params.from.toHexString(),
+    event.params.to.toHexString(),
+  ]);
   createERC721TransferActivity(nft, event);
+
+  log.warning('done {}', [nft.id]);
 }
 
 export function handleMint(event: Mint): void {

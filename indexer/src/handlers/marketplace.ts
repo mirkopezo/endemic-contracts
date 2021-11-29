@@ -80,11 +80,9 @@ export function handleAuctionSuccessful(event: AuctionSuccessful): void {
   auction.save();
 
   let isAuctionCompleted = auction.tokenAmount <= BigInt.fromI32(0);
-  if (isAuctionCompleted) {
-    store.remove('Auction', auction.id);
-  }
 
   if (isAuctionCompleted) {
+    store.remove('Auction', auction.id);
     handleAuctionCompletedForNFT(nft, auction.id);
     nft.lastSalePrice = auction.totalPrice;
     nft.save();

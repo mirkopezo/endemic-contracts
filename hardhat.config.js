@@ -22,12 +22,12 @@ module.exports = {
   defaultNetwork: 'hardhat',
   networks: {
     hardhat: {},
-    // mainnet_aurora: {
-    //   url: 'https://mainnet.aurora.dev',
-    //   accounts: [`0x${process.env.MAINNET_PRIVATE_KEY}`],
-    //   chainId: 1313161555,
-    // },
-    testnet_aurora: {
+    aurora: {
+      url: 'https://mainnet.aurora.dev',
+      accounts: [`0x${process.env.MAINNET_PRIVATE_KEY}`],
+      chainId: 1313161554,
+    },
+    aurora_testnet: {
       url: 'https://testnet.aurora.dev',
       accounts: [`0x${process.env.PRIVATE_KEY}`],
       chainId: 1313161555,
@@ -39,7 +39,7 @@ module.exports = {
   },
   gasReporter: {
     currency: 'USD',
-    gasPrice: 120,
+    gasPrice: 100,
     coinmarketcap: process.env.COINMARKETCAP_API_KEY,
   },
   etherscan: {

@@ -6,6 +6,10 @@ import * as addresses from '../data/addresses';
 import { Metadata } from './models';
 import { filter } from '../utils/array';
 
+export function isMarketplaceAddress(address: String): boolean {
+  return address.toLowerCase() == addresses.EndemicMarketplace.toLowerCase();
+}
+
 export function isMintEvent(from: Address): boolean {
   return from.toHexString() == addresses.Null;
 }
@@ -94,11 +98,11 @@ export function readTokenMetadataFromIPFS(tokenURI: string): Metadata | null {
 }
 
 export function handleAuctionCreatedForNFT(nft: NFT, auction: Auction): void {
-  nft.isOnSale = true;
-
   let auctionIds = nft.auctionIds;
   auctionIds.push(auction.id.toString());
+
   nft.auctionIds = auctionIds;
+  nft.isOnSale = true;
 
   if (nft.type == 'ERC-1155') {
     if (nft.price === null || nft.price > auction.startingPrice) {
@@ -135,8 +139,4 @@ export function handleAuctionCompletedForNFT(
     nft.isOnSale = false;
     nft.price = BigInt.fromI32(0);
   }
-}
-
-export function isMarketplaceAddress(address: String): boolean {
-  return address.toLowerCase() == addresses.EndemicMarketplace.toLowerCase();
 }

@@ -16,7 +16,7 @@ import { createAccount } from '../modules/account';
 import { createERC1155TransferActivity } from '../modules/activity';
 import { updateStatsForCreate as updateUserStatsForCreate } from '../modules/userStats';
 import { updateERC1155Ownership } from '../modules/ownership';
-import { updateRelatedAuction } from '../modules/auction';
+import { removeActiveAuction } from '../modules/auction';
 import { updateStatsForTransfer } from '../modules/stats';
 
 export function handleTransferSingle(event: TransferSingle): void {
@@ -28,7 +28,7 @@ export function handleTransferSingle(event: TransferSingle): void {
     !isMarketplaceAddress(event.transaction.to!.toHexString()) &&
     !isMintEvent(event.params.from)
   ) {
-    updateRelatedAuction(nft, event.params.from, event.params.value);
+    removeActiveAuction(nft, event.params.from, event.params.value);
     nft.save();
   }
 

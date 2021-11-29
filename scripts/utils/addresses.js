@@ -1,4 +1,4 @@
-const testnet_aurora = {
+const aurora_testnet = {
   endemicMasterKeyProxy: '0x79356B3928fB4729F1F4e472AbE9C5a5f7Cd07c2',
   endemicCollection: '0xcAfDB0E39edCe1b9c336EcFd27f6636c890fA295',
   endemicNftProxy: '0x8F27e6c9f6053c8CcB4Ed355724acD9e3b1dC262',
@@ -6,6 +6,20 @@ const testnet_aurora = {
   marketplaceProxy: '0x192A5Dc88b6d6e469EB701C305d14f188dF09644',
   endemicNftFactory: '0xBA2D5636A3EE2C0528D0B4385d57E97Cb64B16e6',
   endemicErc20: '0x8F55D345458028d451C4f194E23c1B0150fa2567',
+
+  endemicERC1155Proxy: '',
+  endemicERC1155Beacon: '',
+  endemicERC1155Factory: '',
+};
+
+const aurora = {
+  endemicMasterKeyProxy: '0x737De210b5b70de2f6A52af558120a36d3eE3067',
+  endemicCollection: '',
+  endemicNftProxy: '0x7f5C4AdeD107F66687E6E55dEe36A3A8FA3de030',
+  endemicNftBeacon: '0xebF9D94516c2952B1bd9aA082f6bb5e402274C8f',
+  marketplaceProxy: '0x11245523341e83558Db402a955ed7DF3320C1BF8',
+  endemicNftFactory: '0x0b57A0eEA3b688BDcAc8FFb3bE6d549Ea7561D7b',
+  endemicErc20: '',
 
   endemicERC1155Proxy: '',
   endemicERC1155Beacon: '',
@@ -25,7 +39,8 @@ const rinkeby = {
 };
 
 const networks = {
-  testnet_aurora,
+  aurora_testnet,
+  aurora,
   rinkeby,
 };
 

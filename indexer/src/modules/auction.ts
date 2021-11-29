@@ -1,13 +1,12 @@
 import { Address, BigInt, store } from '@graphprotocol/graph-ts';
 import { Auction, NFT } from '../../generated/schema';
 import { Marketplace } from '../../generated/Marketplace/Marketplace';
-import { EndemicERC1155 } from '../../generated/templates/EndemicERC1155/EndemicERC1155';
 import * as addresses from '../data/addresses';
 import { handleAuctionCompletedForNFT } from './nft';
 import * as userStats from './userStats';
 import * as collectionStats from './collectionStats';
 
-export function updateRelatedAuction(
+export function removeActiveAuction(
   nft: NFT,
   seller: Address,
   amount: BigInt
@@ -29,32 +28,18 @@ export function updateRelatedAuction(
   let auction = Auction.load(auctionIdValue);
   if (auction == null) return;
 
-  if (nft.type == 'ERC-1155') {
-    let sellerBalance = EndemicERC1155.bind(
-      Address.fromString(nft.contractId.toHexString())
-    ).balanceOf(seller, nft.tokenId);
-
-    let newBalance = sellerBalance.minus(amount);
-    if (newBalance < auction.tokenAmount) {
-      auction.tokenAmount = newBalance;
-      if (auction.tokenAmount <= BigInt.fromI32(0)) {
-        store.remove('Auction', auctionIdValue);
-      } else {
-        auction.save();
-      }
-    }
-  } else {
-    handleAuctionCompletedForNFT(nft, auctionIdValue);
-
-    userStats.updateStatsForAuctionCancel(
-      auction.seller.toHexString(),
-      BigInt.fromI32(1)
-    );
-    collectionStats.updateStatsForAuctionCancel(
-      nft.contractId.toHexString(),
-      auction.tokenAmount
-    );
-
+  auction.tokenAmount = auction.tokenAmount.minus(amount);
+  if (auction.tokenAmount <= BigInt.fromI32(0)) {
     store.remove('Auction', auctionIdValue);
+  } else {
+    auction.save();
   }
+
+  userStats.updateStatsForAuctionCancel(auction.seller.toHexString(), amount);
+  collectionStats.updateStatsForAuctionCancel(
+    nft.contractId.toHexString(),
+    amount
+  );
+
+  handleAuctionCompletedForNFT(nft, auctionIdValue);
 }
