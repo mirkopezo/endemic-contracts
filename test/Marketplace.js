@@ -662,6 +662,10 @@ describe('Marketplace', function () {
           1
         );
 
+      await expect(bid1)
+        .to.emit(nftContract, 'Transfer')
+        .withArgs(user1.address, user2.address, 1);
+
       const bid2 = marketplace.connect(user2).bid(erc1155AuctionId, 2, {
         value: ethers.utils.parseUnits('0.206'),
       });

@@ -1,4 +1,4 @@
-import { Address, BigInt, log, store } from '@graphprotocol/graph-ts';
+import { Address, BigInt, store } from '@graphprotocol/graph-ts';
 import { Auction, NFT } from '../../generated/schema';
 import { Marketplace } from '../../generated/Marketplace/Marketplace';
 import { EndemicERC1155 } from '../../generated/templates/EndemicERC1155/EndemicERC1155';
@@ -6,10 +6,6 @@ import * as addresses from '../data/addresses';
 import { handleAuctionCompletedForNFT } from './nft';
 import * as userStats from './userStats';
 import * as collectionStats from './collectionStats';
-
-export function getAuctionId(contractAddress: string, tokenId: string): string {
-  return contractAddress + '-' + tokenId;
-}
 
 export function updateRelatedAuction(
   nft: NFT,
