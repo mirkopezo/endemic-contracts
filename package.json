@@ -1,4 +1,6 @@
 {
+  "name": "endemic-contracts",
+  "license": "ISC",
   "scripts": {
     "compile": "npx hardhat compile",
     "test": "npx hardhat test",
