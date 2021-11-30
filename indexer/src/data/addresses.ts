@@ -1,2 +1,2 @@
 export const Null = '0x0000000000000000000000000000000000000000';
-export const EndemicMarketplace = '0x192A5Dc88b6d6e469EB701C305d14f188dF09644';
+export const EndemicMarketplace = '0x11245523341e83558Db402a955ed7DF3320C1BF8';
