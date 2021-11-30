@@ -8,7 +8,7 @@ async function main() {
   const EndemicMasterNFT = await ethers.getContractFactory('EndemicMasterNFT');
   const masterNFTProxy = await upgrades.deployProxy(
     EndemicMasterNFT,
-    ['https://storage.googleapis.com/nft-meta/master-keys/'],
+    ['https://storage.googleapis.com/endemic-master-keys/'],
     {
       deployer,
       initializer: '__EndemicMasterNFT_init',
