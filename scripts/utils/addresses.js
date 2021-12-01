@@ -1,6 +1,6 @@
 const aurora_testnet = {
   endemicMasterKeyProxy: '0x79356B3928fB4729F1F4e472AbE9C5a5f7Cd07c2',
-  endemicCollection: '0xcAfDB0E39edCe1b9c336EcFd27f6636c890fA295',
+  endemicCollection: '0xAEdea478eD31a54C6812EfE671d02335c4cA8253',
   endemicNftProxy: '0x8F27e6c9f6053c8CcB4Ed355724acD9e3b1dC262',
   endemicNftBeacon: '0x190FF6621404e1Ac72eE3F08AA3d88Dc5939a715',
   marketplaceProxy: '0x192A5Dc88b6d6e469EB701C305d14f188dF09644',
