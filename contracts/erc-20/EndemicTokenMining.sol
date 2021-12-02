@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: UNLICENSED
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
@@ -24,47 +24,47 @@ contract EndemicTokenMining is Ownable {
     }
 
     function claim(
-        Balance[] memory _balances,
+        Balance[] memory balances,
         uint8 v,
         bytes32 r,
         bytes32 s
     ) public {
         require(
-            recoverSigner(prepareMessage(_balances), v, r, s) == owner(),
+            recoverSigner(prepareMessage(balances), v, r, s) == owner(),
             "Owner should sign message"
         );
 
-        for (uint256 i = 0; i < _balances.length; i++) {
-            address recipient = _balances[i].recipient;
+        for (uint256 i = 0; i < balances.length; i++) {
+            address recipient = balances[i].recipient;
             if (_msgSender() == recipient) {
-                uint256 toClaim = _balances[i].value.sub(claimed[recipient]);
+                uint256 toClaim = balances[i].value.sub(claimed[recipient]);
                 require(toClaim > 0, "nothing to claim");
-                claimed[recipient] = _balances[i].value;
+                claimed[recipient] = balances[i].value;
                 require(
                     endToken.transfer(_msgSender(), toClaim),
                     "transfer is not successful"
                 );
                 emit Claim(recipient, toClaim);
-                emit Value(recipient, _balances[i].value);
+                emit Value(recipient, balances[i].value);
                 return;
             }
         }
         revert("caller not found in recipients");
     }
 
-    function updateClaimed(Balance[] memory _balances) public onlyOwner {
-        for (uint256 i = 0; i < _balances.length; i++) {
-            claimed[_balances[i].recipient] = _balances[i].value;
-            emit Value(_balances[i].recipient, _balances[i].value);
+    function updateClaimed(Balance[] memory balances) public onlyOwner {
+        for (uint256 i = 0; i < balances.length; i++) {
+            claimed[balances[i].recipient] = balances[i].value;
+            emit Value(balances[i].recipient, balances[i].value);
         }
     }
 
-    function prepareMessage(Balance[] memory _balances)
+    function prepareMessage(Balance[] memory balances)
         internal
         pure
         returns (bytes32)
     {
-        return keccak256(abi.encode(_balances));
+        return keccak256(abi.encode(balances));
     }
 
     function recoverSigner(

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: UNLICENSED
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
@@ -8,22 +8,14 @@ contract EndemicVesting {
     using SafeMath for uint256;
     using SafeMath for uint16;
 
-    modifier onlyMultiSig() {
-        require(msg.sender == multiSig, "Not multisig");
-        _;
-    }
-
-    modifier onlyValidAddress(address _recipient) {
-        require(
-            _recipient != address(0) &&
-                _recipient != address(this) &&
-                _recipient != address(token),
-            "Not valid _recipient"
-        );
-        _;
-    }
-
     uint256 internal constant SECONDS_PER_DAY = 86400;
+
+    ERC20 public token;
+
+    mapping(uint256 => Grant) public tokenGrants;
+    mapping(address => uint256[]) private activeGrants;
+    address public multiSig;
+    uint256 public totalVestingCount;
 
     struct Grant {
         uint256 startTime;
@@ -45,12 +37,20 @@ contract EndemicVesting {
     );
     event ChangedMultisig(address multisig);
 
-    ERC20 public token;
+    modifier onlyMultiSig() {
+        require(msg.sender == multiSig, "Not multisig");
+        _;
+    }
 
-    mapping(uint256 => Grant) public tokenGrants;
-    mapping(address => uint256[]) private activeGrants;
-    address public multiSig;
-    uint256 public totalVestingCount;
+    modifier onlyValidAddress(address recipient) {
+        require(
+            recipient != address(0) &&
+                recipient != address(this) &&
+                recipient != address(token),
+            "Not valid _recipient"
+        );
+        _;
+    }
 
     constructor(ERC20 _token, address _multisig) {
         require(address(_token) != address(0));

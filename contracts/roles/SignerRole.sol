@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: UNLICENSED
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "./Roles.sol";
@@ -12,7 +12,10 @@ abstract contract SignerRole is OwnableUpgradeable {
     Roles.Role private _signers;
 
     modifier onlySigner() {
-        require(isSigner(_msgSender()), "SignerRole: caller does not have the Signer role");
+        require(
+            isSigner(_msgSender()),
+            "SignerRole: caller does not have the Signer role"
+        );
         _;
     }
 

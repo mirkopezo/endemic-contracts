@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: UNLICENSED
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721URIStorageUpgradeable.sol";
@@ -25,6 +25,10 @@ abstract contract ERC721Base is
         _setDefaultApproval(operator, hasApproval);
     }
 
+    function setBaseTokenURI(string memory baseTokenURI) external onlyOwner {
+        _setBaseURI(baseTokenURI);
+    }
+
     function tokenURI(uint256 tokenId)
         public
         view
@@ -34,24 +38,6 @@ abstract contract ERC721Base is
         return super.tokenURI(tokenId);
     }
 
-    function setBaseTokenURI(string memory baseTokenURI) public onlyOwner {
-        _setBaseURI(baseTokenURI);
-    }
-
-    function _setBaseURI(string memory baseTokenURI) internal {
-        baseURI = baseTokenURI;
-    }
-
-    function _isApprovedOrOwner(address spender, uint256 tokenId)
-        internal
-        view
-        virtual
-        override(ERC721Upgradeable, ERC721DefaultApproval)
-        returns (bool)
-    {
-        return ERC721DefaultApproval._isApprovedOrOwner(spender, tokenId);
-    }
-
     function isApprovedForAll(address _owner, address _operator)
         public
         view
@@ -59,6 +45,15 @@ abstract contract ERC721Base is
         returns (bool)
     {
         return ERC721DefaultApproval.isApprovedForAll(_owner, _operator);
+    }
+
+    function supportsInterface(bytes4 interfaceId)
+        public
+        view
+        override(ERC721Upgradeable, ERC721EnumerableUpgradeable)
+        returns (bool)
+    {
+        return super.supportsInterface(interfaceId);
     }
 
     function _baseURI()
@@ -77,21 +72,26 @@ abstract contract ERC721Base is
         super._burn(tokenId);
     }
 
+    function _setBaseURI(string memory baseTokenURI) internal {
+        baseURI = baseTokenURI;
+    }
+
+    function _isApprovedOrOwner(address spender, uint256 tokenId)
+        internal
+        view
+        virtual
+        override(ERC721Upgradeable, ERC721DefaultApproval)
+        returns (bool)
+    {
+        return ERC721DefaultApproval._isApprovedOrOwner(spender, tokenId);
+    }
+
     function _beforeTokenTransfer(
         address from,
         address to,
         uint256 tokenId
     ) internal override(ERC721Upgradeable, ERC721EnumerableUpgradeable) {
         super._beforeTokenTransfer(from, to, tokenId);
-    }
-
-    function supportsInterface(bytes4 interfaceId)
-        public
-        view
-        override(ERC721Upgradeable, ERC721EnumerableUpgradeable)
-        returns (bool)
-    {
-        return super.supportsInterface(interfaceId);
     }
 
     uint256[50] private __gap;

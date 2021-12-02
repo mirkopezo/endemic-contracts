@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: UNLICENSED
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
 library LibAuction {
@@ -14,7 +14,6 @@ library LibAuction {
         uint256 endingPrice;
         uint256 duration;
         uint256 amount;
-        // NOTE: 0 if this auction has been concluded
         uint256 startedAt;
         bytes4 assetClass;
     }

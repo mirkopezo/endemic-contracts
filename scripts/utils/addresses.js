@@ -1,11 +1,12 @@
 const aurora_testnet = {
-  endemicMasterKeyProxy: '0x79356B3928fB4729F1F4e472AbE9C5a5f7Cd07c2',
-  endemicCollection: '0xAEdea478eD31a54C6812EfE671d02335c4cA8253',
-  endemicNftProxy: '0x8F27e6c9f6053c8CcB4Ed355724acD9e3b1dC262',
-  endemicNftBeacon: '0x190FF6621404e1Ac72eE3F08AA3d88Dc5939a715',
-  marketplaceProxy: '0x192A5Dc88b6d6e469EB701C305d14f188dF09644',
-  endemicNftFactory: '0xBA2D5636A3EE2C0528D0B4385d57E97Cb64B16e6',
-  endemicErc20: '0x8F55D345458028d451C4f194E23c1B0150fa2567',
+  endemicMasterKeyProxy: '0x6D27C84EC245A7865718e1CDb7D1aE0EF4B6f08E',
+  endemicNftProxy: '0x599F825A6cBAdA1c8eB972F2ebb6780576d11B96',
+  endemicCollection: '0x1F081B956f670D0fbf6d02b0439e802540bA1aBD',
+  marketplaceProxy: '0x45b87060571e9d372c0762497b6893374f3638Ee',
+  endemicNftBeacon: '0xaFf28326DB64f2f02a7788A047E525B047c0A525',
+  endemicNftFactory: '0xa5572e8558b2CCf6Cb7f05f04f3803dc577966F1',
+
+  endemicErc20: '',
 
   endemicERC1155Proxy: '',
   endemicERC1155Beacon: '',
@@ -13,12 +14,13 @@ const aurora_testnet = {
 };
 
 const aurora = {
-  endemicMasterKeyProxy: '0x737De210b5b70de2f6A52af558120a36d3eE3067',
+  endemicMasterKeyProxy: '',
+  endemicNftProxy: '',
   endemicCollection: '',
-  endemicNftProxy: '0x7f5C4AdeD107F66687E6E55dEe36A3A8FA3de030',
-  endemicNftBeacon: '0xebF9D94516c2952B1bd9aA082f6bb5e402274C8f',
-  marketplaceProxy: '0x11245523341e83558Db402a955ed7DF3320C1BF8',
-  endemicNftFactory: '0x0b57A0eEA3b688BDcAc8FFb3bE6d549Ea7561D7b',
+  endemicNftBeacon: '',
+  marketplaceProxy: '',
+  endemicNftFactory: '',
+
   endemicErc20: '',
 
   endemicERC1155Proxy: '',

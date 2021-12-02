@@ -85,12 +85,19 @@ const deployMarketplace = async (
   masterNFTAddress,
   makerFee = 250, // 2.5% maker fee
   takerFee = 300, // 3% taker fee
-  initialFee = 2200 // 22% initial marketplace cut
+  initialFee = 2200 // 22% initial sale fee
 ) => {
   const Marketplace = await ethers.getContractFactory('Marketplace');
   const marketplaceContract = await upgrades.deployProxy(
     Marketplace,
-    [makerFee, takerFee, initialFee, 500, masterNFTAddress],
+    [
+      makerFee,
+      takerFee,
+      initialFee,
+      500,
+      masterNFTAddress,
+      '0x1d1C46273cEcC00F7503AB3E97A40a199bcd6b31',
+    ],
     {
       deployer,
       initializer: '__Marketplace_init',

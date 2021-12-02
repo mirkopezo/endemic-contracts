@@ -1210,7 +1210,7 @@ describe('Marketplace', function () {
       const user1Bal2 = await user1.getBalance();
 
       const claimEthBalance = await marketplace.provider.getBalance(
-        '0x0c6b78ed2b909E7Fc7D0d0BdA0c8AeEA3f367E0D'
+        '0x1d1C46273cEcC00F7503AB3E97A40a199bcd6b31'
       );
 
       const contractBal2 = await marketplace.provider.getBalance(
@@ -1269,7 +1269,7 @@ describe('Marketplace', function () {
       }
 
       //Distribute fee, 5% of 22% of 1000 = 11
-      await marketplace.connect(owner).distributeMasterNFTShares();
+      await marketplace.connect(owner).distributeMasterNftShares();
 
       // Check update balances
       for (let i = 0; i < 3; i++) {

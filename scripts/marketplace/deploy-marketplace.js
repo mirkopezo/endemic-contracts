@@ -10,7 +10,14 @@ async function main() {
   const Marketplace = await ethers.getContractFactory('Marketplace');
   const marketPlaceProxy = await upgrades.deployProxy(
     Marketplace,
-    [375, 375, 375, 0, endemicMasterKeyProxy],
+    [
+      375,
+      375,
+      375,
+      0,
+      endemicMasterKeyProxy,
+      '0x1d1C46273cEcC00F7503AB3E97A40a199bcd6b31',
+    ],
     {
       deployer,
       initializer: '__Marketplace_init',
