@@ -121,11 +121,26 @@ const deployEndemicMasterNFT = async (deployer) => {
   return masterNftContract;
 };
 
+const deployBid = async (deployer, fee, masterNFTAddress) => {
+  const Bid = await ethers.getContractFactory('Bid');
+  const bidContract = await upgrades.deployProxy(
+    Bid,
+    [fee, masterNFTAddress, '0x1d1C46273cEcC00F7503AB3E97A40a199bcd6b31'],
+    {
+      deployer,
+      initializer: '__Bid_init',
+    }
+  );
+  await bidContract.deployed();
+  return bidContract;
+};
+
 module.exports = {
   deployEndemicToken,
   deployEndemicNFT,
   deployMarketplace,
   deployEndemicMasterNFT,
+  deployBid,
   deployEndemic,
   deployEndemicTokenMining,
   deployEndemicVesting,
