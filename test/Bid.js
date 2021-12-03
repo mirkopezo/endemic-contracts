@@ -234,7 +234,7 @@ describe('Bid', function () {
       expect(await nftContract.ownerOf(1)).to.equal(owner.address);
 
       const feeBalance = await nftContract.provider.getBalance(
-        '0x1d1C46273cEcC00F7503AB3E97A40a199bcd6b31'
+        '0x1D96e9bA0a7c1fdCEB33F3f4C71ca9117FfbE5CD'
       );
 
       expect(feeBalance).to.equal(ethers.utils.parseUnits('0.015'));

@@ -3,10 +3,10 @@ const { getForNetwork } = require('../utils/addresses');
 
 async function main() {
   const [deployer] = await ethers.getSigners();
-  const { marketplaceProxy } = getForNetwork(network.name);
+  const { bidProxy } = getForNetwork(network.name);
 
-  const Marketplace = await ethers.getContractFactory('Marketplace');
-  await upgrades.upgradeProxy(marketplaceProxy, Marketplace, { deployer });
+  const Bid = await ethers.getContractFactory('Bid');
+  await upgrades.upgradeProxy(bidProxy, Bid, { deployer });
 }
 
 main()
