@@ -13,7 +13,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [12.x]
+        node-version: [14.x]
 
     steps:
     - uses: actions/checkout@v1
@@ -28,7 +28,7 @@ jobs:
       run: |
         yarn test
       env:
-        ETHERSCAN_KEY: ZACIH6PH846I5MQGXH6HVJDV6WCJBT766U
-        PRIVATE_KEY: 727d1a87bcbd1883828be841e6cfb8c98971779b030b3ad4480a64a052aeac4d
-        MAINNET_PRIVATE_KEY: 727d1a87bcbd1883828be841e6cfb8c98971779b030b3ad4480a64a052aeac4d
-        ALCHEMY_API_KEY: Iw34o-VYAykzHt1_-ZoDYqVihmK5vMF7
+        ETHERSCAN_KEY: ${{ secrets.ETHERSCAN_KEY }}
+        PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+        MAINNET_PRIVATE_KEY: ${{ secrets.MAINNET_PRIVATE_KEY }}
+        ALCHEMY_API_KEY: ${{ secrets.ALCHEMY_API_KEY }}

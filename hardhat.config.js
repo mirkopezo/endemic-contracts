@@ -29,7 +29,7 @@ module.exports = {
     },
     aurora_testnet: {
       url: 'https://testnet.aurora.dev',
-      accounts: [`0x${process.env.PRIVATE_KEY}`],
+      accounts: [``],
       chainId: 1313161555,
     },
     rinkeby: {
@@ -41,8 +41,5 @@ module.exports = {
     currency: 'USD',
     gasPrice: 100,
     coinmarketcap: process.env.COINMARKETCAP_API_KEY,
-  },
-  etherscan: {
-    apiKey: process.env.ETHERSCAN_API_KEY,
   },
 };
