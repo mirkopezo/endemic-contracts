@@ -42,6 +42,7 @@ describe('Bid', function () {
     nftContract2 = await deployEndemicNFT(user1);
 
     await mint(1, user1.address);
+    await mint(2, user1.address);
   }
 
   describe('Initial State', () => {
@@ -123,7 +124,31 @@ describe('Bid', function () {
         bidContract.connect(user1).placeBid(nftContract.address, 1, 1000, {
           value: ethers.utils.parseUnits('0.5'),
         })
-      ).to.be.revertedWith("Token can't be burned or owned by the sender");
+      ).to.be.revertedWith('Token is burned or owned by the sender');
+    });
+
+    it('should fail to bid with invalid duration', async () => {
+      await expect(
+        bidContract.placeBid(nftContract.address, 1, 1, {
+          value: ethers.utils.parseUnits('0.5'),
+        })
+      ).to.be.revertedWith('Bid duration too short');
+
+      await expect(
+        bidContract.placeBid(nftContract.address, 1, 9999999999, {
+          value: ethers.utils.parseUnits('0.5'),
+        })
+      ).to.be.revertedWith('Bid duration too long');
+    });
+
+    it('should fail to create bid when paused', async () => {
+      await bidContract.pause();
+
+      await expect(
+        bidContract.placeBid(nftContract.address, 1, 1000, {
+          value: ethers.utils.parseUnits('0.5'),
+        })
+      ).to.be.revertedWith('Pausable: paused');
     });
   });
 
@@ -188,6 +213,58 @@ describe('Bid', function () {
       );
 
       expect(activeBid.bidIndex).to.equal(0);
+    });
+
+    it('should fail to cancel bid when paused', async () => {
+      await bidContract.placeBid(nftContract.address, 1, 1000, {
+        value: ethers.utils.parseUnits('0.5'),
+      });
+
+      await bidContract.pause();
+
+      await expect(
+        bidContract.cancelBid(nftContract.address, 1)
+      ).to.be.revertedWith('Pausable: paused');
+    });
+
+    it('should remove expired bid', async () => {
+      await bidContract.placeBid(nftContract.address, 1, 100, {
+        value: ethers.utils.parseUnits('0.5'),
+      });
+
+      await bidContract.connect(user2).placeBid(nftContract.address, 2, 100, {
+        value: ethers.utils.parseUnits('0.5'),
+      });
+
+      await bidContract.connect(user2).placeBid(nftContract.address, 1, 500, {
+        value: ethers.utils.parseUnits('0.4'),
+      });
+
+      await network.provider.send('evm_increaseTime', [200]);
+      await network.provider.send('evm_mine');
+
+      await bidContract.removeExpiredBids(
+        [nftContract.address, nftContract.address],
+        [1, 2],
+        [owner.address, user2.address]
+      );
+
+      await expect(
+        bidContract.getBidByBidder(nftContract.address, 1, owner.address)
+      ).to.be.revertedWith('Bidder has not an active bid for this token');
+
+      await expect(
+        bidContract.getBidByBidder(nftContract.address, 2, user2.address)
+      ).to.be.revertedWith('Invalid index');
+
+      const bid = await bidContract.getBidByBidder(
+        nftContract.address,
+        1,
+        user2.address
+      );
+
+      expect(bid.bidder).to.equal(user2.address);
+      expect(bid.price).to.equal(ethers.utils.parseUnits('0.4'));
     });
   });
 

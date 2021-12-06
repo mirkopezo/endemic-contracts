@@ -93,7 +93,7 @@ abstract contract BidCore is PausableUpgradeable, OwnableUpgradeable {
 
         require(
             nftOwner != address(0) && nftOwner != _msgSender(),
-            "Token can't be burned or owned by the sender"
+            "Token is burned or owned by the sender"
         );
 
         require(duration >= MIN_BID_DURATION, "Bid duration too short");
@@ -197,6 +197,14 @@ abstract contract BidCore is PausableUpgradeable, OwnableUpgradeable {
         );
 
         _cancelBid(bidIndex, bidId, nftContract, tokenId, _msgSender(), price);
+    }
+
+    function pause() external onlyOwner {
+        _pause();
+    }
+
+    function unpause() external onlyOwner {
+        _unpause();
     }
 
     function onERC721Received(
