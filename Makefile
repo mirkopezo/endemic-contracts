@@ -22,6 +22,10 @@ deployBeacon:
 deployFactory:
 	npx hardhat run scripts/erc-721/deploy-nft-factory.js --network ${network}
 
+.PHONY: deployBid
+deployBid:
+	npx hardhat run scripts/bid/deploy-bid.js --network ${network}
+
 .PHONY: upgradeErc721
 upgradeErc721:
 	npx hardhat run scripts/erc-721/upgrade-erc721-proxy.js --network ${network}
