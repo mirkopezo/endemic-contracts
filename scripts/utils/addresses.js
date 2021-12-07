@@ -15,12 +15,12 @@ const aurora_testnet = {
 };
 
 const aurora = {
-  endemicMasterKeyProxy: '',
-  endemicNftProxy: '',
-  endemicCollection: '',
-  endemicNftBeacon: '',
-  marketplaceProxy: '',
-  endemicNftFactory: '',
+  endemicMasterKeyProxy: '0x97cb197f862173a0f4c0B9Fda3272b56464578cc',
+  endemicNftProxy: '0xCd75e540157E04b0a7f1E347d21dED2FF748AD0f',
+  endemicCollection: '0x329b61bF16aDd14863c1C154614888F14303169c',
+  endemicNftBeacon: '0xAfAF30cB1215e344088296e058c7694bAeBAe1E9',
+  marketplaceProxy: '0xdC446d49c0055B48Ad6626FDf0F358396c8C0D06',
+  endemicNftFactory: '0xf44F8a702945B1dc9819286D11E8cFce94d90Ef2',
   bidProxy: '',
 
   endemicErc20: '',
