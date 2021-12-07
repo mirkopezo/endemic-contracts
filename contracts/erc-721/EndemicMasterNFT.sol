@@ -20,7 +20,7 @@ contract EndemicMasterNFT is DistributorRole, ERC721Base {
     {
         __Context_init_unchained();
         __ERC165_init_unchained();
-        __ERC721_init_unchained("Endemic Master Keys", "EMK");
+        __ERC721_init_unchained("Lost Animals of the World", "LAW");
         __ERC721Enumerable_init_unchained();
         __ERC721URIStorage_init_unchained();
         __ERC721Burnable_init_unchained();
