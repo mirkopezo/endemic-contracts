@@ -21,7 +21,7 @@ const aurora = {
   endemicNftBeacon: '0xAfAF30cB1215e344088296e058c7694bAeBAe1E9',
   marketplaceProxy: '0xdC446d49c0055B48Ad6626FDf0F358396c8C0D06',
   endemicNftFactory: '0xf44F8a702945B1dc9819286D11E8cFce94d90Ef2',
-  bidProxy: '',
+  bidProxy: '0x70669ea7C7c7364fbC7418e7d12F416379389fC4',
 
   endemicErc20: '',
 
