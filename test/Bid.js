@@ -347,5 +347,16 @@ describe('Bid', function () {
 
       expect(await nftContract.ownerOf(1)).to.equal(owner.address);
     });
+
+    it('should get correct fee', async () => {
+      const fee = await bidContract.getFee(user1.address);
+      expect(fee.toString()).to.equal('300');
+
+      await masterNftContract.mintNFT(user1.address);
+
+      const feeWithMasterKey = await bidContract.getFee(user1.address);
+
+      expect(feeWithMasterKey.toString()).to.equal('0');
+    });
   });
 });

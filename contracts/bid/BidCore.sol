@@ -207,6 +207,14 @@ abstract contract BidCore is PausableUpgradeable, OwnableUpgradeable {
         _unpause();
     }
 
+    function getFee(address actor) public view returns (uint256) {
+        if (IEndemicMasterNFT(masterNFTAddress).balanceOf(actor) > 0) {
+            return 0;
+        }
+
+        return fee;
+    }
+
     function onERC721Received(
         address _from,
         address, /*_to*/
@@ -236,11 +244,7 @@ abstract contract BidCore is PausableUpgradeable, OwnableUpgradeable {
         IERC721(_msgSender()).safeTransferFrom(address(this), bidder, _tokenId);
 
         uint256 saleShareAmount = 0;
-
-        uint256 transactionFee = fee;
-        if (IEndemicMasterNFT(masterNFTAddress).balanceOf(_from) > 0) {
-            transactionFee = 0;
-        }
+        uint256 transactionFee = getFee(_from);
 
         if (transactionFee > 0) {
             saleShareAmount = price.mul(transactionFee).div(10000);

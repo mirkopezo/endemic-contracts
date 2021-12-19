@@ -14,10 +14,10 @@ describe('EndemicMasterNFT', function () {
 
   it('should have correct initial data', async function () {
     const name = await masterNftContract.name();
-    expect(name).to.equal('Endemic Master Keys');
+    expect(name).to.equal('Lost Animals of the World');
 
     const symbol = await masterNftContract.symbol();
-    expect(symbol).to.equal('EMK');
+    expect(symbol).to.equal('LAW');
 
     const ownerAddress = await masterNftContract.owner();
     expect(ownerAddress).to.equal(owner.address);
