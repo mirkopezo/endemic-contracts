@@ -2,7 +2,6 @@ const { expect } = require('chai');
 const { ethers, upgrades } = require('hardhat');
 const {
   deployEndemicMasterNFT,
-  deployMarketplace,
   deployEndemicERC1155,
 } = require('../helpers/deploy');
 

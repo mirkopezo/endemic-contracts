@@ -8,6 +8,7 @@ import "@openzeppelin/contracts-upgradeable/utils/math/SafeMathUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol";
 import "../erc-721/IERC721.sol";
 import "../erc-721/IEndemicMasterNFT.sol";
+import "../fee/IFeeProvider.sol";
 
 abstract contract BidCore is PausableUpgradeable, OwnableUpgradeable {
     using SafeMathUpgradeable for uint256;
@@ -28,10 +29,10 @@ abstract contract BidCore is PausableUpgradeable, OwnableUpgradeable {
     mapping(address => mapping(uint256 => mapping(uint256 => Bid)))
         internal bidsByToken;
 
-    uint256 public fee;
-    address public feeClaimAddress;
+    address feeClaimAddress;
 
-    address masterNFTAddress;
+    IFeeProvider feeProvider;
+    IEndemicMasterNFT masterNFT;
 
     struct Bid {
         bytes32 id;
@@ -39,6 +40,7 @@ abstract contract BidCore is PausableUpgradeable, OwnableUpgradeable {
         uint256 tokenId;
         address bidder;
         uint256 price;
+        uint256 priceWithFee;
         uint256 expiresAt;
     }
 
@@ -68,13 +70,13 @@ abstract contract BidCore is PausableUpgradeable, OwnableUpgradeable {
     );
 
     function __BidCore___init_unchained(
-        uint256 _fee,
-        address _masterNFTAddress,
+        IFeeProvider _feeProvider,
+        IEndemicMasterNFT _masterNFT,
         address _feeClaimAddress
     ) internal initializer {
-        fee = _fee;
+        feeProvider = _feeProvider;
+        masterNFT = _masterNFT;
         feeClaimAddress = _feeClaimAddress;
-        masterNFTAddress = _masterNFTAddress;
 
         ERC721_Received = 0x150b7a02;
         MAX_BID_DURATION = 182 days;
@@ -112,7 +114,13 @@ abstract contract BidCore is PausableUpgradeable, OwnableUpgradeable {
             )
         );
 
+        uint256 takerFee = feeProvider.getTakerFee(_msgSender());
+        uint256 takerCut = (msg.value * takerFee) / 10000;
+
         uint256 bidIndex;
+
+        uint256 priceWithFee = msg.value;
+        uint256 price = priceWithFee.sub(takerCut);
 
         require(
             !_bidderHasBid(nftContract, tokenId, _msgSender()),
@@ -127,7 +135,8 @@ abstract contract BidCore is PausableUpgradeable, OwnableUpgradeable {
             bidder: _msgSender(),
             nftContract: nftContract,
             tokenId: tokenId,
-            price: msg.value,
+            price: price,
+            priceWithFee: priceWithFee,
             expiresAt: expiresAt
         });
 
@@ -136,7 +145,7 @@ abstract contract BidCore is PausableUpgradeable, OwnableUpgradeable {
             nftContract,
             tokenId,
             _msgSender(),
-            msg.value,
+            price,
             expiresAt
         );
     }
@@ -153,12 +162,13 @@ abstract contract BidCore is PausableUpgradeable, OwnableUpgradeable {
             bytes32 bidId,
             address bidder,
             uint256 price,
+            uint256 priceWithFee,
             uint256 expiresAt
         )
     {
         bidId = bidIdByTokenAndBidder[nftContract][tokenId][_bidder];
         bidIndex = bidIndexByBidId[bidId];
-        (bidId, bidder, price, expiresAt) = getBidByToken(
+        (bidId, bidder, price, priceWithFee, expiresAt) = getBidByToken(
             nftContract,
             tokenId,
             bidIndex
@@ -179,24 +189,35 @@ abstract contract BidCore is PausableUpgradeable, OwnableUpgradeable {
             bytes32,
             address,
             uint256,
+            uint256,
             uint256
         )
     {
         Bid memory bid = _getBid(nftContract, tokenId, index);
-        return (bid.id, bid.bidder, bid.price, bid.expiresAt);
+        return (bid.id, bid.bidder, bid.price, bid.priceWithFee, bid.expiresAt);
     }
 
     function cancelBid(address nftContract, uint256 tokenId)
         external
         whenNotPaused
     {
-        (uint256 bidIndex, bytes32 bidId, , uint256 price, ) = getBidByBidder(
+        (
+            uint256 bidIndex,
+            bytes32 bidId,
+            ,
+            ,
+            uint256 priceWithFee,
+
+        ) = getBidByBidder(nftContract, tokenId, _msgSender());
+
+        _cancelBid(
+            bidIndex,
+            bidId,
             nftContract,
             tokenId,
-            _msgSender()
+            _msgSender(),
+            priceWithFee
         );
-
-        _cancelBid(bidIndex, bidId, nftContract, tokenId, _msgSender(), price);
     }
 
     function pause() external onlyOwner {
@@ -205,14 +226,6 @@ abstract contract BidCore is PausableUpgradeable, OwnableUpgradeable {
 
     function unpause() external onlyOwner {
         _unpause();
-    }
-
-    function getFee(address actor) public view returns (uint256) {
-        if (IEndemicMasterNFT(masterNFTAddress).balanceOf(actor) > 0) {
-            return 0;
-        }
-
-        return fee;
     }
 
     function onERC721Received(
@@ -233,6 +246,7 @@ abstract contract BidCore is PausableUpgradeable, OwnableUpgradeable {
 
         address bidder = bid.bidder;
         uint256 price = bid.price;
+        uint256 priceWithFee = bid.priceWithFee;
 
         delete bidsByToken[_msgSender()][_tokenId][bidIndex];
         delete bidIndexByBidId[bidId];
@@ -240,30 +254,55 @@ abstract contract BidCore is PausableUpgradeable, OwnableUpgradeable {
 
         delete bidCounterByToken[_msgSender()][_tokenId];
 
-        // Transfer token to bidder
-        IERC721(_msgSender()).safeTransferFrom(address(this), bidder, _tokenId);
+        uint256 totalCut = _calculateCut(
+            _msgSender(),
+            _tokenId,
+            _from,
+            price,
+            priceWithFee
+        );
 
-        uint256 saleShareAmount = 0;
-        uint256 transactionFee = getFee(_from);
-
-        if (transactionFee > 0) {
-            saleShareAmount = price.mul(transactionFee).div(10000);
-
+        if (totalCut > 0) {
             (bool feeSuccess, ) = payable(feeClaimAddress).call{
-                value: saleShareAmount
+                value: totalCut
             }("");
             require(feeSuccess, "Fee Transfer failed.");
         }
 
-        uint256 sellerProceeds = price.sub(saleShareAmount);
+        // sale happened
+        feeProvider.onInitialSale(_msgSender(), _tokenId);
+
+        // Transfer token to bidder
+        IERC721(_msgSender()).safeTransferFrom(address(this), bidder, _tokenId);
 
         // Transfer ETH from bidder to seller
-        (bool success, ) = payable(_from).call{value: sellerProceeds}("");
+        (bool success, ) = payable(_from).call{
+            value: priceWithFee.sub(totalCut)
+        }("");
         require(success, "Transfer failed.");
 
-        emit BidAccepted(bidId, msg.sender, _tokenId, bidder, _from, price);
+        emit BidAccepted(bidId, _msgSender(), _tokenId, bidder, _from, price);
 
         return ERC721_Received;
+    }
+
+    function _calculateCut(
+        address _tokenAddress,
+        uint256 _tokenId,
+        address _seller,
+        uint256 price,
+        uint256 priceWithFee
+    ) internal view returns (uint256) {
+        uint256 makerFee = feeProvider.getMakerFee(
+            _seller,
+            _tokenAddress,
+            _tokenId
+        );
+
+        uint256 makerCut = price.mul(makerFee).div(10000);
+        uint256 takerCut = priceWithFee.sub(price);
+
+        return makerCut.add(takerCut);
     }
 
     function removeExpiredBids(
@@ -296,7 +335,8 @@ abstract contract BidCore is PausableUpgradeable, OwnableUpgradeable {
             uint256 bidIndex,
             bytes32 bidId,
             ,
-            uint256 price,
+            ,
+            uint256 priceWithFee,
             uint256 expiresAt
         ) = getBidByBidder(nftContract, tokenId, bidder);
 
@@ -305,7 +345,7 @@ abstract contract BidCore is PausableUpgradeable, OwnableUpgradeable {
             "The bid to remove should be expired"
         );
 
-        _cancelBid(bidIndex, bidId, nftContract, tokenId, bidder, price);
+        _cancelBid(bidIndex, bidId, nftContract, tokenId, bidder, priceWithFee);
     }
 
     function _cancelBid(
@@ -314,7 +354,7 @@ abstract contract BidCore is PausableUpgradeable, OwnableUpgradeable {
         address nftContract,
         uint256 tokenId,
         address bidder,
-        uint256 price
+        uint256 priceWithFee
     ) internal {
         // Delete bid references
         delete bidIndexByBidId[bidId];
@@ -334,7 +374,7 @@ abstract contract BidCore is PausableUpgradeable, OwnableUpgradeable {
         delete bidsByToken[nftContract][tokenId][lastBidIndex];
         bidCounterByToken[nftContract][tokenId]--;
 
-        (bool success, ) = payable(bidder).call{value: price}("");
+        (bool success, ) = payable(bidder).call{value: priceWithFee}("");
         require(success, "Refund failed.");
 
         emit BidCancelled(bidId, nftContract, tokenId, bidder);

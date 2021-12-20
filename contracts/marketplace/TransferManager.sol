@@ -5,76 +5,24 @@ import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "../erc-721/IERC721.sol";
 import "../erc-1155/IERC1155.sol";
 import "../erc-721/IEndemicMasterNFT.sol";
+import "../fee/IFeeProvider.sol";
 import "./LibAuction.sol";
 
 abstract contract TransferManager is OwnableUpgradeable {
-    uint256 public makerFee;
-    uint256 public takerFee;
-    uint256 public initialSaleFee;
-    uint256 public masterNftCut;
     uint256 public masterNftShares;
+    address feeClaimAddress;
 
-    mapping(address => mapping(uint256 => bool)) tradedTokens;
-
-    address claimEthAddress;
-
+    IFeeProvider feeProvider;
     IEndemicMasterNFT masterNFT;
 
     function __TransferManager___init_unchained(
-        uint256 _makerFee,
-        uint256 _takerFee,
-        uint256 _initialSaleFee,
-        uint256 _masterNftCut,
-        address _claimEthAddress,
-        IEndemicMasterNFT _masterNFT
+        IFeeProvider _feeProvider,
+        IEndemicMasterNFT _masterNFT,
+        address _feeClaimAddress
     ) internal initializer {
-        makerFee = _makerFee;
-        takerFee = _takerFee;
-        initialSaleFee = _initialSaleFee;
-        masterNftCut = _masterNftCut;
+        feeProvider = _feeProvider;
         masterNFT = _masterNFT;
-        claimEthAddress = _claimEthAddress;
-    }
-
-    function updateFee(
-        uint256 _makerFee,
-        uint256 _takerFee,
-        uint256 _initialSaleFee,
-        uint256 _masterNftCut
-    ) external onlyOwner {
-        require(_makerFee <= 10000);
-        require(_takerFee <= 10000);
-        require(_initialSaleFee <= 10000);
-        require(_masterNftCut <= 10000);
-        makerFee = _makerFee;
-        takerFee = _takerFee;
-        initialSaleFee = _initialSaleFee;
-        masterNftCut = _masterNftCut;
-    }
-
-    function getMakerFee(
-        address seller,
-        address nftContract,
-        uint256 tokenId
-    ) public view returns (uint256) {
-        require(seller != address(0));
-        require(nftContract != address(0));
-
-        if (_isAdressOwnerOfMasterNft(seller)) {
-            return 0;
-        }
-
-        bool isInitialSale = !tradedTokens[nftContract][tokenId];
-        return isInitialSale ? initialSaleFee : makerFee;
-    }
-
-    function getTakerFee(address buyer) public view returns (uint256) {
-        require(buyer != address(0));
-        if (_isAdressOwnerOfMasterNft(buyer)) {
-            return 0;
-        }
-
-        return takerFee;
+        feeClaimAddress = _feeClaimAddress;
     }
 
     function _computeMakerCut(
@@ -82,19 +30,14 @@ abstract contract TransferManager is OwnableUpgradeable {
         address seller,
         address nftContract,
         uint256 tokenId
-    ) internal returns (uint256) {
-        bool isInitialSale = !tradedTokens[nftContract][tokenId];
-        if (isInitialSale) {
-            tradedTokens[nftContract][tokenId] = true;
-        }
+    ) internal view returns (uint256) {
+        uint256 makerFee = feeProvider.getMakerFee(
+            seller,
+            nftContract,
+            tokenId
+        );
 
-        if (_isAdressOwnerOfMasterNft(seller)) {
-            return 0;
-        }
-
-        uint256 makerCut = isInitialSale ? initialSaleFee : makerFee;
-
-        return (price * makerCut) / 10000;
+        return (price * makerFee) / 10000;
     }
 
     function _computeTakerCut(uint256 price, address buyer)
@@ -102,25 +45,13 @@ abstract contract TransferManager is OwnableUpgradeable {
         view
         returns (uint256)
     {
-        if (_isAdressOwnerOfMasterNft(buyer)) {
-            return 0;
-        }
-
+        uint256 takerFee = feeProvider.getTakerFee(buyer);
         return (price * takerFee) / 10000;
-    }
-
-    function _isAdressOwnerOfMasterNft(address _address)
-        internal
-        view
-        returns (bool)
-    {
-        uint256 balance = masterNFT.balanceOf(_address);
-        return balance > 0;
     }
 
     function claimETH() external onlyOwner {
         uint256 claimableETH = address(this).balance - masterNftShares;
-        (bool success, ) = payable(claimEthAddress).call{value: claimableETH}(
+        (bool success, ) = payable(feeClaimAddress).call{value: claimableETH}(
             ""
         );
         require(success, "Transfer failed.");
@@ -155,6 +86,8 @@ abstract contract TransferManager is OwnableUpgradeable {
 
             _addMasterNftContractShares(fees);
 
+            feeProvider.onInitialSale(nftContract, tokenId);
+
             (bool success, ) = payable(seller).call{value: sellerProceeds}("");
             require(success, "Transfer failed.");
         } else {
@@ -186,7 +119,9 @@ abstract contract TransferManager is OwnableUpgradeable {
     }
 
     function _addMasterNftContractShares(uint256 marketplaceCut) internal {
-        masterNftShares += (marketplaceCut * masterNftCut) / 10000;
+        masterNftShares +=
+            (marketplaceCut * feeProvider.getMasterNftCut()) /
+            10000;
     }
 
     uint256[50] private __gap;

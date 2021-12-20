@@ -5,10 +5,18 @@ const {
   deployEndemicNFT,
   deployBid,
   deployEndemicMasterNFT,
+  deployContractRegistry,
+  deployFeeProvider,
 } = require('./helpers/deploy');
 
 describe('Bid', function () {
-  let bidContract, masterNftContract, nftContract, nftContract2;
+  let bidContract,
+    masterNftContract,
+    nftContract,
+    nftContract2,
+    feeProviderContract,
+    contractRegistryContract;
+
   let owner, user1, user2, user3;
 
   async function mint(id, recipient) {
@@ -31,15 +39,34 @@ describe('Bid', function () {
         data
       );
   }
-  async function deploy(fee = 300) {
+  async function deploy(makerFee = 300, takerFee = 300, initialFee = 2200) {
     [owner, user1, user2, user3, minter, signer, ...otherSigners] =
       await ethers.getSigners();
 
+    contractRegistryContract = await deployContractRegistry(owner);
     masterNftContract = await deployEndemicMasterNFT(owner);
-    bidContract = await deployBid(owner, fee, masterNftContract.address);
+
+    feeProviderContract = await deployFeeProvider(
+      owner,
+      masterNftContract.address,
+      contractRegistryContract.address,
+      makerFee,
+      takerFee,
+      initialFee
+    );
+
+    masterNftContract = await deployEndemicMasterNFT(owner);
+
+    bidContract = await deployBid(
+      owner,
+      feeProviderContract.address,
+      masterNftContract.address
+    );
 
     nftContract = await deployEndemicNFT(owner);
     nftContract2 = await deployEndemicNFT(user1);
+
+    await contractRegistryContract.addSaleContract(bidContract.address);
 
     await mint(1, user1.address);
     await mint(2, user1.address);
@@ -86,7 +113,8 @@ describe('Bid', function () {
 
       expect(activeBid.bidIndex).to.equal(0);
       expect(activeBid.bidder).to.equal(owner.address);
-      expect(activeBid.price).to.equal(ethers.utils.parseUnits('0.5'));
+      expect(activeBid.price).to.equal(ethers.utils.parseUnits('0.485'));
+      expect(activeBid.priceWithFee).to.equal(ethers.utils.parseUnits('0.5'));
     });
 
     it('should fail to bid multiple times on same token', async () => {
@@ -108,7 +136,8 @@ describe('Bid', function () {
 
       expect(activeBid.bidIndex).to.equal(0);
       expect(activeBid.bidder).to.equal(owner.address);
-      expect(activeBid.price).to.equal(ethers.utils.parseUnits('0.5'));
+      expect(activeBid.price).to.equal(ethers.utils.parseUnits('0.485'));
+      expect(activeBid.priceWithFee).to.equal(ethers.utils.parseUnits('0.5'));
     });
 
     it('should fail to create bid with no eth sent', async () => {
@@ -264,7 +293,7 @@ describe('Bid', function () {
       );
 
       expect(bid.bidder).to.equal(user2.address);
-      expect(bid.price).to.equal(ethers.utils.parseUnits('0.4'));
+      expect(bid.priceWithFee).to.equal(ethers.utils.parseUnits('0.4'));
     });
   });
 
@@ -272,6 +301,12 @@ describe('Bid', function () {
     beforeEach(deploy);
 
     it('should be able to accept bid', async () => {
+      // sending 0.5 eth
+      // taker fee is 3% = 0.015 eth
+      // owner of nft sees bid with 0.485 eth
+      // maker initial sale fee is 22% = 0.1067 eth
+      // owner will get 0.3783 eth
+      // total fee is 0.1217
       await bidContract.placeBid(nftContract.address, 1, 1000000, {
         value: ethers.utils.parseUnits('0.5'),
       });
@@ -298,13 +333,13 @@ describe('Bid', function () {
           1,
           owner.address,
           user1.address,
-          ethers.utils.parseUnits('0.5')
+          ethers.utils.parseUnits('0.485')
         );
 
       const user1Balance2 = await user1.getBalance();
 
       expect(user1Balance2.sub(user1Balance1)).to.be.closeTo(
-        ethers.utils.parseUnits('0.485'),
+        ethers.utils.parseUnits('0.378'),
         ethers.utils.parseUnits('0.001') //gas
       );
 
@@ -314,10 +349,10 @@ describe('Bid', function () {
         '0x1D96e9bA0a7c1fdCEB33F3f4C71ca9117FfbE5CD'
       );
 
-      expect(feeBalance).to.equal(ethers.utils.parseUnits('0.015'));
+      expect(feeBalance).to.equal(ethers.utils.parseUnits('0.1217'));
     });
 
-    it('should not charge fee if seller is owner of master nft', async () => {
+    it('should not charge maker fee if seller is owner of master nft', async () => {
       await masterNftContract.mintNFT(user1.address);
 
       await bidContract.placeBid(nftContract.address, 1, 1000000, {
@@ -346,17 +381,6 @@ describe('Bid', function () {
       );
 
       expect(await nftContract.ownerOf(1)).to.equal(owner.address);
-    });
-
-    it('should get correct fee', async () => {
-      const fee = await bidContract.getFee(user1.address);
-      expect(fee.toString()).to.equal('300');
-
-      await masterNftContract.mintNFT(user1.address);
-
-      const feeWithMasterKey = await bidContract.getFee(user1.address);
-
-      expect(feeWithMasterKey.toString()).to.equal('0');
     });
   });
 });
