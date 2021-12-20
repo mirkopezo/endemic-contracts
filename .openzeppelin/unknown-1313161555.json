@@ -84,6 +84,11 @@
       "address": "0xB17A0B9ad3160784F92653C19E7DDBE3DEEc54C0",
       "txHash": "0xc5d73e34883165458d566b076af01e82e5e00be07a5530ff6cbc8bda316251a5",
       "kind": "transparent"
+    },
+    {
+      "address": "0x7CDdB0f2defc12205693454a6B6581702e3C7924",
+      "txHash": "0x1de08499b7eef6b857a4fba69552e4f6ee22690252ac5495ff3a220ed8002b10",
+      "kind": "transparent"
     }
   ],
   "impls": {
@@ -1992,6 +1997,223 @@
             "label": "contract IFeeProvider"
           },
           "t_contract(IEndemicMasterNFT)10998": {
+            "label": "contract IEndemicMasterNFT"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]"
+          },
+          "t_bool": {
+            "label": "bool"
+          }
+        }
+      }
+    },
+    "a26fc167aa3df29d9dc92e0eb4b973347da90345c0db674c6f87b419621bcf5c": {
+      "address": "0x5E8b875AA421F85188cBF2BB212A9de8B63EDf59",
+      "txHash": "0xea9bb3b5847f1c8903e5e0d181f316365992d2eb2013fed93dafef662f224970",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:21"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:26"
+          },
+          {
+            "contract": "ContextUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol:30"
+          },
+          {
+            "contract": "PausableUpgradeable",
+            "label": "_paused",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol:28"
+          },
+          {
+            "contract": "PausableUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol:96"
+          },
+          {
+            "contract": "OwnableUpgradeable",
+            "label": "_owner",
+            "type": "t_address",
+            "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:21"
+          },
+          {
+            "contract": "OwnableUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:77"
+          },
+          {
+            "contract": "BidCore",
+            "label": "MAX_BID_DURATION",
+            "type": "t_uint256",
+            "src": "contracts/bid/BidCore.sol:17"
+          },
+          {
+            "contract": "BidCore",
+            "label": "MIN_BID_DURATION",
+            "type": "t_uint256",
+            "src": "contracts/bid/BidCore.sol:18"
+          },
+          {
+            "contract": "BidCore",
+            "label": "ERC721_Received",
+            "type": "t_bytes4",
+            "src": "contracts/bid/BidCore.sol:19"
+          },
+          {
+            "contract": "BidCore",
+            "label": "bidCounterByToken",
+            "type": "t_mapping(t_address,t_mapping(t_uint256,t_uint256))",
+            "src": "contracts/bid/BidCore.sol:22"
+          },
+          {
+            "contract": "BidCore",
+            "label": "bidIndexByBidId",
+            "type": "t_mapping(t_bytes32,t_uint256)",
+            "src": "contracts/bid/BidCore.sol:24"
+          },
+          {
+            "contract": "BidCore",
+            "label": "bidIdByTokenAndBidder",
+            "type": "t_mapping(t_address,t_mapping(t_uint256,t_mapping(t_address,t_bytes32)))",
+            "src": "contracts/bid/BidCore.sol:26"
+          },
+          {
+            "contract": "BidCore",
+            "label": "bidsByToken",
+            "type": "t_mapping(t_address,t_mapping(t_uint256,t_mapping(t_uint256,t_struct(Bid)7166_storage)))",
+            "src": "contracts/bid/BidCore.sol:29"
+          },
+          {
+            "contract": "BidCore",
+            "label": "feeClaimAddress",
+            "type": "t_address",
+            "src": "contracts/bid/BidCore.sol:32"
+          },
+          {
+            "contract": "BidCore",
+            "label": "masterNftShares",
+            "type": "t_uint256",
+            "src": "contracts/bid/BidCore.sol:33"
+          },
+          {
+            "contract": "BidCore",
+            "label": "feeProvider",
+            "type": "t_contract(IFeeProvider)11450",
+            "src": "contracts/bid/BidCore.sol:35"
+          },
+          {
+            "contract": "BidCore",
+            "label": "masterNFT",
+            "type": "t_contract(IEndemicMasterNFT)11058",
+            "src": "contracts/bid/BidCore.sol:36"
+          },
+          {
+            "contract": "BidCore",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "contracts/bid/BidCore.sol:443"
+          },
+          {
+            "contract": "Bid",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "contracts/bid/Bid.sol:26"
+          }
+        ],
+        "types": {
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_bytes4": {
+            "label": "bytes4"
+          },
+          "t_mapping(t_address,t_mapping(t_uint256,t_uint256))": {
+            "label": "mapping(address => mapping(uint256 => uint256))"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_mapping(t_uint256,t_uint256)": {
+            "label": "mapping(uint256 => uint256)"
+          },
+          "t_mapping(t_bytes32,t_uint256)": {
+            "label": "mapping(bytes32 => uint256)"
+          },
+          "t_bytes32": {
+            "label": "bytes32"
+          },
+          "t_mapping(t_address,t_mapping(t_uint256,t_mapping(t_address,t_bytes32)))": {
+            "label": "mapping(address => mapping(uint256 => mapping(address => bytes32)))"
+          },
+          "t_mapping(t_uint256,t_mapping(t_address,t_bytes32))": {
+            "label": "mapping(uint256 => mapping(address => bytes32))"
+          },
+          "t_mapping(t_address,t_bytes32)": {
+            "label": "mapping(address => bytes32)"
+          },
+          "t_mapping(t_address,t_mapping(t_uint256,t_mapping(t_uint256,t_struct(Bid)7166_storage)))": {
+            "label": "mapping(address => mapping(uint256 => mapping(uint256 => struct BidCore.Bid)))"
+          },
+          "t_mapping(t_uint256,t_mapping(t_uint256,t_struct(Bid)7166_storage))": {
+            "label": "mapping(uint256 => mapping(uint256 => struct BidCore.Bid))"
+          },
+          "t_mapping(t_uint256,t_struct(Bid)7166_storage)": {
+            "label": "mapping(uint256 => struct BidCore.Bid)"
+          },
+          "t_struct(Bid)7166_storage": {
+            "label": "struct BidCore.Bid",
+            "members": [
+              {
+                "label": "id",
+                "type": "t_bytes32"
+              },
+              {
+                "label": "nftContract",
+                "type": "t_address"
+              },
+              {
+                "label": "tokenId",
+                "type": "t_uint256"
+              },
+              {
+                "label": "bidder",
+                "type": "t_address"
+              },
+              {
+                "label": "price",
+                "type": "t_uint256"
+              },
+              {
+                "label": "priceWithFee",
+                "type": "t_uint256"
+              },
+              {
+                "label": "expiresAt",
+                "type": "t_uint256"
+              }
+            ]
+          },
+          "t_contract(IFeeProvider)11450": {
+            "label": "contract IFeeProvider"
+          },
+          "t_contract(IEndemicMasterNFT)11058": {
             "label": "contract IEndemicMasterNFT"
           },
           "t_array(t_uint256)49_storage": {
