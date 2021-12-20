@@ -55,8 +55,6 @@ describe('Bid', function () {
       initialFee
     );
 
-    masterNftContract = await deployEndemicMasterNFT(owner);
-
     bidContract = await deployBid(
       owner,
       feeProviderContract.address,
@@ -365,6 +363,10 @@ describe('Bid', function () {
         await bidContract.getBidByToken(nftContract.address, 1, 0)
       )[0];
 
+      const feeBalanceBefore = await nftContract.provider.getBalance(
+        '0x1D96e9bA0a7c1fdCEB33F3f4C71ca9117FfbE5CD'
+      );
+
       await safeTransferWithBytes(
         user1,
         user1.address,
@@ -373,14 +375,102 @@ describe('Bid', function () {
         bidId
       );
 
-      const user1Balance2 = await user1.getBalance();
+      expect(await nftContract.ownerOf(1)).to.equal(owner.address);
 
+      const user1Balance2 = await user1.getBalance();
+      expect(user1Balance2.sub(user1Balance1)).to.be.closeTo(
+        ethers.utils.parseUnits('0.485'),
+        ethers.utils.parseUnits('0.001') //gas
+      );
+
+      const feeBalanceAfter = await nftContract.provider.getBalance(
+        '0x1D96e9bA0a7c1fdCEB33F3f4C71ca9117FfbE5CD'
+      );
+      expect(feeBalanceAfter.sub(feeBalanceBefore)).to.equal(
+        ethers.utils.parseUnits('0.015')
+      );
+    });
+
+    it('should not charge taker fee if buyer is owner of master nft', async () => {
+      await masterNftContract.mintNFT(owner.address);
+
+      await bidContract.placeBid(nftContract.address, 1, 1000000, {
+        value: ethers.utils.parseUnits('0.5'),
+      });
+
+      const user1Balance1 = await user1.getBalance();
+
+      const bidId = (
+        await bidContract.getBidByToken(nftContract.address, 1, 0)
+      )[0];
+
+      const feeBalanceBefore = await nftContract.provider.getBalance(
+        '0x1D96e9bA0a7c1fdCEB33F3f4C71ca9117FfbE5CD'
+      );
+
+      await safeTransferWithBytes(
+        user1,
+        user1.address,
+        bidContract.address,
+        1,
+        bidId
+      );
+
+      expect(await nftContract.ownerOf(1)).to.equal(owner.address);
+
+      const user1Balance2 = await user1.getBalance();
+      expect(user1Balance2.sub(user1Balance1)).to.be.closeTo(
+        ethers.utils.parseUnits('0.39'),
+        ethers.utils.parseUnits('0.001') //gas
+      );
+
+      const feeBalanceAfter = await nftContract.provider.getBalance(
+        '0x1D96e9bA0a7c1fdCEB33F3f4C71ca9117FfbE5CD'
+      );
+      expect(feeBalanceAfter.sub(feeBalanceBefore)).to.equal(
+        ethers.utils.parseUnits('0.11')
+      );
+    });
+
+    it('should not charge fees if buyer and saler and owners of master nft', async () => {
+      await masterNftContract.mintNFT(owner.address);
+      await masterNftContract.mintNFT(user1.address);
+
+      await bidContract.placeBid(nftContract.address, 1, 1000000, {
+        value: ethers.utils.parseUnits('0.5'),
+      });
+
+      const user1Balance1 = await user1.getBalance();
+      const feeBalanceBefore = await nftContract.provider.getBalance(
+        '0x1D96e9bA0a7c1fdCEB33F3f4C71ca9117FfbE5CD'
+      );
+
+      const bidId = (
+        await bidContract.getBidByToken(nftContract.address, 1, 0)
+      )[0];
+
+      await safeTransferWithBytes(
+        user1,
+        user1.address,
+        bidContract.address,
+        1,
+        bidId
+      );
+
+      expect(await nftContract.ownerOf(1)).to.equal(owner.address);
+
+      const user1Balance2 = await user1.getBalance();
       expect(user1Balance2.sub(user1Balance1)).to.be.closeTo(
         ethers.utils.parseUnits('0.5'),
         ethers.utils.parseUnits('0.001') //gas
       );
 
-      expect(await nftContract.ownerOf(1)).to.equal(owner.address);
+      const feeBalanceAfter = await nftContract.provider.getBalance(
+        '0x1D96e9bA0a7c1fdCEB33F3f4C71ca9117FfbE5CD'
+      );
+      expect(feeBalanceAfter.sub(feeBalanceBefore)).to.equal(
+        ethers.utils.parseUnits('0')
+      );
     });
   });
 });
