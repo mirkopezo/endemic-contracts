@@ -30,6 +30,7 @@ abstract contract BidCore is PausableUpgradeable, OwnableUpgradeable {
         internal bidsByToken;
 
     address feeClaimAddress;
+    uint256 public masterNftShares;
 
     IFeeProvider feeProvider;
     IEndemicMasterNFT masterNFT;
@@ -263,8 +264,11 @@ abstract contract BidCore is PausableUpgradeable, OwnableUpgradeable {
         );
 
         if (totalCut > 0) {
+            uint256 masterShares = _calculateMasterNftShares(totalCut);
+            masterNftShares += masterShares;
+
             (bool feeSuccess, ) = payable(feeClaimAddress).call{
-                value: totalCut
+                value: totalCut.sub(masterShares)
             }("");
             require(feeSuccess, "Fee Transfer failed.");
         }
@@ -284,6 +288,12 @@ abstract contract BidCore is PausableUpgradeable, OwnableUpgradeable {
         emit BidAccepted(bidId, _msgSender(), _tokenId, bidder, _from, price);
 
         return ERC721_Received;
+    }
+
+    function distributeMasterNftShares() external onlyOwner {
+        require(address(this).balance >= masterNftShares, "Not enough funds");
+        masterNFT.distributeShares{value: masterNftShares}();
+        masterNftShares = 0;
     }
 
     function _calculateCut(
@@ -420,6 +430,14 @@ abstract contract BidCore is PausableUpgradeable, OwnableUpgradeable {
         }
 
         return bidId;
+    }
+
+    function _calculateMasterNftShares(uint256 bidCut)
+        internal
+        view
+        returns (uint256)
+    {
+        return (bidCut * feeProvider.getMasterNftCut()) / 10000;
     }
 
     uint256[50] private __gap;

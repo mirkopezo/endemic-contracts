@@ -305,6 +305,7 @@ describe('Bid', function () {
       // maker initial sale fee is 22% = 0.1067 eth
       // owner will get 0.3783 eth
       // total fee is 0.1217
+      // total fee after master key cut is 0.115616
       await bidContract.placeBid(nftContract.address, 1, 1000000, {
         value: ethers.utils.parseUnits('0.5'),
       });
@@ -347,7 +348,7 @@ describe('Bid', function () {
         '0x1D96e9bA0a7c1fdCEB33F3f4C71ca9117FfbE5CD'
       );
 
-      expect(feeBalance).to.equal(ethers.utils.parseUnits('0.1217'));
+      expect(feeBalance).to.equal(ethers.utils.parseUnits('0.115615'));
     });
 
     it('should not charge maker fee if seller is owner of master nft', async () => {
@@ -387,7 +388,7 @@ describe('Bid', function () {
         '0x1D96e9bA0a7c1fdCEB33F3f4C71ca9117FfbE5CD'
       );
       expect(feeBalanceAfter.sub(feeBalanceBefore)).to.equal(
-        ethers.utils.parseUnits('0.015')
+        ethers.utils.parseUnits('0.01425')
       );
     });
 
@@ -428,7 +429,7 @@ describe('Bid', function () {
         '0x1D96e9bA0a7c1fdCEB33F3f4C71ca9117FfbE5CD'
       );
       expect(feeBalanceAfter.sub(feeBalanceBefore)).to.equal(
-        ethers.utils.parseUnits('0.11')
+        ethers.utils.parseUnits('0.1045')
       );
     });
 
@@ -471,6 +472,57 @@ describe('Bid', function () {
       expect(feeBalanceAfter.sub(feeBalanceBefore)).to.equal(
         ethers.utils.parseUnits('0')
       );
+    });
+  });
+
+  describe('Distribute master', () => {
+    beforeEach(deploy);
+
+    it('should be able to distribute master nft shares', async function () {
+      await masterNftContract
+        .connect(owner)
+        .addDistributor(bidContract.address);
+
+      // Create auction and buy NFT
+      await bidContract.placeBid(nftContract.address, 1, 1000000, {
+        value: ethers.utils.parseUnits('1'),
+      });
+
+      const bidId = (
+        await bidContract.getBidByToken(nftContract.address, 1, 0)
+      )[0];
+
+      const transferTx = await safeTransferWithBytes(
+        user1,
+        user1.address,
+        bidContract.address,
+        1,
+        bidId
+      );
+
+      let currentBalances = [];
+
+      for (let i = 0; i < 3; i++) {
+        await masterNftContract.connect(owner).mintNFT(otherSigners[i].address);
+
+        let balanceOfAccount = await otherSigners[i].getBalance();
+        currentBalances.push(balanceOfAccount);
+      }
+
+      //Distribute fee, 5% of 22% of 1000 = 11
+      await bidContract.connect(owner).distributeMasterNftShares();
+
+      // Check update balances
+      for (let i = 0; i < 3; i++) {
+        let updatedBalance = await otherSigners[i].getBalance();
+        expect(updatedBalance.sub(currentBalances[i]).toString()).to.equal(
+          ethers.utils.parseUnits('0.004056666666666666')
+        );
+      }
+
+      expect(
+        (await bidContract.provider.getBalance(bidContract.address)).toString()
+      ).to.equal('0');
     });
   });
 });
