@@ -3,9 +3,11 @@ const { ethers, network, upgrades } = require('hardhat');
 const BN = require('bignumber.js');
 const {
   deployEndemicNFT,
-  deployMarketplace,
+  deployMarketplaceWithDeps,
   deployEndemicMasterNFT,
   deployEndemicERC1155,
+  deployContractRegistry,
+  deployFeeProvider,
 } = require('./helpers/deploy');
 const { ERC1155_ASSET_CLASS, ERC721_ASSET_CLASS } = require('./helpers/ids');
 
@@ -15,7 +17,10 @@ describe('Marketplace', function () {
     nftContract,
     nftContract2,
     erc1155Contract,
-    erc1155Contract2;
+    erc1155Contract2,
+    feeProviderContract,
+    contractRegistryContract;
+
   let owner, user1, user2, user3, minter, signer;
 
   async function mint(id, recipient) {
@@ -50,16 +55,22 @@ describe('Marketplace', function () {
     [owner, user1, user2, user3, minter, signer, ...otherSigners] =
       await ethers.getSigners();
 
-    masterNftContract = await deployEndemicMasterNFT(owner);
-    marketplace = await deployMarketplace(
+    const result = await deployMarketplaceWithDeps(
       owner,
-      masterNftContract.address,
       makerFee,
       takerFee,
       initialFee
     );
+
+    contractRegistryContract = result.contractRegistryContract;
+    masterNftContract = result.masterNftContract;
+    feeProviderContract = result.feeProviderContract;
+    marketplace = result.marketplace;
+
     nftContract = await deployEndemicNFT(owner);
     nftContract2 = await deployEndemicNFT(user1);
+
+    await contractRegistryContract.addSaleContract(marketplace.address);
 
     erc1155Contract = await deployEndemicERC1155(owner);
     erc1155Contract2 = await deployEndemicERC1155(user1);
@@ -920,14 +931,14 @@ describe('Marketplace', function () {
 
     it('should calculate seller fee correctly', async () => {
       await masterNftContract.connect(owner).mintNFT(user1.address);
-      const masterNftFee = await marketplace.getMakerFee(
+      const masterNftFee = await feeProviderContract.getMakerFee(
         user1.address,
         nftContract.address,
         1
       );
       expect(masterNftFee).to.equal(0);
 
-      const initialFee = await marketplace.getMakerFee(
+      const initialFee = await feeProviderContract.getMakerFee(
         user2.address,
         nftContract.address,
         2
@@ -957,7 +968,7 @@ describe('Marketplace', function () {
       });
 
       // Initial sale completed, now fee should be 2.5%
-      const marketplaceFee = await marketplace.getMakerFee(
+      const marketplaceFee = await feeProviderContract.getMakerFee(
         user2.address,
         nftContract.address,
         1
@@ -966,16 +977,18 @@ describe('Marketplace', function () {
     });
     it('should calculate taker fee correctly', async () => {
       await masterNftContract.connect(owner).mintNFT(user1.address);
-      const masterNftFee = await marketplace.getTakerFee(user1.address);
+      const masterNftFee = await feeProviderContract.getTakerFee(user1.address);
       expect(masterNftFee).to.equal(0);
 
-      const marketplaceFee = await marketplace.getTakerFee(user2.address);
+      const marketplaceFee = await feeProviderContract.getTakerFee(
+        user2.address
+      );
       expect(marketplaceFee).to.equal(300);
     });
 
     it('should handle fee change', async function () {
       // Update fees
-      await marketplace.connect(owner).updateFee(500, 1000, 2000, 500); // 5% maker fee, 10% taker fee, 20% initial sale cut
+      await feeProviderContract.connect(owner).updateFee(500, 1000, 2000, 500); // 5% maker fee, 10% taker fee, 20% initial sale cut
       // Creates auction and bid it
       await nftContract.connect(user1).approve(marketplace.address, 1);
       await marketplace
@@ -1051,11 +1064,6 @@ describe('Marketplace', function () {
       // New owner
       const tokenOwner = await nftContract.ownerOf(1);
       expect(tokenOwner).to.equal(user3.address);
-    });
-
-    it('should fail to update fee if not owner', async function () {
-      await expect(marketplace.connect(user1).updateFee(500, 600, 2000, 500)).to
-        .be.reverted;
     });
 
     it('should not charge maker fee if seller is owner of master NFT', async function () {

@@ -3,7 +3,7 @@ const { ethers } = require('hardhat');
 const Web3 = require('web3');
 const {
   deployEndemicNFT,
-  deployMarketplace,
+  deployMarketplaceWithDeps,
   deployEndemicMasterNFT,
 } = require('../helpers/deploy');
 
@@ -16,10 +16,7 @@ describe('EndemicNFTFactory', function () {
     [owner, user, signer] = await ethers.getSigners();
 
     const masterNftContract = await deployEndemicMasterNFT(owner);
-    const marketplace = await deployMarketplace(
-      owner,
-      masterNftContract.address
-    );
+    const { marketplace } = await deployMarketplaceWithDeps(owner);
 
     const implContract = await deployEndemicNFT(owner, signer.address);
     // beacon

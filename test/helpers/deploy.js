@@ -82,19 +82,14 @@ const deployEndemicERC1155 = async (deployer) => {
 
 const deployMarketplace = async (
   deployer,
-  masterNFTAddress,
-  makerFee = 250, // 2.5% maker fee
-  takerFee = 300, // 3% taker fee
-  initialFee = 2200 // 22% initial sale fee
+  feeProviderAddress,
+  masterNFTAddress
 ) => {
   const Marketplace = await ethers.getContractFactory('Marketplace');
   const marketplaceContract = await upgrades.deployProxy(
     Marketplace,
     [
-      makerFee,
-      takerFee,
-      initialFee,
-      500,
+      feeProviderAddress,
       masterNFTAddress,
       '0x1d1C46273cEcC00F7503AB3E97A40a199bcd6b31',
     ],
@@ -105,6 +100,37 @@ const deployMarketplace = async (
   );
   await marketplaceContract.deployed();
   return marketplaceContract;
+};
+
+const deployMarketplaceWithDeps = async (
+  deployer,
+  makerFee = 0,
+  takerFee = 0,
+  initialFee = 0
+) => {
+  const contractRegistryContract = await deployContractRegistry(deployer);
+  const masterNftContract = await deployEndemicMasterNFT(deployer);
+
+  const feeProviderContract = await deployFeeProvider(
+    deployer,
+    masterNftContract.address,
+    contractRegistryContract.address,
+    makerFee,
+    takerFee,
+    initialFee
+  );
+  const marketplace = await deployMarketplace(
+    deployer,
+    feeProviderContract.address,
+    masterNftContract.address
+  );
+
+  return {
+    contractRegistryContract,
+    masterNftContract,
+    feeProviderContract,
+    marketplace,
+  };
 };
 
 const deployEndemicMasterNFT = async (deployer) => {
@@ -121,11 +147,15 @@ const deployEndemicMasterNFT = async (deployer) => {
   return masterNftContract;
 };
 
-const deployBid = async (deployer, fee, masterNFTAddress) => {
+const deployBid = async (deployer, feeProviderAddress, masterNFTAddress) => {
   const Bid = await ethers.getContractFactory('Bid');
   const bidContract = await upgrades.deployProxy(
     Bid,
-    [fee, masterNFTAddress, '0x1D96e9bA0a7c1fdCEB33F3f4C71ca9117FfbE5CD'],
+    [
+      feeProviderAddress,
+      masterNFTAddress,
+      '0x1D96e9bA0a7c1fdCEB33F3f4C71ca9117FfbE5CD',
+    ],
     {
       deployer,
       initializer: '__Bid_init',
@@ -135,14 +165,60 @@ const deployBid = async (deployer, fee, masterNFTAddress) => {
   return bidContract;
 };
 
+const deployFeeProvider = async (
+  deployer,
+  masterNFTAddress,
+  contractRegistryAddress,
+  makerFee = 250, // 2.5% maker fee
+  takerFee = 300, // 3% taker fee
+  initialFee = 2200 // 22% initial sale fee
+) => {
+  const FeeProvider = await ethers.getContractFactory('FeeProvider');
+  const feeProviderContract = await upgrades.deployProxy(
+    FeeProvider,
+    [
+      initialFee,
+      makerFee,
+      takerFee,
+      500,
+      masterNFTAddress,
+      contractRegistryAddress,
+    ],
+    {
+      deployer,
+      initializer: '__FeeProvider_init',
+    }
+  );
+
+  await feeProviderContract.deployed();
+  return feeProviderContract;
+};
+
+const deployContractRegistry = async (deployer) => {
+  const ContractRegistry = await ethers.getContractFactory('ContractRegistry');
+  const contractRegistryContracat = await upgrades.deployProxy(
+    ContractRegistry,
+    [],
+    {
+      deployer,
+      initializer: '__ContractRegistry_init',
+    }
+  );
+
+  await contractRegistryContracat.deployed();
+  return contractRegistryContracat;
+};
+
 module.exports = {
   deployEndemicToken,
   deployEndemicNFT,
-  deployMarketplace,
+  deployMarketplaceWithDeps,
   deployEndemicMasterNFT,
   deployBid,
   deployEndemic,
   deployEndemicTokenMining,
   deployEndemicVesting,
   deployEndemicERC1155,
+  deployFeeProvider,
+  deployContractRegistry,
 };

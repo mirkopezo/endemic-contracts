@@ -1,6 +1,14 @@
+.PHONY: deployContractRegistry
+deployContractRegistry:
+	npx hardhat run scripts/contract-registry/deploy-contract-registry.js --network ${network}
+
 .PHONY: deployMasterKeysCollection
 deployMasterKeysCollection:
 	npx hardhat run scripts/erc-721/deploy-master-nft.js --network ${network}
+
+.PHONY: deployFeeProvider
+deployFeeProvider:
+	npx hardhat run scripts/fee-provider/deploy-fee-provider.js --network ${network}
 
 .PHONY: deployInitialErc721
 deployInitialErc721:
