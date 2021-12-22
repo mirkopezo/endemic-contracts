@@ -8,6 +8,7 @@ const {
   deployContractRegistry,
   deployFeeProvider,
 } = require('./helpers/deploy');
+const safeTransferWithBytes = require('./helpers/safeTransferWithBytes');
 
 describe('Bid', function () {
   let bidContract,
@@ -29,16 +30,6 @@ describe('Bid', function () {
       );
   }
 
-  async function safeTransferWithBytes(sender, from, to, tokenId, data) {
-    return await nftContract
-      .connect(sender)
-      ['safeTransferFrom(address,address,uint256,bytes)'](
-        from,
-        to,
-        tokenId,
-        data
-      );
-  }
   async function deploy(makerFee = 300, takerFee = 300, initialFee = 2200) {
     [owner, user1, user2, user3, minter, signer, ...otherSigners] =
       await ethers.getSigners();
@@ -88,7 +79,7 @@ describe('Bid', function () {
         1,
         1000,
         {
-          value: ethers.utils.parseUnits('0.5'),
+          value: ethers.utils.parseUnits('0.515'),
         }
       );
 
@@ -111,18 +102,18 @@ describe('Bid', function () {
 
       expect(activeBid.bidIndex).to.equal(0);
       expect(activeBid.bidder).to.equal(owner.address);
-      expect(activeBid.price).to.equal(ethers.utils.parseUnits('0.485'));
-      expect(activeBid.priceWithFee).to.equal(ethers.utils.parseUnits('0.5'));
+      expect(activeBid.price).to.equal(ethers.utils.parseUnits('0.5'));
+      expect(activeBid.priceWithFee).to.equal(ethers.utils.parseUnits('0.515'));
     });
 
     it('should fail to bid multiple times on same token', async () => {
       await bidContract.placeBid(nftContract.address, 1, 1000, {
-        value: ethers.utils.parseUnits('0.5'),
+        value: ethers.utils.parseUnits('0.515'),
       });
 
       await expect(
         bidContract.placeBid(nftContract.address, 1, 1000, {
-          value: ethers.utils.parseUnits('0.6'),
+          value: ethers.utils.parseUnits('0.616'),
         })
       ).to.be.revertedWith('Bid already exists');
 
@@ -134,8 +125,8 @@ describe('Bid', function () {
 
       expect(activeBid.bidIndex).to.equal(0);
       expect(activeBid.bidder).to.equal(owner.address);
-      expect(activeBid.price).to.equal(ethers.utils.parseUnits('0.485'));
-      expect(activeBid.priceWithFee).to.equal(ethers.utils.parseUnits('0.5'));
+      expect(activeBid.price).to.equal(ethers.utils.parseUnits('0.5'));
+      expect(activeBid.priceWithFee).to.equal(ethers.utils.parseUnits('0.515'));
     });
 
     it('should fail to create bid with no eth sent', async () => {
@@ -299,15 +290,16 @@ describe('Bid', function () {
     beforeEach(deploy);
 
     it('should be able to accept bid', async () => {
-      // sending 0.5 eth
+      // sending wants to bid 0.5 eth
       // taker fee is 3% = 0.015 eth
-      // owner of nft sees bid with 0.485 eth
-      // maker initial sale fee is 22% = 0.1067 eth
-      // owner will get 0.3783 eth
-      // total fee is 0.1217
-      // total fee after master key cut is 0.115616
+      // user sends 0.515 e th
+      // owner of nft sees bid with 0.5 eth
+      // maker initial sale fee is 22% = 0.11 eth
+      // owner will get 0.39 eth
+      // total fee is 0.125
+      // total fee after master key cut is 0.11875
       await bidContract.placeBid(nftContract.address, 1, 1000000, {
-        value: ethers.utils.parseUnits('0.5'),
+        value: ethers.utils.parseUnits('0.515'),
       });
 
       const user1Balance1 = await user1.getBalance();
@@ -317,6 +309,7 @@ describe('Bid', function () {
       )[0];
 
       const transferTx = await safeTransferWithBytes(
+        nftContract,
         user1,
         user1.address,
         bidContract.address,
@@ -332,13 +325,13 @@ describe('Bid', function () {
           1,
           owner.address,
           user1.address,
-          ethers.utils.parseUnits('0.485')
+          ethers.utils.parseUnits('0.5')
         );
 
       const user1Balance2 = await user1.getBalance();
 
       expect(user1Balance2.sub(user1Balance1)).to.be.closeTo(
-        ethers.utils.parseUnits('0.378'),
+        ethers.utils.parseUnits('0.39'),
         ethers.utils.parseUnits('0.001') //gas
       );
 
@@ -348,14 +341,14 @@ describe('Bid', function () {
         '0x1D96e9bA0a7c1fdCEB33F3f4C71ca9117FfbE5CD'
       );
 
-      expect(feeBalance).to.equal(ethers.utils.parseUnits('0.115615'));
+      expect(feeBalance).to.equal(ethers.utils.parseUnits('0.11875'));
     });
 
     it('should not charge maker fee if seller is owner of master nft', async () => {
       await masterNftContract.mintNFT(user1.address);
 
       await bidContract.placeBid(nftContract.address, 1, 1000000, {
-        value: ethers.utils.parseUnits('0.5'),
+        value: ethers.utils.parseUnits('0.515'),
       });
 
       const user1Balance1 = await user1.getBalance();
@@ -369,6 +362,7 @@ describe('Bid', function () {
       );
 
       await safeTransferWithBytes(
+        nftContract,
         user1,
         user1.address,
         bidContract.address,
@@ -380,7 +374,7 @@ describe('Bid', function () {
 
       const user1Balance2 = await user1.getBalance();
       expect(user1Balance2.sub(user1Balance1)).to.be.closeTo(
-        ethers.utils.parseUnits('0.485'),
+        ethers.utils.parseUnits('0.5'),
         ethers.utils.parseUnits('0.001') //gas
       );
 
@@ -388,7 +382,7 @@ describe('Bid', function () {
         '0x1D96e9bA0a7c1fdCEB33F3f4C71ca9117FfbE5CD'
       );
       expect(feeBalanceAfter.sub(feeBalanceBefore)).to.equal(
-        ethers.utils.parseUnits('0.01425')
+        ethers.utils.parseUnits('0.01425') //0.5 - 5% master key cut
       );
     });
 
@@ -410,6 +404,7 @@ describe('Bid', function () {
       );
 
       await safeTransferWithBytes(
+        nftContract,
         user1,
         user1.address,
         bidContract.address,
@@ -451,6 +446,7 @@ describe('Bid', function () {
       )[0];
 
       await safeTransferWithBytes(
+        nftContract,
         user1,
         user1.address,
         bidContract.address,
@@ -485,7 +481,7 @@ describe('Bid', function () {
 
       // Create auction and buy NFT
       await bidContract.placeBid(nftContract.address, 1, 1000000, {
-        value: ethers.utils.parseUnits('1'),
+        value: ethers.utils.parseUnits('1.03'),
       });
 
       const bidId = (
@@ -493,6 +489,7 @@ describe('Bid', function () {
       )[0];
 
       const transferTx = await safeTransferWithBytes(
+        nftContract,
         user1,
         user1.address,
         bidContract.address,
@@ -516,7 +513,7 @@ describe('Bid', function () {
       for (let i = 0; i < 3; i++) {
         let updatedBalance = await otherSigners[i].getBalance();
         expect(updatedBalance.sub(currentBalances[i]).toString()).to.equal(
-          ethers.utils.parseUnits('0.004056666666666666')
+          ethers.utils.parseUnits('0.004166666666666666')
         );
       }
 
