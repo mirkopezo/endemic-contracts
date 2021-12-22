@@ -116,12 +116,11 @@ abstract contract BidCore is PausableUpgradeable, OwnableUpgradeable {
         );
 
         uint256 takerFee = feeProvider.getTakerFee(_msgSender());
-        uint256 takerCut = (msg.value * takerFee) / 10000;
-
-        uint256 bidIndex;
 
         uint256 priceWithFee = msg.value;
-        uint256 price = priceWithFee.sub(takerCut);
+        uint256 price = msg.value.mul(10000).div(takerFee.add(10000));
+
+        uint256 bidIndex;
 
         require(
             !_bidderHasBid(nftContract, tokenId, _msgSender()),
