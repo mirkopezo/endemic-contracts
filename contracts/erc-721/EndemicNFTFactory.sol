@@ -17,7 +17,6 @@ contract EndemicNFTFactory is AccessControl, Pausable {
         beacon = _beacon;
         marketplaceContract = _marketplaceContract;
 
-        _setupRole(MINTER_ROLE, _msgSender());
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
     }
 
@@ -30,6 +29,13 @@ contract EndemicNFTFactory is AccessControl, Pausable {
     );
 
     struct DeployParams {
+        string name;
+        string symbol;
+        string category;
+        string baseURI;
+    }
+
+    struct OwnedDeployParams {
         address owner;
         string name;
         string symbol;
@@ -48,6 +54,32 @@ contract EndemicNFTFactory is AccessControl, Pausable {
         external
         whenNotPaused
         onlyRole(MINTER_ROLE)
+    {
+        bytes memory data = abi.encodeWithSelector(
+            EndemicNFT(address(0)).__EndemicNFT_init.selector,
+            params.name,
+            params.symbol,
+            params.baseURI
+        );
+
+        BeaconProxy beaconProxy = new BeaconProxy(address(beacon), data);
+        EndemicNFT endemicNft = EndemicNFT(address(beaconProxy));
+        endemicNft.setDefaultApproval(marketplaceContract, true);
+        endemicNft.transferOwnership(_msgSender());
+
+        emit NFTContractCreated(
+            beaconProxy,
+            _msgSender(),
+            params.name,
+            params.symbol,
+            params.category
+        );
+    }
+
+    function createTokenForOwner(OwnedDeployParams calldata params)
+        external
+        whenNotPaused
+        onlyRole(DEFAULT_ADMIN_ROLE)
     {
         bytes memory data = abi.encodeWithSelector(
             EndemicNFT(address(0)).__EndemicNFT_init.selector,
