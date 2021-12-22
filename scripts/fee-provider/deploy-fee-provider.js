@@ -9,9 +9,9 @@ async function main() {
 
   console.log('Deploying FeeProvider with the account:', deployer.address);
 
-  const initialSaleFee = 2200;
-  const secondarySaleMakerFee = 375;
-  const takerFee = 375;
+  const initialSaleFee = 2000;
+  const secondarySaleMakerFee = 250;
+  const takerFee = 250;
   const masterKeyCut = 0;
 
   const FeeProvider = await ethers.getContractFactory('FeeProvider');
