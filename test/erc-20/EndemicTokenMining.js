@@ -13,7 +13,7 @@ describe('EndemicTokenMining', function () {
   beforeEach(async () => {
     [owner, user1, user2] = await ethers.getSigners();
 
-    endemicToken = await deployEndemicToken();
+    endemicToken = await deployEndemicToken(owner);
     endemicTokenMining = await deployEndemicTokenMining(endemicToken.address);
 
     await endemicToken.transfer(

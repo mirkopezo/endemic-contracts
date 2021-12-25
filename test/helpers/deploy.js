@@ -28,10 +28,10 @@ const deployEndemicTokenMining = async (endemicTokenAddress) => {
   return endemicTokenMining;
 };
 
-const deployEndemicToken = async () => {
+const deployEndemicToken = async (deployer) => {
   const EndemicToken = await ethers.getContractFactory('EndemicToken');
 
-  const endemicToken = await EndemicToken.deploy();
+  const endemicToken = await EndemicToken.deploy(deployer.address);
   await endemicToken.deployed();
   return endemicToken;
 };

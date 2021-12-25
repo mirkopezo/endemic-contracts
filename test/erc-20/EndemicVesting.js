@@ -21,7 +21,7 @@ describe('EndemicVesting', function () {
   beforeEach(async () => {
     [owner, user1, user2] = await ethers.getSigners();
 
-    endemicToken = await deployEndemicToken(user1);
+    endemicToken = await deployEndemicToken(owner);
     endemicVesting = await deployEndemicVesting(
       user1,
       endemicToken.address,
