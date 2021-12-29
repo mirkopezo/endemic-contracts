@@ -22,6 +22,13 @@ abstract contract FeeProviderCore is PausableUpgradeable, OwnableUpgradeable {
     IEndemicMasterNFT masterNFT;
     IContractRegistry contractRegistry;
 
+    struct AccountFee {
+        address account;
+        uint256 fee;
+    }
+
+    mapping(address => AccountFee) initialSaleFeePerAccount;
+
     function __FeeProviderCore___init_unchained(
         uint256 _initialSaleFee,
         uint256 _secondarySaleMakerFee,
@@ -69,7 +76,15 @@ abstract contract FeeProviderCore is PausableUpgradeable, OwnableUpgradeable {
         }
 
         bool isInitialSale = !initialSales[nftContract][tokenId];
-        return isInitialSale ? initialSaleFee : secondarySaleMakerFee;
+        if (isInitialSale) {
+            if (initialSaleFeePerAccount[seller].account == seller) {
+                return initialSaleFeePerAccount[seller].fee;
+            }
+
+            return initialSaleFee;
+        }
+
+        return secondarySaleMakerFee;
     }
 
     function getTakerFee(address buyer) public view returns (uint256) {
@@ -88,6 +103,15 @@ abstract contract FeeProviderCore is PausableUpgradeable, OwnableUpgradeable {
             "Invalid caller"
         );
         initialSales[nftContract][tokenId] = true;
+    }
+
+    function setInitialSaleFeePerAccount(address account, uint256 fee)
+        external
+        onlyOwner
+    {
+        require(fee <= 10000);
+
+        initialSaleFeePerAccount[account] = AccountFee(account, fee);
     }
 
     function getMasterNftCut() public view returns (uint256) {
@@ -111,5 +135,5 @@ abstract contract FeeProviderCore is PausableUpgradeable, OwnableUpgradeable {
         return balance > 0;
     }
 
-    uint256[50] private __gap;
+    uint256[49] private __gap;
 }
