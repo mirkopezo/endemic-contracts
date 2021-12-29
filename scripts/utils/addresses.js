@@ -19,13 +19,13 @@ const aurora_testnet = {
 const aurora = {
   contractRegistryProxy: '0xB2d6c6D02f9b6C68c8Aa5fdb455f0feB008D3107',
   endemicMasterKeyProxy: '0x97cb197f862173a0f4c0B9Fda3272b56464578cc',
-  feeProviderProxy: '0xd35c04C360Ddf088D69767E7B47a3102856594Cd',
+  feeProviderProxy: '0x3853676279Ada77826afDEdE6a815D5250A1867A',
   endemicNftProxy: '0xCd75e540157E04b0a7f1E347d21dED2FF748AD0f',
   endemicCollection: '0x329b61bF16aDd14863c1C154614888F14303169c',
   endemicNftBeacon: '0xAfAF30cB1215e344088296e058c7694bAeBAe1E9',
-  marketplaceProxy: '0xdC446d49c0055B48Ad6626FDf0F358396c8C0D06',
+  marketplaceProxy: '0x5f89c1bBbCAc22fc15aC3074c0CfeC6bcF117FE5',
   endemicNftFactory: '0x7e4fD7d4bb0e31A14B76a396F840b6FE08A51da3',
-  bidProxy: '0xf65D3A9820b2ceFf9289d9EACFc3aAB9bf00a935',
+  bidProxy: '',
 
   endemicErc20: '',
 

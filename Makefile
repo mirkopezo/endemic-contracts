@@ -42,6 +42,10 @@ upgradeErc721:
 upgradeMarketplace:
 	npx hardhat run scripts/marketplace/upgrade-marketplace-proxy.js --network ${network}
 
+.PHONY: upgradeFeeProvider
+upgradeFeeProvider:
+	npx hardhat run scripts/fee-provider/upgrade-fee-provider-proxy.js --network ${network}
+
 .PHONY: deployEndemicErc20
 deployEndemicErc20:
 	npx hardhat run scripts/erc-20/deploy-endemic-erc20.js --network ${network}

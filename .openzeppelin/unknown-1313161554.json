@@ -74,6 +74,16 @@
       "address": "0xd35c04C360Ddf088D69767E7B47a3102856594Cd",
       "txHash": "0xed240f2298c2e726e098bb30abf5c13867af64ddff71d9abe0d4cbae028b0312",
       "kind": "transparent"
+    },
+    {
+      "address": "0x3853676279Ada77826afDEdE6a815D5250A1867A",
+      "txHash": "0x4a0473b0428670c19d741f7a25e30a8588d8656052e9aaaeee1d88a32586d85d",
+      "kind": "transparent"
+    },
+    {
+      "address": "0x5f89c1bBbCAc22fc15aC3074c0CfeC6bcF117FE5",
+      "txHash": "0x1be8701b01fc20d61421837f11b165f64202f3fa19d173a0770c8ee7071e6f74",
+      "kind": "transparent"
     }
   ],
   "impls": {
@@ -1601,8 +1611,354 @@
           "t_contract(IContractRegistry)13090": {
             "label": "contract IContractRegistry"
           },
+          "t_mapping(t_address,t_struct(AccountFee)11313_storage)": {
+            "label": "mapping(address => struct FeeProviderCore.AccountFee)"
+          },
+          "t_struct(AccountFee)11313_storage": {
+            "label": "struct FeeProviderCore.AccountFee",
+            "members": [
+              {
+                "label": "account",
+                "type": "t_address"
+              },
+              {
+                "label": "fee",
+                "type": "t_uint256"
+              }
+            ]
+          },
           "t_array(t_uint256)49_storage": {
             "label": "uint256[49]"
+          }
+        }
+      }
+    },
+    "093ea571c4df471546118189fe7a3f5360f4ec7739f86fbf82510bb113b28326": {
+      "address": "0xF5dad834776908D4320Df95d6E046acB54246A7f",
+      "txHash": "0xc557be064c8e6119a3ff42fdda0a55ce67e15d8d07bf8d831e729be4c8246367",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:39"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:44"
+          },
+          {
+            "contract": "ContextUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol:31"
+          },
+          {
+            "contract": "PausableUpgradeable",
+            "label": "_paused",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol:29"
+          },
+          {
+            "contract": "PausableUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol:97"
+          },
+          {
+            "contract": "OwnableUpgradeable",
+            "label": "_owner",
+            "type": "t_address",
+            "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:22"
+          },
+          {
+            "contract": "OwnableUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:82"
+          },
+          {
+            "contract": "FeeProviderCore",
+            "label": "secondarySaleMakerFee",
+            "type": "t_uint256",
+            "src": "contracts/fee/FeeProviderCore.sol:15"
+          },
+          {
+            "contract": "FeeProviderCore",
+            "label": "takerFee",
+            "type": "t_uint256",
+            "src": "contracts/fee/FeeProviderCore.sol:16"
+          },
+          {
+            "contract": "FeeProviderCore",
+            "label": "initialSaleFee",
+            "type": "t_uint256",
+            "src": "contracts/fee/FeeProviderCore.sol:17"
+          },
+          {
+            "contract": "FeeProviderCore",
+            "label": "masterNftCut",
+            "type": "t_uint256",
+            "src": "contracts/fee/FeeProviderCore.sol:18"
+          },
+          {
+            "contract": "FeeProviderCore",
+            "label": "initialSales",
+            "type": "t_mapping(t_address,t_mapping(t_uint256,t_bool))",
+            "src": "contracts/fee/FeeProviderCore.sol:20"
+          },
+          {
+            "contract": "FeeProviderCore",
+            "label": "masterNFT",
+            "type": "t_contract(IEndemicMasterNFT)11199",
+            "src": "contracts/fee/FeeProviderCore.sol:22"
+          },
+          {
+            "contract": "FeeProviderCore",
+            "label": "contractRegistry",
+            "type": "t_contract(IContractRegistry)13141",
+            "src": "contracts/fee/FeeProviderCore.sol:23"
+          },
+          {
+            "contract": "FeeProviderCore",
+            "label": "initialSaleFeePerAccount",
+            "type": "t_mapping(t_address,t_struct(AccountFee)11313_storage)",
+            "src": "contracts/fee/FeeProviderCore.sol:30"
+          },
+          {
+            "contract": "FeeProviderCore",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "contracts/fee/FeeProviderCore.sol:138"
+          },
+          {
+            "contract": "FeeProvider",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "contracts/fee/FeeProvider.sol:42"
+          }
+        ],
+        "types": {
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_mapping(t_address,t_mapping(t_uint256,t_bool))": {
+            "label": "mapping(address => mapping(uint256 => bool))"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_mapping(t_uint256,t_bool)": {
+            "label": "mapping(uint256 => bool)"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_contract(IEndemicMasterNFT)11199": {
+            "label": "contract IEndemicMasterNFT"
+          },
+          "t_contract(IContractRegistry)13141": {
+            "label": "contract IContractRegistry"
+          },
+          "t_mapping(t_address,t_struct(AccountFee)11313_storage)": {
+            "label": "mapping(address => struct FeeProviderCore.AccountFee)"
+          },
+          "t_struct(AccountFee)11313_storage": {
+            "label": "struct FeeProviderCore.AccountFee",
+            "members": [
+              {
+                "label": "account",
+                "type": "t_address"
+              },
+              {
+                "label": "fee",
+                "type": "t_uint256"
+              }
+            ]
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]"
+          }
+        }
+      }
+    },
+    "d62309ec6dc964f85e62286ff713075a434df0f8253309f0728d8ed1c94d7ce8": {
+      "address": "0xa0721d4188FeEC0f87Cd0B2739FaD1E0BC596FB3",
+      "txHash": "0x57358b76b9fa568d53cfb17bf71bd7728a90128409d242526a61298d762ed581",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:39"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:44"
+          },
+          {
+            "contract": "ContextUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol:31"
+          },
+          {
+            "contract": "PausableUpgradeable",
+            "label": "_paused",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol:29"
+          },
+          {
+            "contract": "PausableUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol:97"
+          },
+          {
+            "contract": "OwnableUpgradeable",
+            "label": "_owner",
+            "type": "t_address",
+            "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:22"
+          },
+          {
+            "contract": "OwnableUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:82"
+          },
+          {
+            "contract": "TransferManager",
+            "label": "masterNftShares",
+            "type": "t_uint256",
+            "src": "contracts/marketplace/TransferManager.sol:12"
+          },
+          {
+            "contract": "TransferManager",
+            "label": "feeClaimAddress",
+            "type": "t_address",
+            "src": "contracts/marketplace/TransferManager.sol:13"
+          },
+          {
+            "contract": "TransferManager",
+            "label": "feeProvider",
+            "type": "t_contract(IFeeProvider)11641",
+            "src": "contracts/marketplace/TransferManager.sol:15"
+          },
+          {
+            "contract": "TransferManager",
+            "label": "masterNFT",
+            "type": "t_contract(IEndemicMasterNFT)11199",
+            "src": "contracts/marketplace/TransferManager.sol:16"
+          },
+          {
+            "contract": "TransferManager",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "contracts/marketplace/TransferManager.sol:127"
+          },
+          {
+            "contract": "MarketplaceCore",
+            "label": "idToAuction",
+            "type": "t_mapping(t_bytes32,t_struct(Auction)11680_storage)",
+            "src": "contracts/marketplace/MarketplaceCore.sol:19"
+          },
+          {
+            "contract": "MarketplaceCore",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "contracts/marketplace/MarketplaceCore.sol:241"
+          },
+          {
+            "contract": "Marketplace",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "contracts/marketplace/Marketplace.sol:30"
+          }
+        ],
+        "types": {
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_mapping(t_bytes32,t_struct(Auction)11680_storage)": {
+            "label": "mapping(bytes32 => struct LibAuction.Auction)"
+          },
+          "t_bytes32": {
+            "label": "bytes32"
+          },
+          "t_struct(Auction)11680_storage": {
+            "label": "struct LibAuction.Auction",
+            "members": [
+              {
+                "label": "id",
+                "type": "t_bytes32"
+              },
+              {
+                "label": "contractId",
+                "type": "t_address"
+              },
+              {
+                "label": "tokenId",
+                "type": "t_uint256"
+              },
+              {
+                "label": "seller",
+                "type": "t_address"
+              },
+              {
+                "label": "startingPrice",
+                "type": "t_uint256"
+              },
+              {
+                "label": "endingPrice",
+                "type": "t_uint256"
+              },
+              {
+                "label": "duration",
+                "type": "t_uint256"
+              },
+              {
+                "label": "amount",
+                "type": "t_uint256"
+              },
+              {
+                "label": "startedAt",
+                "type": "t_uint256"
+              },
+              {
+                "label": "assetClass",
+                "type": "t_bytes4"
+              }
+            ]
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_bytes4": {
+            "label": "bytes4"
+          },
+          "t_contract(IFeeProvider)11641": {
+            "label": "contract IFeeProvider"
+          },
+          "t_contract(IEndemicMasterNFT)11199": {
+            "label": "contract IEndemicMasterNFT"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]"
+          },
+          "t_bool": {
+            "label": "bool"
           }
         }
       }
