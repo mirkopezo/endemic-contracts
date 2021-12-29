@@ -1643,9 +1643,6 @@
           "t_uint256": {
             "label": "uint256"
           },
-          "t_uint256": {
-            "label": "uint256"
-          },
           "t_array(t_uint256)49_storage": {
             "label": "uint256[49]"
           }
@@ -2468,6 +2465,161 @@
           },
           "t_bool": {
             "label": "bool"
+          }
+        }
+      }
+    },
+    "093ea571c4df471546118189fe7a3f5360f4ec7739f86fbf82510bb113b28326": {
+      "address": "0xDF64C193fDAf531731db2739082427A1284325CF",
+      "txHash": "0xfe9b180cc8cba0e78a2c2af052b1934561713ef620fe20b99c1aa07bd466a8b2",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:39"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:44"
+          },
+          {
+            "contract": "ContextUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol:31"
+          },
+          {
+            "contract": "PausableUpgradeable",
+            "label": "_paused",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol:29"
+          },
+          {
+            "contract": "PausableUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol:97"
+          },
+          {
+            "contract": "OwnableUpgradeable",
+            "label": "_owner",
+            "type": "t_address",
+            "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:22"
+          },
+          {
+            "contract": "OwnableUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:82"
+          },
+          {
+            "contract": "FeeProviderCore",
+            "label": "secondarySaleMakerFee",
+            "type": "t_uint256",
+            "src": "contracts/fee/FeeProviderCore.sol:15"
+          },
+          {
+            "contract": "FeeProviderCore",
+            "label": "takerFee",
+            "type": "t_uint256",
+            "src": "contracts/fee/FeeProviderCore.sol:16"
+          },
+          {
+            "contract": "FeeProviderCore",
+            "label": "initialSaleFee",
+            "type": "t_uint256",
+            "src": "contracts/fee/FeeProviderCore.sol:17"
+          },
+          {
+            "contract": "FeeProviderCore",
+            "label": "masterNftCut",
+            "type": "t_uint256",
+            "src": "contracts/fee/FeeProviderCore.sol:18"
+          },
+          {
+            "contract": "FeeProviderCore",
+            "label": "initialSales",
+            "type": "t_mapping(t_address,t_mapping(t_uint256,t_bool))",
+            "src": "contracts/fee/FeeProviderCore.sol:20"
+          },
+          {
+            "contract": "FeeProviderCore",
+            "label": "masterNFT",
+            "type": "t_contract(IEndemicMasterNFT)11199",
+            "src": "contracts/fee/FeeProviderCore.sol:22"
+          },
+          {
+            "contract": "FeeProviderCore",
+            "label": "contractRegistry",
+            "type": "t_contract(IContractRegistry)13141",
+            "src": "contracts/fee/FeeProviderCore.sol:23"
+          },
+          {
+            "contract": "FeeProviderCore",
+            "label": "initialSaleFeePerAccount",
+            "type": "t_mapping(t_address,t_struct(AccountFee)11313_storage)",
+            "src": "contracts/fee/FeeProviderCore.sol:30"
+          },
+          {
+            "contract": "FeeProviderCore",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "contracts/fee/FeeProviderCore.sol:138"
+          },
+          {
+            "contract": "FeeProvider",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "contracts/fee/FeeProvider.sol:42"
+          }
+        ],
+        "types": {
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_mapping(t_address,t_mapping(t_uint256,t_bool))": {
+            "label": "mapping(address => mapping(uint256 => bool))"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_mapping(t_uint256,t_bool)": {
+            "label": "mapping(uint256 => bool)"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_contract(IEndemicMasterNFT)11199": {
+            "label": "contract IEndemicMasterNFT"
+          },
+          "t_contract(IContractRegistry)13141": {
+            "label": "contract IContractRegistry"
+          },
+          "t_mapping(t_address,t_struct(AccountFee)11313_storage)": {
+            "label": "mapping(address => struct FeeProviderCore.AccountFee)"
+          },
+          "t_struct(AccountFee)11313_storage": {
+            "label": "struct FeeProviderCore.AccountFee",
+            "members": [
+              {
+                "label": "account",
+                "type": "t_address"
+              },
+              {
+                "label": "fee",
+                "type": "t_uint256"
+              }
+            ]
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]"
           }
         }
       }
