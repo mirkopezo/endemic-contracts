@@ -9,6 +9,7 @@ import "@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol";
 import "../erc-721/IERC721.sol";
 import "../erc-721/IEndemicMasterNFT.sol";
 import "../fee/IFeeProvider.sol";
+import "../royalties/IRoyaltiesProvider.sol";
 
 abstract contract BidCore is PausableUpgradeable, OwnableUpgradeable {
     using SafeMathUpgradeable for uint256;
@@ -34,6 +35,7 @@ abstract contract BidCore is PausableUpgradeable, OwnableUpgradeable {
 
     IFeeProvider feeProvider;
     IEndemicMasterNFT masterNFT;
+    IRoyaltiesProvider royaltiesProvider;
 
     struct Bid {
         bytes32 id;
@@ -73,10 +75,12 @@ abstract contract BidCore is PausableUpgradeable, OwnableUpgradeable {
     function __BidCore___init_unchained(
         IFeeProvider _feeProvider,
         IEndemicMasterNFT _masterNFT,
+        IRoyaltiesProvider _royaltiesProvider,
         address _feeClaimAddress
     ) internal initializer {
         feeProvider = _feeProvider;
         masterNFT = _masterNFT;
+        royaltiesProvider = _royaltiesProvider;
         feeClaimAddress = _feeClaimAddress;
 
         ERC721_Received = 0x150b7a02;
@@ -262,15 +266,10 @@ abstract contract BidCore is PausableUpgradeable, OwnableUpgradeable {
             priceWithFee
         );
 
-        if (totalCut > 0) {
-            uint256 masterShares = _calculateMasterNftShares(totalCut);
-            masterNftShares += masterShares;
-
-            (bool feeSuccess, ) = payable(feeClaimAddress).call{
-                value: totalCut.sub(masterShares)
-            }("");
-            require(feeSuccess, "Fee Transfer failed.");
-        }
+        (
+            address royaltiesRecipient,
+            uint256 royaltiesCut
+        ) = _calculateRoyalties(_msgSender(), _tokenId, price);
 
         // sale happened
         feeProvider.onInitialSale(_msgSender(), _tokenId);
@@ -278,11 +277,21 @@ abstract contract BidCore is PausableUpgradeable, OwnableUpgradeable {
         // Transfer token to bidder
         IERC721(_msgSender()).safeTransferFrom(address(this), bidder, _tokenId);
 
+        // transfer fees
+        if (totalCut > 0) {
+            _transferFees(totalCut);
+        }
+
+        // transfer rolayties
+        if (royaltiesCut > 0) {
+            _transferRoyalties(royaltiesRecipient, royaltiesCut);
+        }
+
         // Transfer ETH from bidder to seller
-        (bool success, ) = payable(_from).call{
-            value: priceWithFee.sub(totalCut)
-        }("");
-        require(success, "Transfer failed.");
+        _transferFundsToSeller(
+            _from,
+            priceWithFee.sub(totalCut).sub(royaltiesCut)
+        );
 
         emit BidAccepted(bidId, _msgSender(), _tokenId, bidder, _from, price);
 
@@ -312,6 +321,42 @@ abstract contract BidCore is PausableUpgradeable, OwnableUpgradeable {
         uint256 takerCut = priceWithFee.sub(price);
 
         return makerCut.add(takerCut);
+    }
+
+    function _transferFees(uint256 _totalCut) internal {
+        uint256 masterShares = _calculateMasterNftShares(_totalCut);
+        masterNftShares += masterShares;
+
+        (bool feeSuccess, ) = payable(feeClaimAddress).call{
+            value: _totalCut.sub(masterShares)
+        }("");
+        require(feeSuccess, "Fee Transfer failed.");
+    }
+
+    function _transferRoyalties(
+        address _royaltiesRecipient,
+        uint256 _royaltiesCut
+    ) internal {
+        (bool royaltiesSuccess, ) = payable(_royaltiesRecipient).call{
+            value: _royaltiesCut
+        }("");
+        require(royaltiesSuccess, "Royalties Transfer failed.");
+    }
+
+    function _transferFundsToSeller(address _seller, uint256 _total) internal {
+        (bool success, ) = payable(_seller).call{value: _total}("");
+        require(success, "Transfer failed.");
+    }
+
+    function _calculateRoyalties(
+        address _tokenAddress,
+        uint256 _tokenId,
+        uint256 price
+    ) internal view returns (address recipient, uint256 royaltiesCut) {
+        (address account, uint256 royaltiesFee) = royaltiesProvider
+            .getRoyalties(_tokenAddress, _tokenId);
+
+        return (account, price.mul(royaltiesFee).div(10000));
     }
 
     function removeExpiredBids(
@@ -436,7 +481,7 @@ abstract contract BidCore is PausableUpgradeable, OwnableUpgradeable {
         view
         returns (uint256)
     {
-        return (bidCut * feeProvider.getMasterNftCut()) / 10000;
+        return (bidCut.mul(feeProvider.getMasterNftCut())).div(10000);
     }
 
     uint256[50] private __gap;

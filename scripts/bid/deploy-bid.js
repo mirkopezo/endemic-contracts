@@ -3,9 +3,8 @@ const { getForNetwork } = require('../utils/addresses');
 
 async function main() {
   const [deployer] = await ethers.getSigners();
-  const { endemicMasterKeyProxy, feeProviderProxy } = getForNetwork(
-    network.name
-  );
+  const { endemicMasterKeyProxy, feeProviderProxy, royaltiesProviderProxy } =
+    getForNetwork(network.name);
 
   console.log('Deploying Bid with the account:', deployer.address);
 
@@ -15,6 +14,7 @@ async function main() {
     [
       feeProviderProxy,
       endemicMasterKeyProxy,
+      royaltiesProviderProxy,
       '0xcF96Ed58395d55d6bd0c470f7ed064741119cbC5',
     ],
     {

@@ -10,9 +10,12 @@ const {
 } = require('./helpers/deploy');
 
 describe('FeeProvider', function () {
-  let masterNftContract, feeProviderContract, contractRegistryContract;
-
-  let owner, user1, nftContract, saleContract;
+  let masterNftContract,
+    feeProviderContract,
+    contractRegistryContract,
+    nftContract,
+    saleContract;
+  let owner, user1;
 
   async function deploy(makerFee = 300, takerFee = 300, initialFee = 2200) {
     [owner, user1, nftContract, saleContract] = await ethers.getSigners();

@@ -15,7 +15,8 @@ describe('NftTrade', function () {
     masterNftContract,
     nftContract,
     feeProviderContract,
-    contractRegistryContract;
+    contractRegistryContract,
+    royaltiesProviderContract;
 
   let owner, user1, user2, user3, minter, signer;
 
@@ -44,10 +45,12 @@ describe('NftTrade', function () {
     masterNftContract = result.masterNftContract;
     feeProviderContract = result.feeProviderContract;
     marketplace = result.marketplace;
+    royaltiesProviderContract = result.royaltiesProviderContract;
 
     bid = await deployBid(
       owner,
       feeProviderContract.address,
+      royaltiesProviderContract.address,
       masterNftContract.address
     );
 

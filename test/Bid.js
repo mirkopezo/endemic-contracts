@@ -7,6 +7,7 @@ const {
   deployEndemicMasterNFT,
   deployContractRegistry,
   deployFeeProvider,
+  deployRoyaltiesProvider,
 } = require('./helpers/deploy');
 const safeTransferWithBytes = require('./helpers/safeTransferWithBytes');
 
@@ -16,9 +17,10 @@ describe('Bid', function () {
     nftContract,
     nftContract2,
     feeProviderContract,
+    royaltiesProviderContract,
     contractRegistryContract;
 
-  let owner, user1, user2, user3;
+  let owner, user1, user2, user3, royaltiesRecipient;
 
   async function mint(id, recipient) {
     await nftContract
@@ -31,12 +33,21 @@ describe('Bid', function () {
   }
 
   async function deploy(makerFee = 300, takerFee = 300, initialFee = 2200) {
-    [owner, user1, user2, user3, minter, signer, ...otherSigners] =
-      await ethers.getSigners();
+    [
+      owner,
+      user1,
+      user2,
+      user3,
+      minter,
+      signer,
+      royaltiesRecipient,
+      ...otherSigners
+    ] = await ethers.getSigners();
 
     contractRegistryContract = await deployContractRegistry(owner);
     masterNftContract = await deployEndemicMasterNFT(owner);
 
+    royaltiesProviderContract = await deployRoyaltiesProvider(owner);
     feeProviderContract = await deployFeeProvider(
       owner,
       masterNftContract.address,
@@ -49,6 +60,7 @@ describe('Bid', function () {
     bidContract = await deployBid(
       owner,
       feeProviderContract.address,
+      royaltiesProviderContract.address,
       masterNftContract.address
     );
 
@@ -520,6 +532,80 @@ describe('Bid', function () {
       expect(
         (await bidContract.provider.getBalance(bidContract.address)).toString()
       ).to.equal('0');
+    });
+  });
+
+  describe('Royalties', () => {
+    beforeEach(async () => {
+      await deploy();
+      await royaltiesProviderContract.setRoyaltiesForCollection(
+        nftContract.address,
+        royaltiesRecipient.address,
+        1000
+      );
+    });
+
+    it('should distribute royalties', async () => {
+      // sending wants to bid 0.5 eth
+      // taker fee is 3% = 0.015 eth
+      // user sends 0.515 e th
+      // owner of nft sees bid with 0.5 eth
+      // maker initial sale fee is 22% = 0.11 eth
+      // royalties are 10% = 0.05 ETH
+      // owner will get 0.34 eth
+      // total fee is 0.125
+      // total fee after master key cut is 0.11875
+      await bidContract.placeBid(nftContract.address, 1, 1000000, {
+        value: ethers.utils.parseUnits('0.515'),
+      });
+
+      const feeBalance1 = await nftContract.provider.getBalance(
+        '0x1D96e9bA0a7c1fdCEB33F3f4C71ca9117FfbE5CD'
+      );
+      const user1Balance1 = await user1.getBalance();
+      const royaltiesRecipientBalance1 = await royaltiesRecipient.getBalance();
+
+      const bidId = (
+        await bidContract.getBidByToken(nftContract.address, 1, 0)
+      )[0];
+
+      const transferTx = await safeTransferWithBytes(
+        nftContract,
+        user1,
+        user1.address,
+        bidContract.address,
+        1,
+        bidId
+      );
+
+      await expect(transferTx)
+        .to.emit(bidContract, 'BidAccepted')
+        .withArgs(
+          bidId,
+          nftContract.address,
+          1,
+          owner.address,
+          user1.address,
+          ethers.utils.parseUnits('0.5')
+        );
+
+      const user1Balance2 = await user1.getBalance();
+      expect(user1Balance2.sub(user1Balance1)).to.be.closeTo(
+        ethers.utils.parseUnits('0.34'),
+        ethers.utils.parseUnits('0.001') //gas
+      );
+
+      const feeBalance2 = await nftContract.provider.getBalance(
+        '0x1D96e9bA0a7c1fdCEB33F3f4C71ca9117FfbE5CD'
+      );
+      expect(feeBalance2.sub(feeBalance1)).to.equal(
+        ethers.utils.parseUnits('0.11875')
+      );
+
+      const royaltiesRecipientBalance2 = await royaltiesRecipient.getBalance();
+      expect(
+        royaltiesRecipientBalance2.sub(royaltiesRecipientBalance1)
+      ).to.equal(ethers.utils.parseUnits('0.05'));
     });
   });
 });
