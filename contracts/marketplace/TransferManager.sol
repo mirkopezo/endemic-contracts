@@ -64,7 +64,7 @@ abstract contract TransferManager is OwnableUpgradeable {
     }
 
     function claimETH() external onlyOwner {
-        uint256 claimableETH = address(this).balance - masterNftShares;
+        uint256 claimableETH = address(this).balance.sub(masterNftShares);
         (bool success, ) = payable(feeClaimAddress).call{value: claimableETH}(
             ""
         );
