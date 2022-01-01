@@ -7,7 +7,7 @@ async function main() {
     getForNetwork(network.name);
 
   console.log('Deploying Bid with the account:', deployer.address);
-
+  
   const Bid = await ethers.getContractFactory('Bid');
   const bidProxy = await upgrades.deployProxy(
     Bid,

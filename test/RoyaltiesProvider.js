@@ -35,9 +35,9 @@ describe('RoyaltiesProvider', function () {
         royaltiesProviderContract.setRoyaltiesForCollection(
           nftContract.address,
           feeRecipient.address,
-          1600
+          5100
         )
-      ).to.be.revertedWith('Royalties must be up to 15%');
+      ).to.be.revertedWith('Royalties must be up to 50%');
     });
 
     it('should set for collection if caller is collection owner', async () => {
@@ -96,9 +96,9 @@ describe('RoyaltiesProvider', function () {
           nftContract.address,
           1,
           feeRecipient.address,
-          1600
+          5100
         )
-      ).to.be.revertedWith('Royalties must be up to 15%');
+      ).to.be.revertedWith('Royalties must be up to 50%');
     });
 
     it('should set for collection if caller is collection owner', async () => {

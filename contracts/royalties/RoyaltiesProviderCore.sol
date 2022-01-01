@@ -49,7 +49,7 @@ abstract contract RoyaltiesProviderCore is OwnableUpgradeable {
         address feeRecipient,
         uint256 fee
     ) external {
-        require(fee <= 1500, "Royalties must be up to 15%");
+        require(fee <= 5000, "Royalties must be up to 50%");
 
         checkOwner(nftContract);
 
@@ -66,7 +66,7 @@ abstract contract RoyaltiesProviderCore is OwnableUpgradeable {
         address feeRecipient,
         uint256 fee
     ) external {
-        require(fee <= 1500, "Royalties must be up to 15%");
+        require(fee <= 5000, "Royalties must be up to 50%");
 
         checkOwner(nftContract);
 
