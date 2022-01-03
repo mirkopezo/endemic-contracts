@@ -10,6 +10,10 @@ deployMasterKeysCollection:
 deployFeeProvider:
 	npx hardhat run scripts/fee-provider/deploy-fee-provider.js --network ${network}
 
+.PHONY: deployRoyaltiesProvider
+deployRoyaltiesProvider:
+	npx hardhat run scripts/royalties-provider/deploy-royalties-provider.js --network ${network}
+
 .PHONY: deployInitialErc721
 deployInitialErc721:
 	npx hardhat run scripts/erc-721/deploy-erc721-initial.js --network ${network}

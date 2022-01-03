@@ -83,6 +83,7 @@ const deployEndemicERC1155 = async (deployer) => {
 const deployMarketplace = async (
   deployer,
   feeProviderAddress,
+  royaltiesProviderAddress,
   masterNFTAddress
 ) => {
   const Marketplace = await ethers.getContractFactory('Marketplace');
@@ -91,6 +92,7 @@ const deployMarketplace = async (
     [
       feeProviderAddress,
       masterNFTAddress,
+      royaltiesProviderAddress,
       '0x1d1C46273cEcC00F7503AB3E97A40a199bcd6b31',
     ],
     {
@@ -111,6 +113,8 @@ const deployMarketplaceWithDeps = async (
   const contractRegistryContract = await deployContractRegistry(deployer);
   const masterNftContract = await deployEndemicMasterNFT(deployer);
 
+  const royaltiesProviderContract = await deployRoyaltiesProvider(deployer);
+
   const feeProviderContract = await deployFeeProvider(
     deployer,
     masterNftContract.address,
@@ -122,6 +126,7 @@ const deployMarketplaceWithDeps = async (
   const marketplace = await deployMarketplace(
     deployer,
     feeProviderContract.address,
+    royaltiesProviderContract.address,
     masterNftContract.address
   );
 
@@ -129,6 +134,7 @@ const deployMarketplaceWithDeps = async (
     contractRegistryContract,
     masterNftContract,
     feeProviderContract,
+    royaltiesProviderContract,
     marketplace,
   };
 };
@@ -147,13 +153,19 @@ const deployEndemicMasterNFT = async (deployer) => {
   return masterNftContract;
 };
 
-const deployBid = async (deployer, feeProviderAddress, masterNFTAddress) => {
+const deployBid = async (
+  deployer,
+  feeProviderAddress,
+  royaltiesProviderAddress,
+  masterNFTAddress
+) => {
   const Bid = await ethers.getContractFactory('Bid');
   const bidContract = await upgrades.deployProxy(
     Bid,
     [
       feeProviderAddress,
       masterNFTAddress,
+      royaltiesProviderAddress,
       '0x1D96e9bA0a7c1fdCEB33F3f4C71ca9117FfbE5CD',
     ],
     {
@@ -163,6 +175,22 @@ const deployBid = async (deployer, feeProviderAddress, masterNFTAddress) => {
   );
   await bidContract.deployed();
   return bidContract;
+};
+
+const deployRoyaltiesProvider = async (deployer) => {
+  const RoyaltiesProvider = await ethers.getContractFactory(
+    'RoyaltiesProvider'
+  );
+  const royaltiesProviderProxy = await upgrades.deployProxy(
+    RoyaltiesProvider,
+    [],
+    {
+      deployer,
+      initializer: '__RoyaltiesProvider_init',
+    }
+  );
+  await royaltiesProviderProxy.deployed();
+  return royaltiesProviderProxy;
 };
 
 const deployFeeProvider = async (
@@ -221,4 +249,5 @@ module.exports = {
   deployEndemicERC1155,
   deployFeeProvider,
   deployContractRegistry,
+  deployRoyaltiesProvider,
 };

@@ -5,7 +5,7 @@ async function main() {
   console.log('Transfering ownership');
 
   const newOwner = '0xcF96Ed58395d55d6bd0c470f7ed064741119cbC5';
-  const address = '0xe57a1a98988eab453ad06262d721351c4fb8e0c8';
+  const address = '0xa341fc4962801aa57b66c89acbeba91afc77a40c';
 
   const EndemicNFT = await ethers.getContractFactory('EndemicNFT');
   const nft = await EndemicNFT.attach(address);

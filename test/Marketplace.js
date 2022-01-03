@@ -15,13 +15,12 @@ describe('Marketplace', function () {
   let marketplace,
     masterNftContract,
     nftContract,
-    nftContract2,
     erc1155Contract,
-    erc1155Contract2,
     feeProviderContract,
+    royaltiesProviderContract,
     contractRegistryContract;
 
-  let owner, user1, user2, user3, minter, signer;
+  let owner, user1, user2, user3, minter, signer, feeRecipient;
 
   async function mint(id, recipient) {
     await nftContract
@@ -52,8 +51,16 @@ describe('Marketplace', function () {
   };
 
   async function deploy(makerFee = 0, takerFee, initialFee = 0) {
-    [owner, user1, user2, user3, minter, signer, ...otherSigners] =
-      await ethers.getSigners();
+    [
+      owner,
+      user1,
+      user2,
+      user3,
+      minter,
+      signer,
+      feeRecipient,
+      ...otherSigners
+    ] = await ethers.getSigners();
 
     const result = await deployMarketplaceWithDeps(
       owner,
@@ -65,15 +72,14 @@ describe('Marketplace', function () {
     contractRegistryContract = result.contractRegistryContract;
     masterNftContract = result.masterNftContract;
     feeProviderContract = result.feeProviderContract;
+    royaltiesProviderContract = result.royaltiesProviderContract;
     marketplace = result.marketplace;
 
     nftContract = await deployEndemicNFT(owner);
-    nftContract2 = await deployEndemicNFT(user1);
 
     await contractRegistryContract.addSaleContract(marketplace.address);
 
     erc1155Contract = await deployEndemicERC1155(owner);
-    erc1155Contract2 = await deployEndemicERC1155(user1);
 
     await mint(1, user1.address);
     await mintERC1155(user1.address, 3);
@@ -1384,6 +1390,82 @@ describe('Marketplace', function () {
 
       await expect(marketplace.getAuction(erc1155AuctionId)).to.be.revertedWith(
         'Not on auction'
+      );
+    });
+  });
+
+  describe('Royalties', function () {
+    beforeEach(async function () {
+      await deploy(250, 300, 2200);
+      await nftContract.connect(user1).approve(marketplace.address, 1);
+      await erc1155Contract
+        .connect(user1)
+        .setApprovalForAll(marketplace.address, true);
+
+      await royaltiesProviderContract.setRoyaltiesForCollection(
+        nftContract.address,
+        feeRecipient.address,
+        1000
+      );
+    });
+
+    it('should distribute royalties', async () => {
+      await marketplace
+        .connect(user1)
+        .createAuction(
+          nftContract.address,
+          1,
+          ethers.utils.parseUnits('0.2'),
+          ethers.utils.parseUnits('0.2'),
+          60,
+          1,
+          ERC721_ASSET_CLASS
+        );
+      const auctionid = await marketplace.createAuctionId(
+        nftContract.address,
+        1,
+        user1.address
+      );
+
+      // 22% of 0.2 + 3% fee
+      // 22% of 0.2 maker fee= 0.044ETH
+      // 10% of 0.2 royalties = 0.02ETH
+      // 0.2 + 3% taker fee = 0.006
+      // fees = 0.05
+      // seller gets 0.2 - 22% -10% = 0.136
+      // buyer pays 0.2 + 3% = 0.206
+
+      // buys NFT and calculates price diff on contract and user1 wallet
+
+      const contractBal1 = await marketplace.provider.getBalance(
+        marketplace.address
+      );
+
+      const feeRecipientBalance1 = await feeRecipient.getBalance();
+      const user1Bal1 = await user1.getBalance();
+
+      await marketplace.connect(user2).bid(auctionid, 1, {
+        value: ethers.utils.parseUnits('0.206'),
+      });
+
+      const user1Bal2 = await user1.getBalance();
+      const feeRecipientBalance2 = await feeRecipient.getBalance();
+      const contractBal2 = await marketplace.provider.getBalance(
+        marketplace.address
+      );
+
+      const contractDiff = contractBal2.sub(contractBal1);
+
+      // 22% of 0.2 + 3% fee
+      expect(contractDiff.toString()).to.equal(ethers.utils.parseUnits('0.05'));
+
+      const user1Diff = user1Bal2.sub(user1Bal1);
+      // 0.2 minus 22% fee minus 10% royalties
+      expect(user1Diff.toString()).to.equal(ethers.utils.parseUnits('0.136'));
+
+      const feeRecipientDiff = feeRecipientBalance2.sub(feeRecipientBalance1);
+      expect(feeRecipientDiff.toString()).to.equal(
+        ethers.utils.parseUnits('0.02')
       );
     });
   });

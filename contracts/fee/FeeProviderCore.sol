@@ -71,7 +71,7 @@ abstract contract FeeProviderCore is PausableUpgradeable, OwnableUpgradeable {
         require(seller != address(0));
         require(nftContract != address(0));
 
-        if (_isAdressOwnerOfMasterNft(seller)) {
+        if (_isAddressOwnerOfMasterNft(seller)) {
             return 0;
         }
 
@@ -90,7 +90,7 @@ abstract contract FeeProviderCore is PausableUpgradeable, OwnableUpgradeable {
     function getTakerFee(address buyer) public view returns (uint256) {
         require(buyer != address(0));
 
-        if (_isAdressOwnerOfMasterNft(buyer)) {
+        if (_isAddressOwnerOfMasterNft(buyer)) {
             return 0;
         }
 
@@ -126,7 +126,7 @@ abstract contract FeeProviderCore is PausableUpgradeable, OwnableUpgradeable {
         _unpause();
     }
 
-    function _isAdressOwnerOfMasterNft(address _address)
+    function _isAddressOwnerOfMasterNft(address _address)
         internal
         view
         returns (bool)
