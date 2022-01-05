@@ -1,3 +1,7 @@
+.PHONY: deployContractImporter
+deployContractImporter:
+	npx hardhat run scripts/import/deploy-contract-importer.js --network ${network}
+
 .PHONY: deployContractRegistry
 deployContractRegistry:
 	npx hardhat run scripts/contract-registry/deploy-contract-registry.js --network ${network}

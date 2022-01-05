@@ -9,6 +9,7 @@ const aurora_testnet = {
   endemicNftBeacon: '0xaFf28326DB64f2f02a7788A047E525B047c0A525',
   endemicNftFactory: '0xFe7F3f28b5963b5447ECb37F1d9710f453BDFB21',
   bidProxy: '0x247001fBCE8166ECDeD545a1a52E52041838f87C',
+  contractImporter: '0x44317C983Ada8176801B40f98650cf1A1c3E4DcC'
 
   endemicErc20: '',
 
@@ -28,6 +29,7 @@ const aurora = {
   marketplaceProxy: '0x5f89c1bBbCAc22fc15aC3074c0CfeC6bcF117FE5',
   endemicNftFactory: '0x7e4fD7d4bb0e31A14B76a396F840b6FE08A51da3',
   bidProxy: '',
+  contractImporter: ''
 
   endemicErc20: '',
 
