@@ -84,6 +84,11 @@
       "address": "0x5f89c1bBbCAc22fc15aC3074c0CfeC6bcF117FE5",
       "txHash": "0x1be8701b01fc20d61421837f11b165f64202f3fa19d173a0770c8ee7071e6f74",
       "kind": "transparent"
+    },
+    {
+      "address": "0xE6a3541995E78600A949049C41A1C310634C57cc",
+      "txHash": "0x20f857f735b7f486c111d93da55c058e4dbcc5cb9005c942792f43d4c0337738",
+      "kind": "transparent"
     }
   ],
   "impls": {
@@ -1953,6 +1958,107 @@
           },
           "t_contract(IEndemicMasterNFT)11199": {
             "label": "contract IEndemicMasterNFT"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]"
+          },
+          "t_bool": {
+            "label": "bool"
+          }
+        }
+      }
+    },
+    "67084654bdc6465656ae08167af89edb745b418463ab70fd59eb9cb238192224": {
+      "address": "0x7C22D234fb027dBe382c3dFdDD56Bc06caa86233",
+      "txHash": "0xe8409d3f56edf2586c2d7a8998df5d1d4735a7fd0311c1111e5c378af312e595",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:39"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:44"
+          },
+          {
+            "contract": "ContextUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol:31"
+          },
+          {
+            "contract": "OwnableUpgradeable",
+            "label": "_owner",
+            "type": "t_address",
+            "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:22"
+          },
+          {
+            "contract": "OwnableUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:82"
+          },
+          {
+            "contract": "RoyaltiesProviderCore",
+            "label": "royaltiesPerTokenId",
+            "type": "t_mapping(t_address,t_mapping(t_uint256,t_struct(Royalties)13724_storage))",
+            "src": "contracts/royalties/RoyaltiesProviderCore.sol:7"
+          },
+          {
+            "contract": "RoyaltiesProviderCore",
+            "label": "royaltiesPerCollection",
+            "type": "t_mapping(t_address,t_struct(Royalties)13724_storage)",
+            "src": "contracts/royalties/RoyaltiesProviderCore.sol:8"
+          },
+          {
+            "contract": "RoyaltiesProviderCore",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "contracts/royalties/RoyaltiesProviderCore.sol:87"
+          },
+          {
+            "contract": "RoyaltiesProvider",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "contracts/royalties/RoyaltiesProvider.sol:12"
+          }
+        ],
+        "types": {
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_mapping(t_address,t_mapping(t_uint256,t_struct(Royalties)13724_storage))": {
+            "label": "mapping(address => mapping(uint256 => struct RoyaltiesProviderCore.Royalties))"
+          },
+          "t_address": {
+            "label": "address"
+          },
+          "t_mapping(t_uint256,t_struct(Royalties)13724_storage)": {
+            "label": "mapping(uint256 => struct RoyaltiesProviderCore.Royalties)"
+          },
+          "t_struct(Royalties)13724_storage": {
+            "label": "struct RoyaltiesProviderCore.Royalties",
+            "members": [
+              {
+                "label": "account",
+                "type": "t_address"
+              },
+              {
+                "label": "fee",
+                "type": "t_uint256"
+              }
+            ]
+          },
+          "t_mapping(t_address,t_struct(Royalties)13724_storage)": {
+            "label": "mapping(address => struct RoyaltiesProviderCore.Royalties)"
           },
           "t_array(t_uint256)49_storage": {
             "label": "uint256[49]"

@@ -15,7 +15,7 @@ async function main() {
       feeProviderProxy,
       endemicMasterKeyProxy,
       royaltiesProviderProxy,
-      '0xcF96Ed58395d55d6bd0c470f7ed064741119cbC5',
+      '0x813201fe76De0622223492D2467fF5Fd38cF2320',
     ],
     {
       deployer,

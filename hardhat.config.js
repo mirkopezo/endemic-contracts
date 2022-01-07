@@ -26,16 +26,14 @@ module.exports = {
       url: 'https://mainnet.aurora.dev',
       accounts: [`0x${process.env.MAINNET_PRIVATE_KEY}`],
       chainId: 1313161554,
+      timeout: 80000,
     },
     aurora_testnet: {
       url: 'https://testnet.aurora.dev',
       accounts: [`0x${process.env.PRIVATE_KEY}`],
       chainId: 1313161555,
       gasPrice: 0,
-    },
-    rinkeby: {
-      url: `https://eth-rinkeby.alchemyapi.io/v2/${process.env.ALCHEMY_API_KEY}`,
-      accounts: [`0x${process.env.PRIVATE_KEY}`],
+      timeout: 80000,
     },
   },
   gasReporter: {

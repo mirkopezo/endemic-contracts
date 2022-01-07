@@ -7,7 +7,7 @@ async function main() {
     getForNetwork(network.name);
 
   console.log('Deploying Bid with the account:', deployer.address);
-  
+
   const Bid = await ethers.getContractFactory('Bid');
   const bidProxy = await upgrades.deployProxy(
     Bid,
@@ -15,7 +15,7 @@ async function main() {
       feeProviderProxy,
       endemicMasterKeyProxy,
       royaltiesProviderProxy,
-      '0xcF96Ed58395d55d6bd0c470f7ed064741119cbC5',
+      '0x813201fe76De0622223492D2467fF5Fd38cF2320',
     ],
     {
       deployer,

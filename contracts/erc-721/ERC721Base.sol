@@ -25,10 +25,6 @@ abstract contract ERC721Base is
         _setDefaultApproval(operator, hasApproval);
     }
 
-    function setBaseTokenURI(string memory baseTokenURI) external onlyOwner {
-        _setBaseURI(baseTokenURI);
-    }
-
     function tokenURI(uint256 tokenId)
         public
         view

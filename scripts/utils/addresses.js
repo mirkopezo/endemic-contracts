@@ -22,7 +22,7 @@ const aurora = {
   contractRegistryProxy: '0xB2d6c6D02f9b6C68c8Aa5fdb455f0feB008D3107',
   endemicMasterKeyProxy: '0x97cb197f862173a0f4c0B9Fda3272b56464578cc',
   feeProviderProxy: '0x3853676279Ada77826afDEdE6a815D5250A1867A',
-  royaltiesProviderProxy: '',
+  royaltiesProviderProxy: '0xE6a3541995E78600A949049C41A1C310634C57cc',
   endemicNftProxy: '0xCd75e540157E04b0a7f1E347d21dED2FF748AD0f',
   endemicCollection: '0x329b61bF16aDd14863c1C154614888F14303169c',
   endemicNftBeacon: '0xAfAF30cB1215e344088296e058c7694bAeBAe1E9',

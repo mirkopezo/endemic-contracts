@@ -14,7 +14,7 @@ abstract contract TransferManager is OwnableUpgradeable {
     using SafeMathUpgradeable for uint256;
 
     uint256 public masterNftShares;
-    address feeClaimAddress;
+    address public feeClaimAddress;
 
     IFeeProvider feeProvider;
     IEndemicMasterNFT masterNFT;
