@@ -28,6 +28,7 @@ abstract contract FeeProviderCore is PausableUpgradeable, OwnableUpgradeable {
     }
 
     mapping(address => AccountFee) initialSaleFeePerAccount;
+    mapping(address => bool) collectionsWithoutInitialSaleFee;
 
     function __FeeProviderCore___init_unchained(
         uint256 _initialSaleFee,
@@ -76,7 +77,8 @@ abstract contract FeeProviderCore is PausableUpgradeable, OwnableUpgradeable {
         }
 
         bool isInitialSale = !initialSales[nftContract][tokenId];
-        if (isInitialSale) {
+        bool hasInitialSaleFee = !collectionsWithoutInitialSaleFee[nftContract];
+        if (isInitialSale && hasInitialSaleFee) {
             if (initialSaleFeePerAccount[seller].account == seller) {
                 return initialSaleFeePerAccount[seller].fee;
             }
@@ -114,6 +116,13 @@ abstract contract FeeProviderCore is PausableUpgradeable, OwnableUpgradeable {
         initialSaleFeePerAccount[account] = AccountFee(account, fee);
     }
 
+    function setCollectionWithoutInitialSaleFee(
+        address nftContract,
+        bool isWithoutInitialFee
+    ) external onlyOwner {
+        collectionsWithoutInitialSaleFee[nftContract] = isWithoutInitialFee;
+    }
+
     function getMasterNftCut() public view returns (uint256) {
         return masterNftCut;
     }
@@ -135,5 +144,5 @@ abstract contract FeeProviderCore is PausableUpgradeable, OwnableUpgradeable {
         return balance > 0;
     }
 
-    uint256[49] private __gap;
+    uint256[48] private __gap;
 }

@@ -105,6 +105,29 @@ describe('FeeProvider', function () {
           .setInitialSaleFeePerAccount(user1.address, 100)
       ).to.be.revertedWith('Ownable: caller is not the owner');
     });
+
+    it('should be able to set collection without initial sale fee when owner', async () => {
+      await feeProviderContract.setCollectionWithoutInitialSaleFee(
+        nftContract.address,
+        true
+      );
+
+      const fee = await feeProviderContract.getMakerFee(
+        owner.address,
+        nftContract.address,
+        1
+      );
+
+      expect(fee.toString()).to.equal('300');
+    });
+
+    it('should not be able to set collection without initial sale fee when not owner', async () => {
+      await expect(
+        feeProviderContract
+          .connect(user1)
+          .setCollectionWithoutInitialSaleFee(nftContract.address, true)
+      ).to.be.revertedWith('Ownable: caller is not the owner');
+    });
   });
 
   describe('Taker fee', () => {

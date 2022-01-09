@@ -1,7 +1,7 @@
 const aurora_testnet = {
   contractRegistryProxy: '0x1BE1744a1d718C1E42dA5BD1e79639Ae6DFbEb58',
   endemicMasterKeyProxy: '0x6D27C84EC245A7865718e1CDb7D1aE0EF4B6f08E',
-  feeProviderProxy: '0x874E83ca575523dcC5E9A6afb6fF589b241e83C6',
+  feeProviderProxy: '0xb00BB669eb0953144caE73cf4049F59B6d358203',
   royaltiesProviderProxy: '0xe34Ec7b3A3aB22B2422a37ad6726E7A76e5C2787',
   endemicNftProxy: '0x599F825A6cBAdA1c8eB972F2ebb6780576d11B96',
   endemicCollection: '0x1F081B956f670D0fbf6d02b0439e802540bA1aBD',
