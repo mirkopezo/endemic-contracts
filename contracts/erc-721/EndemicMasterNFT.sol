@@ -69,6 +69,10 @@ contract EndemicMasterNFT is DistributorRole, ERC721Base {
         }
     }
 
+    function setBaseTokenURI(string memory baseTokenURI) external onlyOwner {
+        _setBaseURI(baseTokenURI);
+    }
+
     function claimETH() external onlyOwner {
         (bool success, ) = payable(claimEthAddress).call{
             value: address(this).balance

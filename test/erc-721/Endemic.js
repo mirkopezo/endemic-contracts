@@ -69,33 +69,6 @@ describe('Endemic', function () {
     });
   });
 
-  describe('Base token uri', async () => {
-    beforeEach(async () => {
-      await mintToken(defaultSigner, user);
-    });
-
-    it('should update token uri', async () => {
-      const tokenUri = await endemicContract.connect(owner).tokenURI(1);
-      expect(tokenUri).to.equal('ipfs://ais9d8as9d9asd');
-
-      await endemicContract
-        .connect(owner)
-        .setBaseTokenURI('https://new-tokenbase.com/');
-
-      const newTokenUri = await endemicContract.tokenURI(1);
-
-      expect(newTokenUri).to.equal('https://new-tokenbase.com/ais9d8as9d9asd');
-    });
-
-    it('should fail to update token uri if not owner', async () => {
-      await expect(
-        endemicContract
-          .connect(user)
-          .setBaseTokenURI('https://new-base-uri.com/')
-      ).to.be.revertedWith('Ownable: caller is not the owner');
-    });
-  });
-
   describe('Burn', async () => {
     it('should burn token for owner', async () => {
       await mintToken(defaultSigner, user);
