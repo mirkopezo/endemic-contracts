@@ -15,15 +15,15 @@
     "dotenv": "10.0.0",
     "ethers": "^5.5.2",
     "hardhat": "^2.8.0",
-    "hardhat-gas-reporter": "^1.0.6",
+    "hardhat-gas-reporter": "^1.0.7",
     "web3": "1.5.3"
   },
   "devDependencies": {
-    "@nomiclabs/hardhat-ethers": "^2.0.3",
+    "@nomiclabs/hardhat-ethers": "^2.0.4",
     "@nomiclabs/hardhat-waffle": "^2.0.1",
     "chai": "^4.3.4",
     "ethereum-waffle": "^3.4.0",
-    "hardhat-contract-sizer": "^2.2.0",
+    "hardhat-contract-sizer": "^2.3.1",
     "prettier": "^2.4.1",
     "prettier-plugin-solidity": "^1.0.0-beta.19",
     "solidity-coverage": "^0.7.17"
