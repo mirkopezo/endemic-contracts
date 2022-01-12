@@ -71,12 +71,6 @@ abstract contract TransferManager is OwnableUpgradeable {
         require(success, "Transfer failed.");
     }
 
-    function distributeMasterNftShares() external onlyOwner {
-        require(address(this).balance >= masterNftShares, "Not enough funds");
-        masterNFT.distributeShares{value: masterNftShares}();
-        masterNftShares = 0;
-    }
-
     function _transferFunds(
         address nftContract,
         uint256 tokenId,
@@ -104,8 +98,6 @@ abstract contract TransferManager is OwnableUpgradeable {
             uint256 fees = takerCut.add(makerCut);
             uint256 sellerProceeds = price.sub(makerCut).sub(royaltiesCut);
 
-            _addMasterNftContractShares(fees);
-
             feeProvider.onInitialSale(nftContract, tokenId);
 
             if (royaltiesCut > 0) {
@@ -113,6 +105,13 @@ abstract contract TransferManager is OwnableUpgradeable {
                     value: royaltiesCut
                 }("");
                 require(royaltiesSuccess, "Royalties Transfer failed.");
+            }
+
+            if (fees > 0) {
+                (bool feeTransferSuccess, ) = payable(feeClaimAddress).call{
+                    value: fees
+                }("");
+                require(feeTransferSuccess, "Fee Transfer failed.");
             }
 
             (bool success, ) = payable(seller).call{value: sellerProceeds}("");
@@ -143,12 +142,6 @@ abstract contract TransferManager is OwnableUpgradeable {
         } else {
             revert("Invalid asset class");
         }
-    }
-
-    function _addMasterNftContractShares(uint256 marketplaceCut) internal {
-        masterNftShares +=
-            (marketplaceCut * feeProvider.getMasterNftCut()) /
-            10000;
     }
 
     function _calculateRoyalties(

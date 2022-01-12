@@ -810,8 +810,8 @@ describe('Marketplace', function () {
 
     it('should take cut on initial sale', async function () {
       // saves current contract and user1 balances and creates auction
-      const contractBal1 = await marketplace.provider.getBalance(
-        marketplace.address
+      const claimEthBalance1 = await marketplace.provider.getBalance(
+        '0x1d1C46273cEcC00F7503AB3E97A40a199bcd6b31'
       );
       await marketplace
         .connect(user1)
@@ -843,15 +843,17 @@ describe('Marketplace', function () {
       await marketplace.connect(user2).bid(auctionid, 1, {
         value: ethers.utils.parseUnits('0.206'),
       });
-      const contractBal2 = await marketplace.provider.getBalance(
-        marketplace.address
+      const claimEthBalance2 = await marketplace.provider.getBalance(
+        '0x1d1C46273cEcC00F7503AB3E97A40a199bcd6b31'
       );
       const user1Bal2 = await user1.getBalance();
       const token2Owner = await nftContract.ownerOf(1);
-      const contractDiff = contractBal2.sub(contractBal1);
+      const claimEthBalanceDiff = claimEthBalance2.sub(claimEthBalance1);
 
       // 22% of 0.2 + 3% fee
-      expect(contractDiff.toString()).to.equal(ethers.utils.parseUnits('0.05'));
+      expect(claimEthBalanceDiff.toString()).to.equal(
+        ethers.utils.parseUnits('0.05')
+      );
 
       const user1Diff = user1Bal2.sub(user1Bal1);
       // 0.2 minus 22% fee (220)
@@ -905,10 +907,10 @@ describe('Marketplace', function () {
         user2.address
       );
 
-      // Grab current balance of seller and contract
+      // Grab current balance
       const user2Bal1 = await user2.getBalance();
-      const contractBal1 = await marketplace.provider.getBalance(
-        marketplace.address
+      const claimEthBalance1 = await marketplace.provider.getBalance(
+        '0x1d1C46273cEcC00F7503AB3E97A40a199bcd6b31'
       );
 
       // Buy with user 3
@@ -916,18 +918,18 @@ describe('Marketplace', function () {
         value: ethers.utils.parseUnits('0.515'),
       });
 
-      //Grab updated balances of seller and contract
-      const contractBal2 = await marketplace.provider.getBalance(
-        marketplace.address
+      //Grab updated balances
+      const claimEthBalance2 = await marketplace.provider.getBalance(
+        '0x1d1C46273cEcC00F7503AB3E97A40a199bcd6b31'
       );
       const user2Bal2 = await user2.getBalance();
 
-      const contractDiff = contractBal2.sub(contractBal1);
+      const claimEthBalanceDiff = claimEthBalance2.sub(claimEthBalance1);
       const user2Diff = user2Bal2.sub(user2Bal1);
 
       // Checks if marketplace gets 2.5% maker fee + 3% taker fee
       // 2.5% of 0.5 + 0.015 taker fee
-      expect(contractDiff).to.equal(ethers.utils.parseUnits('0.0275'));
+      expect(claimEthBalanceDiff).to.equal(ethers.utils.parseUnits('0.0275'));
       expect(user2Diff.toString()).to.equal(ethers.utils.parseUnits('0.4875'));
 
       // New owner
@@ -1015,9 +1017,8 @@ describe('Marketplace', function () {
         user1.address
       );
 
-      // Grab current marketpalce balance
-      const contractBal1 = await marketplace.provider.getBalance(
-        marketplace.address
+      const claimEthBalance1 = await marketplace.provider.getBalance(
+        '0x1d1C46273cEcC00F7503AB3E97A40a199bcd6b31'
       );
 
       await marketplace.connect(user2).bid(auctionid, 1, {
@@ -1055,16 +1056,19 @@ describe('Marketplace', function () {
 
       // Contract nw has 0.1 + 0.05
       //Grab updated balances of seller and contract
-      const contractBal2 = await marketplace.provider.getBalance(
-        marketplace.address
+
+      const claimEthBalance2 = await marketplace.provider.getBalance(
+        '0x1d1C46273cEcC00F7503AB3E97A40a199bcd6b31'
       );
       const user2Bal2 = await user2.getBalance();
 
-      const contractDiff = contractBal2.sub(contractBal1);
+      const claimEthBalanceDiff = claimEthBalance2.sub(claimEthBalance1);
       const user2Diff = user2Bal2.sub(user2Bal1);
 
       // Checks if marketplace gets 5% maker and 10% taker
-      expect(contractDiff.toString()).to.equal(ethers.utils.parseUnits('0.75'));
+      expect(claimEthBalanceDiff.toString()).to.equal(
+        ethers.utils.parseUnits('0.75')
+      );
       expect(user2Diff.toString()).to.equal(ethers.utils.parseUnits('0.95'));
 
       // New owner
@@ -1088,8 +1092,8 @@ describe('Marketplace', function () {
         );
 
       // Grab balances
-      const contractBal1 = await marketplace.provider.getBalance(
-        marketplace.address
+      const claimEthBalance1 = await marketplace.provider.getBalance(
+        '0x1d1C46273cEcC00F7503AB3E97A40a199bcd6b31'
       );
       const user1Bal1 = await user1.getBalance();
 
@@ -1105,14 +1109,14 @@ describe('Marketplace', function () {
       });
 
       // Grab updated balances
-      const contractBal2 = await marketplace.provider.getBalance(
-        marketplace.address
+      const claimEthBalance2 = await marketplace.provider.getBalance(
+        '0x1d1C46273cEcC00F7503AB3E97A40a199bcd6b31'
       );
       const user1Bal2 = await user1.getBalance();
 
       // Only taker fee is taken (3%)
-      const contractDiff = contractBal2.sub(contractBal1);
-      expect(contractDiff.toString()).to.equal(
+      const claimEthBalanceDiff = claimEthBalance2.sub(claimEthBalance1);
+      expect(claimEthBalanceDiff.toString()).to.equal(
         ethers.utils.parseUnits('0.006')
       );
 
@@ -1148,8 +1152,8 @@ describe('Marketplace', function () {
         );
 
       // Grab balances
-      const contractBal1 = await marketplace.provider.getBalance(
-        marketplace.address
+      const claimEthBalance1 = await marketplace.provider.getBalance(
+        '0x1d1C46273cEcC00F7503AB3E97A40a199bcd6b31'
       );
       const user1Bal1 = await user1.getBalance();
 
@@ -1174,124 +1178,20 @@ describe('Marketplace', function () {
       });
 
       // Grab updated balances
-      const contractBal2 = await marketplace.provider.getBalance(
-        marketplace.address
+      const claimEthBalance2 = await marketplace.provider.getBalance(
+        '0x1d1C46273cEcC00F7503AB3E97A40a199bcd6b31'
       );
       const user1Bal2 = await user1.getBalance();
 
       // Fee shouldn't be taken, diff is zero
-      const contractDiff = contractBal2.sub(contractBal1);
-      expect(contractDiff.toString()).to.equal(
+      const claimEthBalanceDiff = claimEthBalance2.sub(claimEthBalance1);
+      expect(claimEthBalanceDiff.toString()).to.equal(
         ethers.utils.parseUnits('0.088')
       );
 
       // Seller got full amount
       const user1Diff = user1Bal2.sub(user1Bal1);
       expect(user1Diff.toString()).to.equal(ethers.utils.parseUnits('0.312'));
-    });
-    it('should be able to withdraw funds to claim address', async function () {
-      await marketplace
-        .connect(user1)
-        .createAuction(
-          nftContract.address,
-          1,
-          ethers.utils.parseUnits('1'),
-          ethers.utils.parseUnits('1'),
-          1000,
-          1,
-          ERC721_ASSET_CLASS
-        );
-
-      const user1Bal1 = await user1.getBalance();
-      const contractBal1 = await marketplace.provider.getBalance(
-        marketplace.address
-      );
-
-      const auctionid = await marketplace.createAuctionId(
-        nftContract.address,
-        1,
-        user1.address
-      );
-
-      // Buy NFT
-      await marketplace.connect(user3).bid(auctionid, 1, {
-        value: ethers.utils.parseUnits('1.03'),
-      });
-
-      // Contract has 0.03 from taker fee + 0.22 from maker fee
-      // Master key share is 5% of 0.25
-      await marketplace.connect(owner).claimETH();
-      const user1Bal2 = await user1.getBalance();
-
-      const claimEthBalance = await marketplace.provider.getBalance(
-        '0x1d1C46273cEcC00F7503AB3E97A40a199bcd6b31'
-      );
-
-      const contractBal2 = await marketplace.provider.getBalance(
-        marketplace.address
-      );
-
-      expect(user1Bal2.sub(user1Bal1).toString()).to.equal(
-        ethers.utils.parseUnits('0.78')
-      );
-      // 5% should stay in the contract for master key shares
-      expect(contractBal2.sub(contractBal1).toString()).to.equal(
-        ethers.utils.parseUnits('0.0125')
-      );
-
-      // 95% should be claimed
-      expect(claimEthBalance.toString()).to.equal(
-        ethers.utils.parseUnits('0.2375')
-      );
-    });
-
-    it('should be able to distribute master nft shares', async function () {
-      await masterNftContract
-        .connect(owner)
-        .addDistributor(marketplace.address);
-
-      // Create auction and buy NFT
-      await marketplace
-        .connect(user1)
-        .createAuction(
-          nftContract.address,
-          1,
-          ethers.utils.parseUnits('1'),
-          ethers.utils.parseUnits('1'),
-          60,
-          1,
-          ERC721_ASSET_CLASS
-        );
-
-      const auctionid = await marketplace.createAuctionId(
-        nftContract.address,
-        1,
-        user1.address
-      );
-
-      await marketplace.connect(user2).bid(auctionid, 1, {
-        value: ethers.utils.parseUnits('1.03'),
-      });
-
-      let currentBalances = [];
-
-      for (let i = 0; i < 3; i++) {
-        await masterNftContract.connect(owner).mintNFT(otherSigners[i].address);
-
-        let balanceOfAccount = await otherSigners[i].getBalance();
-        currentBalances.push(balanceOfAccount);
-      }
-
-      //Distribute fee, 5% of 22% of 1000 = 11
-      await marketplace.connect(owner).distributeMasterNftShares();
-
-      // Check update balances
-      for (let i = 0; i < 3; i++) {
-        let updatedBalance = await otherSigners[i].getBalance();
-        expect(updatedBalance.sub(currentBalances[i]).toString()).to.equal(
-          ethers.utils.parseUnits('0.004166666666666666')
-        );
-      }
     });
   });
 
@@ -1437,8 +1337,8 @@ describe('Marketplace', function () {
 
       // buys NFT and calculates price diff on contract and user1 wallet
 
-      const contractBal1 = await marketplace.provider.getBalance(
-        marketplace.address
+      const claimEthBalance1 = await marketplace.provider.getBalance(
+        '0x1d1C46273cEcC00F7503AB3E97A40a199bcd6b31'
       );
 
       const feeRecipientBalance1 = await feeRecipient.getBalance();
@@ -1450,14 +1350,16 @@ describe('Marketplace', function () {
 
       const user1Bal2 = await user1.getBalance();
       const feeRecipientBalance2 = await feeRecipient.getBalance();
-      const contractBal2 = await marketplace.provider.getBalance(
-        marketplace.address
+      const claimEthBalance2 = await marketplace.provider.getBalance(
+        '0x1d1C46273cEcC00F7503AB3E97A40a199bcd6b31'
       );
 
-      const contractDiff = contractBal2.sub(contractBal1);
+      const claimEthBalanceDiff = claimEthBalance2.sub(claimEthBalance1);
 
       // 22% of 0.2 + 3% fee
-      expect(contractDiff.toString()).to.equal(ethers.utils.parseUnits('0.05'));
+      expect(claimEthBalanceDiff.toString()).to.equal(
+        ethers.utils.parseUnits('0.05')
+      );
 
       const user1Diff = user1Bal2.sub(user1Bal1);
       // 0.2 minus 22% fee minus 10% royalties
