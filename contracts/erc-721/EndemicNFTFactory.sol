@@ -52,6 +52,15 @@ contract EndemicNFTFactory is AccessControl, Pausable, ILayerZeroReceiver {
         string category
     );
 
+    event NFTContractCreatedOnBothChains(
+        BeaconProxy indexed nftContract,
+        uint16 indexed dstChainId,
+        address indexed owner,
+        string name,
+        string symbol,
+        string category
+    );
+
     struct DeployParams {
         string name;
         string symbol;
@@ -135,6 +144,52 @@ contract EndemicNFTFactory is AccessControl, Pausable, ILayerZeroReceiver {
     }
 
     /* --- New functions added - prototype --- */
+
+    function createTokenOnBothChains(
+        uint16 _dstChainId,
+        bytes calldata _dstEndemicNFTFactoryAddr,
+        DeployParams calldata params
+    ) external payable whenNotPaused onlyRole(MINTER_ROLE) {
+        OwnedDeployParams memory paramsLZ = OwnedDeployParams(
+            _msgSender(),
+            params.name,
+            params.symbol,
+            params.category,
+            params.baseURI
+        );
+
+        bytes memory payload = abi.encode(paramsLZ);
+
+        endpoint.send{value: msg.value}(
+            _dstChainId,
+            _dstEndemicNFTFactoryAddr,
+            payload,
+            payable(_msgSender()),
+            address(0x0),
+            bytes("")
+        );
+
+        bytes memory data = abi.encodeWithSelector(
+            EndemicNFT(address(0)).__EndemicNFT_init.selector,
+            params.name,
+            params.symbol,
+            params.baseURI
+        );
+
+        BeaconProxy beaconProxy = new BeaconProxy(address(beacon), data);
+        EndemicNFT endemicNft = EndemicNFT(address(beaconProxy));
+        endemicNft.setDefaultApproval(marketplaceContract, true);
+        endemicNft.transferOwnership(_msgSender());
+
+        emit NFTContractCreatedOnBothChains(
+            beaconProxy,
+            _dstChainId,
+            _msgSender(),
+            params.name,
+            params.symbol,
+            params.category
+        );
+    }
 
     function createTokenOnOtherChain(
         uint16 _dstChainId,

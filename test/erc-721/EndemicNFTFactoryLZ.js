@@ -62,88 +62,147 @@ describe('EndemicNFTFactory', function () {
     await factoryContract2.deployed();
   });
 
-  it('should deploy contract correctly on other chain if minter', async function () {
-    await factoryContract1.grantRole(
-      await factoryContract1.MINTER_ROLE(),
-      user.address
-    );
+  describe('erc721 contract is only deployed to second chain', function () {
+    it('should deploy contract correctly on other chain if minter', async function () {
+      await factoryContract1.grantRole(
+        await factoryContract1.MINTER_ROLE(),
+        user.address
+      );
 
-    const tx = await factoryContract1.connect(user).createTokenOnOtherChain(
-      555, // chainId - in this test its irrelevant
-      factoryContract2.address,
-      {
-        name: 'Lazy #1',
-        symbol: 'LZ',
-        category: 'Art',
-        baseURI: 'ipfs://',
-      },
-      { value: 50000000 }
-    );
+      const tx = await factoryContract1.connect(user).createTokenOnOtherChain(
+        555, // chainId - in this test its irrelevant
+        factoryContract2.address,
+        {
+          name: 'Lazy #1',
+          symbol: 'LZ',
+          category: 'Art',
+          baseURI: 'ipfs://',
+        },
+        { value: 50000000 }
+      );
 
-    const receipt = await tx.wait();
-    const eventData = receipt.events.find(
-      ({ event }) => event === 'NFTCreationInitiated'
-    );
-    const [chainId, contractOwner, name, symbol, category] = eventData.args;
+      const receipt = await tx.wait();
+      const eventData = receipt.events.find(
+        ({ event }) => event === 'NFTCreationInitiated'
+      );
+      const [chainId, contractOwner, name, symbol, category] = eventData.args;
 
-    expect(chainId).to.equal(555);
-    expect(contractOwner).to.equal(user.address);
-    expect(name).to.equal('Lazy #1');
-    expect(symbol).to.equal('LZ');
-    expect(category).to.equal('Art');
+      expect(chainId).to.equal(555);
+      expect(contractOwner).to.equal(user.address);
+      expect(name).to.equal('Lazy #1');
+      expect(symbol).to.equal('LZ');
+      expect(category).to.equal('Art');
 
-    const allTokens = await factoryContract2.connect(user).getMyTokens();
-    const tokenContract = allTokens[0];
+      const allTokens = await factoryContract2.connect(user).getMyTokens();
+      const tokenContract = allTokens[0];
 
-    expect(tokenContract).to.properAddress;
+      expect(tokenContract).to.properAddress;
 
-    const EndemicNFT = await ethers.getContractFactory('EndemicNFT');
-    const token = EndemicNFT.attach(tokenContract);
+      const EndemicNFT = await ethers.getContractFactory('EndemicNFT');
+      const token = EndemicNFT.attach(tokenContract);
 
-    expect(await token.name()).to.equal('Lazy #1');
-    expect(await token.symbol()).to.equal('LZ');
-    expect(await token.owner()).to.equal(user.address);
+      expect(await token.name()).to.equal('Lazy #1');
+      expect(await token.symbol()).to.equal('LZ');
+      expect(await token.owner()).to.equal(user.address);
+    });
+
+    it('owner of contract can mint tokens after contract is created', async function () {
+      await factoryContract1.grantRole(
+        await factoryContract1.MINTER_ROLE(),
+        user.address
+      );
+
+      const tx = await factoryContract1.connect(user).createTokenOnOtherChain(
+        555, // chainId - in this test its irrelevant
+        factoryContract2.address,
+        {
+          name: 'Lazy #1',
+          symbol: 'LZ',
+          category: 'Art',
+          baseURI: 'ipfs://',
+        },
+        { value: 50000000 }
+      );
+      await tx.wait();
+
+      const allTokens = await factoryContract2.connect(user).getMyTokens();
+      const tokenContract = allTokens[0];
+
+      const EndemicNFT = await ethers.getContractFactory('EndemicNFT');
+      const contract = EndemicNFT.attach(tokenContract);
+      const tx2 = await contract
+        .connect(user)
+        .mint(
+          user.address,
+          user.address,
+          'bafybeigdyrzt5sfp7udm7hu76uh7y26nf3efuylqabf3oclgtqy55fbzdi'
+        );
+      await tx2.wait();
+
+      expect(await contract.tokenURI(1)).to.equal(
+        'ipfs://bafybeigdyrzt5sfp7udm7hu76uh7y26nf3efuylqabf3oclgtqy55fbzdi'
+      );
+      expect(await contract.ownerOf(1)).to.equal(user.address);
+      expect(
+        await contract.isApprovedForAll(user.address, marketplace2Addr)
+      ).to.equal(true);
+    });
   });
 
-  it('owner of contract can mint tokens after contract is created', async function () {
-    await factoryContract1.grantRole(
-      await factoryContract1.MINTER_ROLE(),
-      user.address
-    );
-
-    const tx = await factoryContract1.connect(user).createTokenOnOtherChain(
-      555, // chainId - in this test its irrelevant
-      factoryContract2.address,
-      {
-        name: 'Lazy #1',
-        symbol: 'LZ',
-        category: 'Art',
-        baseURI: 'ipfs://',
-      },
-      { value: 50000000 }
-    );
-    await tx.wait();
-
-    const allTokens = await factoryContract2.connect(user).getMyTokens();
-    const tokenContract = allTokens[0];
-
-    const EndemicNFT = await ethers.getContractFactory('EndemicNFT');
-    const contract = EndemicNFT.attach(tokenContract);
-    const tx2 = await contract
-      .connect(user)
-      .mint(
-        user.address,
-        user.address,
-        'bafybeigdyrzt5sfp7udm7hu76uh7y26nf3efuylqabf3oclgtqy55fbzdi'
+  describe('erc721 contract is deployed to both chains', function () {
+    it('should deploy contract correctly on both chains if minter', async function () {
+      await factoryContract1.grantRole(
+        await factoryContract1.MINTER_ROLE(),
+        user.address
       );
-    await tx2.wait();
 
-    expect(await contract.tokenURI(1)).to.equal(
-      'ipfs://bafybeigdyrzt5sfp7udm7hu76uh7y26nf3efuylqabf3oclgtqy55fbzdi'
-    );
-    expect(await contract.ownerOf(1)).to.equal(user.address);
-    expect(
-      await contract.isApprovedForAll(user.address, marketplace2Addr)
-    ).to.equal(true);
+      const tx = await factoryContract1.connect(user).createTokenOnBothChains(
+        555, // chainId - in this test its irrelevant
+        factoryContract2.address,
+        {
+          name: 'Lazy #1',
+          symbol: 'LZ',
+          category: 'Art',
+          baseURI: 'ipfs://',
+        },
+        { value: 50000000 }
+      );
+
+      const receipt = await tx.wait();
+      const eventData = receipt.events.find(
+        ({ event }) => event === 'NFTContractCreatedOnBothChains'
+      );
+      const [newAddress, chainId, contractOwner, name, symbol, category] =
+        eventData.args;
+
+      /* --- Tests on first chain --- */
+
+      expect(newAddress).to.properAddress;
+      expect(chainId).to.equal(555);
+      expect(contractOwner).to.equal(user.address);
+      expect(name).to.equal('Lazy #1');
+      expect(symbol).to.equal('LZ');
+      expect(category).to.equal('Art');
+
+      const EndemicNFT = await ethers.getContractFactory('EndemicNFT');
+      const token1 = EndemicNFT.attach(newAddress);
+
+      expect(await token1.name()).to.equal('Lazy #1');
+      expect(await token1.symbol()).to.equal('LZ');
+      expect(await token1.owner()).to.equal(user.address);
+
+      /* --- Tests on second chain --- */
+
+      const allTokens = await factoryContract2.connect(user).getMyTokens();
+      const tokenContract = allTokens[0];
+
+      expect(tokenContract).to.properAddress;
+
+      const token2 = EndemicNFT.attach(tokenContract);
+
+      expect(await token2.name()).to.equal('Lazy #1');
+      expect(await token2.symbol()).to.equal('LZ');
+      expect(await token2.owner()).to.equal(user.address);
+    });
   });
 });
