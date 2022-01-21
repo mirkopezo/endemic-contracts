@@ -77,7 +77,7 @@ abstract contract TransferManager is OwnableUpgradeable {
         address seller,
         address buyer,
         uint256 price
-    ) internal {
+    ) internal returns (uint256 totalFees) {
         if (price > 0) {
             uint256 takerCut = _computeTakerCut(price, buyer);
 
@@ -116,6 +116,8 @@ abstract contract TransferManager is OwnableUpgradeable {
 
             (bool success, ) = payable(seller).call{value: sellerProceeds}("");
             require(success, "Transfer failed.");
+
+            return fees;
         } else {
             revert("Invalid price");
         }

@@ -676,7 +676,8 @@ describe('Marketplace', function () {
           erc721AuctionId,
           ethers.utils.parseUnits('0.1'),
           user2.address,
-          1
+          1,
+          ethers.utils.parseUnits('0')
         );
 
       await expect(bid1)
@@ -693,7 +694,8 @@ describe('Marketplace', function () {
           erc1155AuctionId,
           ethers.utils.parseUnits('0.2'),
           user2.address,
-          2
+          2,
+          ethers.utils.parseUnits('0')
         );
     });
   });
@@ -840,9 +842,20 @@ describe('Marketplace', function () {
       const user1Bal1 = await user1.getBalance();
 
       // buys NFT and calculates price diff on contract and user1 wallet
-      await marketplace.connect(user2).bid(auctionid, 1, {
+      const bidTx = await marketplace.connect(user2).bid(auctionid, 1, {
         value: ethers.utils.parseUnits('0.206'),
       });
+
+      await expect(bidTx)
+        .to.emit(marketplace, 'AuctionSuccessful')
+        .withArgs(
+          auctionid,
+          ethers.utils.parseUnits('0.2'),
+          user2.address,
+          1,
+          ethers.utils.parseUnits('0.05')
+        );
+
       const claimEthBalance2 = await marketplace.provider.getBalance(
         '0x1d1C46273cEcC00F7503AB3E97A40a199bcd6b31'
       );
@@ -914,9 +927,19 @@ describe('Marketplace', function () {
       );
 
       // Buy with user 3
-      await marketplace.connect(user3).bid(auctionid2, 1, {
+      const bidTx = await marketplace.connect(user3).bid(auctionid2, 1, {
         value: ethers.utils.parseUnits('0.515'),
       });
+
+      await expect(bidTx)
+        .to.emit(marketplace, 'AuctionSuccessful')
+        .withArgs(
+          auctionid2,
+          ethers.utils.parseUnits('0.5'),
+          user3.address,
+          1,
+          ethers.utils.parseUnits('0.0275')
+        );
 
       //Grab updated balances
       const claimEthBalance2 = await marketplace.provider.getBalance(

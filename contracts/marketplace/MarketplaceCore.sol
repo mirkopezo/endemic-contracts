@@ -34,7 +34,8 @@ abstract contract MarketplaceCore is
         bytes32 indexed id,
         uint256 indexed totalPrice,
         address winner,
-        uint256 amount
+        uint256 amount,
+        uint256 totalFees
     );
 
     event AuctionCancelled(bytes32 indexed id);
@@ -144,7 +145,13 @@ abstract contract MarketplaceCore is
             revert("Invalid asset class");
         }
 
-        _transferFunds(contractId, tokenId, seller, _msgSender(), price);
+        uint256 totalFees = _transferFunds(
+            contractId,
+            tokenId,
+            seller,
+            _msgSender(),
+            price
+        );
 
         _transferNFT(
             seller,
@@ -155,7 +162,13 @@ abstract contract MarketplaceCore is
             assetClass
         );
 
-        emit AuctionSuccessful(auctionId, price, _msgSender(), tokenAmount);
+        emit AuctionSuccessful(
+            auctionId,
+            price,
+            _msgSender(),
+            tokenAmount,
+            totalFees
+        );
     }
 
     function cancelAuction(bytes32 id) external {
